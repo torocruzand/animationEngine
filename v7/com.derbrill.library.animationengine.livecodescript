@@ -258,7 +258,7 @@ on aeConstrainHandler pX, pY, pID
          put item 2 of tAnimationEngineArray["constrainLinear"] into tY2
       end if
 
-      put closestpointOnLine(tX1, tY1, tX2, tY2, pX, pY) into tAllowDragOnLine
+      put closestPointOnLine(tX1, tY1, tX2, tY2, pX, pY) into tAllowDragOnLine
       put round(item 1 of tAllowDragOnLine) into item 1 of tAllowDragOnLine
       put round(item 2 of tAllowDragOnLine) into item 2 of tAllowDragOnLine
 
@@ -502,7 +502,7 @@ function circleCollide pX1, pY1, pX2, pY2, pThreshold
 
    --check syntax
    if item 1 to 4 of tParameters is not a rectangle or item 5 of tParameters is not a number
-   then return "Error: Syntax is circleCollide(x1,y1,x2,y2,threshold)"
+   then return "Error: Syntax is circleCollide(x1,y1,x2,y2,threshold) or circleCollide(point1, point2, threshold)."
 
    put item 1 of tParameters into pX1
    put item 2 of tParameters into pY1
@@ -522,7 +522,7 @@ function circleLineSegmentCollide pX1, pY1, pX2, pY2, pX3, pY3, pRadius
 
    --check syntax
    if item 1 to 4 of tParameters is not a rectangle or item 5 to 6 of tParameters is not a point or item 7 of tParameters is not a number then
-      return "Error: Syntax is circleLineSegmentCollide(x1,y1,x2,y2,x3,y3,radius)"
+      return "Error: Syntax is circleLineSegmentCollide(x1,y1,x2,y2,x3,y3,radius) or circleLineSegmentCollide(point1, point2, point3, radius)."
    end if
 
    put item 1 of tParameters into pX1
@@ -549,13 +549,13 @@ end circleLineSegmentCollide
 
 --> closest points
 
-function closestpointOnLine pX1, pY1, pX2, pY2, pX3, pY3
-   local tClosestPointX,tClosestPointY, tTemp, tU, tParameters
+function closestPointOnLine pX1, pY1, pX2, pY2, pX3, pY3
+   local tClosestPointX, tClosestPointY, tTemp, tU, tParameters
 
    --assemble one string from parameters
    put pX1, pY1, pX2, pY2, pX3, pY3 into tParameters
    if item 1 to 4 of tParameters is not a rectangle or item 5 to 6 of tParameters is not a point then
-      return "Error: Syntax is closestpointOnLine(x1, y1, x2, y2, x3, y3)"
+      return "Error: Syntax is closestPointOnLine(x1, y1, x2, y2, x3, y3) or closestPointOnLine(point1, point2, point3)."
    end if
 
    put item 1 of tParameters into pX1
@@ -577,1184 +577,802 @@ function closestpointOnLine pX1, pY1, pX2, pY2, pX3, pY3
 
    return pX1, pY1
 end closestPointOnLine
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 --> basic geometry
 
-function getSlope
-   local i, theValue, xEnd, xStart
-   local yEnd, yStart
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
+function getSlope pX1, pY1, pX2, pY2
+   local tTemp, tParameters
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit getSlope
-            exit repeat
-         end if
-      end repeat
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2 into tParameters
+   if item 1 to 4 of tParameters is not a rectangle then
+      return "Error: Syntax is getSlope(x1, y1, x2, y2) or getSlope(point1, point2)."
+   end if
 
-      put item 1 of theValue into xStart
-      put item 2 of theValue into yStart
-      put item 3 of theValue into xEnd
-      put item 4 of theValue into yEnd
-      if xEnd - xStart <> 0 then
-         return (yEnd - yStart) / (xEnd - xStart)
-       else
-         return "y"
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+   put pX2 - pX1 into tTemp
+
+   if tTemp <> 0 then
+      return (pY2 - pY1) / tTemp
+   end if
+
+   return "y"
 end getSlope
 
-function distance
-   -- Unglaublich wie viel code man schreibt nur um die Parameter zu checken. Wär chic das schlauer zu regeln...
 
-   local adjacentLeg, hypotenuse, i, oppositeLeg
-   local theValue, x1, x2, y1
-   local y2
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
+function distance pX1, pY1, pX2, pY2
+   local tParameters
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit distance
-            exit repeat
-         end if
-      end repeat
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2 into tParameters
+   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is distance(x1, y1, x2, y2) or distance(point1, point2)."
 
-      put item 1 of theValue into x1
-      put item 2 of theValue into y1
-      put item 3 of theValue into x2
-      put item 4 of theValue into y2
-      if y2 is empty then
-         return "Error: Syntax is distance(x1,y1,x2,y2)" & cr & theValue
-      end if
-      put x1 - x2 into oppositeLeg
-      put y1 - y2 into adjacentLeg
-      put round(sqrt(oppositeLeg ^ 2 + adjacentLeg ^ 2)) into hypotenuse
-      return hypotenuse
-   catch theerror
-      return "error: " & theError
-   end try
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+
+   return floor(sqrt((pX1 - pX2) ^ 2 + (pY1 - pY2) ^ 2))
 end distance
 
-function findAngle
-   local adjacentLeg, alpha, foundAngle, i
-   local oppositeLeg, theValue, x1, x2
-   local y1, y2
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit findAngle
-            exit repeat
-         end if
-      end repeat
+function findAngle pX1, pY1, pX2, pY2
+   local tParameters, tAngle
 
-      put item 1 of theValue into x1
-      put item 2 of theValue into y1
-      put item 3 of theValue into x2
-      put item 4 of theValue into y2
-      put abs(x1 - x2) into oppositeLeg
-      put abs(y1 - y2) into adjacentLeg
-      if adjacentLeg <> 0 then
-         put atan(oppositeleg / adjacentLeg) into alpha
-         put alpha * 180 / pi into alpha
-       else
-         put 90 into alpha
-      end if
-      switch
-         case x1 <= x2 and y1 >= y2
-            put alpha into foundAngle
-            break
-         case x1 <= x2 and y1 <= y2
-            put 180 - alpha into foundAngle
-            break
-         case x1 >= x2 and y1 <= y2
-            put 180 + alpha into foundAngle
-            break
-         case x1 >= x2 and y1 >= y2
-            put 360 - alpha into foundAngle
-            break
-      end switch
-      return round(foundangle)
-   catch theerror
-      return "error: " & theError
-   end try
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2 into tParameters
+   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findAngle(x1, y1, x2, y2) or findAngle(point1, point2)."
+
+   put findPreciseAngle(tParameters) into tAngle
+   if tAngle is a number then return floor(tAngle)
 end findAngle
 
-function findPreciseAngle
-   --grrrrrr Das hätte ich mal von Anfang an so machen sollen... Solln die User doch selber runden.
-   local adjacentLeg, alpha, foundAngle, i
-   local oppositeLeg, theValue, x1, x2
-   local y1, y2
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit findPreciseAngle
-            exit repeat
-         end if
-      end repeat
+function findPreciseAngle pX1, pY1, pX2, pY2
+   local tParameters, tAdjacentLeg, tAlpha
 
-      put item 1 of theValue into x1
-      put item 2 of theValue into y1
-      put item 3 of theValue into x2
-      put item 4 of theValue into y2
-      put abs(x1 - x2) into oppositeLeg
-      put abs(y1 - y2) into adjacentLeg
-      if adjacentLeg <> 0 then
-         put atan(oppositeleg / adjacentLeg) into alpha
-         put alpha * 180 / pi into alpha
-       else
-         put 90 into alpha
-      end if
-      switch
-         case x1 <= x2 and y1 >= y2
-            put alpha into foundAngle
-            break
-         case x1 <= x2 and y1 <= y2
-            put 180 - alpha into foundAngle
-            break
-         case x1 >= x2 and y1 <= y2
-            put 180 + alpha into foundAngle
-            break
-         case x1 >= x2 and y1 >= y2
-            put 360 - alpha into foundAngle
-            break
-      end switch
-      return foundangle
-   catch theerror
-      return "error: " & theError
-   end try
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2 into tParameters
+   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findPreciseAngle(x1, y1, x2, y2) or findPreciseAngle(point1, point2)."
+
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+   put abs(pY1 - pY2) into tAdjacentLeg
+
+   if tAdjacentLeg <> 0 then
+      put atan(abs(pX1 - pX2) / tAdjacentLeg) into tAlpha
+      put tAlpha * 180 / pi into tAlpha
+   else put 90 into tAlpha
+
+   switch
+      case pX1 <= pX2 and pY1 >= pY2
+         return tAlpha
+         break
+
+      case pX1 <= pX2 and pY1 <= pY2
+         return (180 - tAlpha)
+         break
+
+      case pX1 >= pX2 and pY1 <= pY2
+         return (180 + tAlpha)
+         break
+
+      case pX1 >= pX2 and pY1 >= pY2
+         return (360 - tAlpha)
+         break
+   end switch
+
 end findPreciseAngle
 
-function findPreciseAngleX
-   local foundAngle, i, theValue
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit findPreciseAngleX
-            exit repeat
-         end if
-      end repeat
+function findPreciseAngleX pX1, pY1, pX2, pY2
+   local tParameters, tFoundAngle
 
-      put findPreciseAngle(theValue) - 90 into foundAngle
-      if foundAngle < 0 then put 360 + foundAngle into foundAngle
-      return foundangle
-   catch theerror
-      return "error: " & theError
-   end try
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2 into tParameters
+   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findPreciseAngleX(x1, y1, x2, y2) or findPreciseAngleX(point1, point2)."
+
+   put findPreciseAngle(tParameters) - 90 into tFoundAngle
+   if tFoundAngle < 0 then put 360 + tFoundAngle into tFoundAngle
+   return tFoundAngle
 end findPreciseAngleX
 
-function findAngleX
-   local foundAngle, i, theValue
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit findAngleX
-            exit repeat
-         end if
-      end repeat
+function findAngleX pX1, pY1, pX2, pY2
+   local tParameters, tFoundAngle
 
-      put findAngle(theValue) - 90 into foundAngle
-      if foundAngle < 0 then put 360 + foundAngle into foundAngle
-      return foundangle
-   catch theerror
-      return "error: " & theError
-   end try
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2 into tParameters
+   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findAngleX(x1, y1, x2, y2) or findAngleX(point1, point2)."
+
+   put findAngle(tParameters) - 90 into tFoundAngle
+   if tFoundAngle < 0 then put 360 + tFoundAngle into tFoundAngle
+   return tFoundAngle
 end findAngleX
 
-function findAngleY
-   local foundAngle, i, theValue
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit findAngleY
-            exit repeat
-         end if
-      end repeat
+function findAngleY pX1, pY1, pX2, pY2
+   local tParameters
 
-      put findAngle(theValue) into foundAngle
-      return foundangle
-   catch theerror
-      return "error: " & theError
-   end try
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2 into tParameters
+   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findAngleY(x1, y1, x2, y2) or findAngleY(point1, point2)."
+   return findAngle(tParameters)
 end findAngleY
 
-function findAngle2
-   local foundAngle, i, theValue
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit findAngle2
-            exit repeat
-         end if
-      end repeat
-      -- fix in 2.0
-      --put findAngle(theValue)-90+item 5 of theValue into foundAngle
-      put findAngle(theValue) - 90 - item 5 of theValue into foundAngle
-      -- end fix
-      if foundAngle < 0 then put 360 + foundAngle into foundAngle
-      if foundAngle > 360 then put foundAngle mod 360 into foundAngle
-      return foundangle
-   catch theerror
-      return "error: " & theError
-   end try
+function findAngle2 pX1, pY1, pX2, pY2
+   local tParameters, tFoundAngle
+
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2 into tParameters
+   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findAngleY(x1, y1, x2, y2) or findAngleY(point1, point2)."
+   -- fix in 2.0
+   --put findAngle(tParameters)-90+item 5 of tParameters into foundAngle
+   put findAngle(tParameters) - 90 - item 5 of tParameters into tFoundAngle
+   -- end fix
+   if tFoundAngle < 0 then return 360 + tFoundAngle
+   if tFoundAngle > 360 then return tFoundAngle mod 360
+   return tFoundAngle
 end findAngle2
 
-function intersectRect
-   local bottom1, bottom2, i, left1
-   local left2, right1, right2, s1
-   local s3, theValue, top1, top2
-   try
-      --assemble one string from parameters
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
+# new in this version 7
+function rectanglesIntersect pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2
+   -- https://stackoverflow.com/questions/2752349/fast-rectangle-to-rectangle-intersection
+   local tParameters
 
-      --check syntax: are there 8 items of theValue?
-      if the number of items of theValue <> 8 then
-         return "Error: Syntax is aspectResize(left1,top1,right1,bottom1,left2,top2,right2,bottom2)"
-         exit intersectRect
-      end if
+   --assemble one string from parameters
+   put pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2 into tParameters
 
-      --check: syntax are all 8 items of theValue numbers?
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit intersectRect
-            exit repeat
-         end if
-      end repeat
+   --rectangle 1
+   put item 1 of tParameters into pLeft1
+   put item 2 of tParameters into pTop1
+   put item 3 of tParameters into pRight1
+   put item 4 of tParameters into pBottom1
+   --rectangle 2
+   put item 5 of tParameters into pLeft2
+   put item 6 of tParameters into pTop2
+   put item 7 of tParameters into pRight2
+   put item 8 of tParameters into pBottom2
 
-      --ok: Split theValue
-      put item 1 of theValue into left1
-      put item 2 of theValue into top1
-      put item 3 of theValue into right1
-      put item 4 of theValue into bottom1
-      put item 5 of theValue into left2
-      put item 6 of theValue into top2
-      put item 7 of theValue into right2
-      put item 8 of theValue into bottom2
+   if (pLeft1, pTop1, pRight1, pBottom1) is not a rectangle or (pLeft2, pTop2, pRight2, pBottom2) is not a rectangle
+   then return "Error: Syntax is rectanglesIntersect(left1, top1, right1, bottom1, left2, top2, right2, bottom2) or rectanglesIntersect(rectangle1, rectangle2)."
 
-      --rectangles dont intersect
-      if left2 > right1 then
-         return false
-      end if
-      if right2 < left1 then
-         return false
-      end if
 
-      --they intersect... now calulate the new rectangle.
-      --s1 is the topleft, s3 the botright
+   return not(pLeft2 > pRight1 or pRight2 < pLeft1 or pTop2 > pBottom1 or pBottom2 < pTop1)
+end rectanglesIntersect
 
-      --is rectangle 2 within rectangle 1?
-      if left1 <= left2 and right1 >= right2 and top1 <= top2 and bottom1 >= bottom2 then
-         put left2, top2 into s1
-         put right2, bottom2 into s3
-         return s1, s3
-      end if
 
-      --is rectangle 1 within rectangle 2?
-      if left2 < left1 and right2 > right1 and top2 < top1 and bottom2 > bottom1 then
-         put left1, top1 into s1
-         put right1, bottom1 into s3
-         return s1, s3
-      end if
+// Function to find intersection rectangle of given two rectangles.
+function intersectRect pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2
+   local tParameters, tLeft, tTop, tRight, tBottom
 
-      --the following needs to be cleared up...
-      if top1 <= top2 and bottom1 >= top2 then
-         if right2 <= right1 then
-            if left1 < left2 then
-               put left2, top2 into s1
-               put right2, bottom1 into s3
-             else
-               if bottom1 < bottom2 then
-                  put left1, top2 into s1
-                  put right2, bottom1 into s3
-                else
-                  if top2 < top1 then
-                     put left2, top1 into s1
-                     put right2, bottom2 into s3
-                   else
-                     put left1, top2 into s1
-                     put right2, bottom2 into s3
-                  end if
-               end if
-            end if
-          else
-            if left1 < left2 then
-               if bottom1 < bottom2 then
-                  put left2, top2 into s1
-                  put right1, bottom1 into s3
-                else
-                  if top2 >= top1 then
-                     put left2, top2 into s1
-                     put right1, bottom2 into s3
-                   else
-                     put left2, top2 into s1
-                     put right2, bottom1 into s3
-                     return s1, s3
-                  end if
-               end if
-             else
-               if right2 < right1 then
-                  put left2, top1 into s1
-                  put right1, bottom1 into s3
-                else
-                  if bottom1 <= bottom2 then
-                     put left1, top2 into s1
-                     put right1, bottom1 into s3
-                   else
-                     put left1, top2 into s1
-                     put right1, bottom2 into s3
-                  end if
-               end if
-            end if
-         end if
-         return s1, s3
-      end if
+   -- https://www.geeksforgeeks.org/intersecting-rectangle-when-bottom-left-and-top-right-corners-of-two-rectangles-are-given/
 
-      if top1 > top2 and bottom2 > top1 then
-         if right2 <= right1 then
-            if left1 < left2 then
-               if bottom2 < bottom1 then
-                  put left2, top1 into s1
-                  put right2, bottom2 into s3
-                else
-                  put left2, top1 into s1
-                  put right2, bottom1 into s3
-               end if
-             else
-               if bottom1 > bottom2 then
-                  put left1, top1 into s1
-                  put right2, bottom2 into s3
-                else
-                  put left1, top1 into s1
-                  put right2, bottom1 into s3
-               end if
-            end if
-          else
-            if left1 < left2 then
-               if bottom1 > bottom2 then
-                  put left2, top1 into s1
-                  put right1, bottom2 into s3
-                else
-                  put left2, top1 into s1
-                  put right1, bottom1 into s3
-               end if
-             else
-               put left1, top1 into s1
-               put right1, bottom2 into s3
-            end if
-         end if
-         return s1, s3
-       else
-         return false
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
+   -- assemble one string from parameters
+   put pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2 into tParameters
+
+   -- rectangle 1
+   put item 1 of tParameters into pLeft1
+   put item 2 of tParameters into pTop1
+   put item 3 of tParameters into pRight1
+   put item 4 of tParameters into pBottom1
+
+   -- rectangle 2
+   put item 5 of tParameters into pLeft2
+   put item 6 of tParameters into pTop2
+   put item 7 of tParameters into pRight2
+   put item 8 of tParameters into pBottom2
+
+   if (pLeft1, pTop1, pRight1, pBottom1) is not a rectangle or (pLeft2, pTop2, pRight2, pBottom2) is not a rectangle
+   then return "Error: Syntax is intersectRect(left1, top1, right1, bottom1, left2, top2, right2, bottom2) or intersectRect(rectangle1, rectangle2)."
+
+   if pLeft1 > pLeft2 then put pLeft1 into tLeft
+   else put pLeft2 into tLeft
+
+   if pTop1 > pTop2 then put pTop1 into tTop
+   else put pTop2 into tTop
+
+   if pRight1 > pRight2 then put pRight1 into tRight
+   else put pRight2 into tRight
+
+   if pBottom1 > pBottom2 then put pBottom1 into tBottom
+   else put pBottom2 into tBottom
+
+   // No intersection
+   if tLeft > tRight or tTop > tBottom then return "No intersection"
+   return tLeft, tTop, tRight, tBottom
 end intersectRect
 
-function maskComparePoints
-   local abc, b1, b2, bottom1
-   local bottom2, e1, e2, i
-   local left1, left2, right1, right2
-   local s1, s2, t1, t2
-   local theValue, top1, top2
-   try
-      --assemble one string from parameters
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
 
-      --check syntax: are there 8 items of theValue?
-      if the number of items of theValue <> 8 then
-         return "Error: Syntax is maskComparePoints(left1,top1,right1,bottom1,left2,top2,right2,bottom2)"
-         exit maskComparePoints
-      end if
+function maskComparePoints pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2
+   local tParameters, tInterceptRectangle
+   local s1, e1, t1, b1, s2, e2, t2, b2
 
-      --check: syntax are all 8 items of theValue numbers?
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers"
-            exit maskComparePoints
-            exit repeat
-         end if
-      end repeat
+   -- assemble one string from parameters
+   put pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2 into tParameters
 
-      --ok: Split theValue
-      put item 1 of theValue into left1
-      put item 2 of theValue into top1
-      put item 3 of theValue into right1
-      put item 4 of theValue into bottom1
-      put item 5 of theValue into left2
-      put item 6 of theValue into top2
-      put item 7 of theValue into right2
-      put item 8 of theValue into bottom2
+   -- rectangle 1
+   put item 1 of tParameters into pLeft1
+   put item 2 of tParameters into pTop1
+   put item 3 of tParameters into pRight1
+   put item 4 of tParameters into pBottom1
 
+   -- rectangle 2
+   put item 5 of tParameters into pLeft2
+   put item 6 of tParameters into pTop2
+   put item 7 of tParameters into pRight2
+   put item 8 of tParameters into pBottom2
 
-      put intersectRect(theValue) into abc
-      if abc <> "false" then
-         put abs(left1 - item 1 of abc) + 1 into s1
-         put abs(left1 - item 3 of abc) + 1 into e1
-         put abs(top1 - item 2 of abc) + 1 into t1
-         put abs(top1 - item 4 of abc) + 1 into b1
-         put abs(left2 - item 1 of abc) + 1 into s2
-         put abs(left2 - item 3 of abc) + 1 into e2
-         put abs(top2 - item 2 of abc) + 1 into t2
-         put abs(top2 - item 4 of abc) + 1 into b2
-         return s1, e1, t1, b1, s2, e2, t2, b2
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
+   if (pLeft1, pTop1, pRight1, pBottom1) is not a rectangle or (pLeft2, pTop2, pRight2, pBottom2) is not a rectangle
+   then return "Error: Syntax is maskComparePoints(left1, top1, right1, bottom1, left2, top2, right2, bottom2) or maskComparePoints(rectangle1, rectangle2)."
+
+   put intersectRect(tParameters) into tInterceptRectangle
+
+   if tInterceptRectangle is "No intersection" then return empty
+
+   put abs(pLeft1 - item 1 of tInterceptRectangle) + 1 into s1
+   put abs(pLeft1 - item 3 of tInterceptRectangle) + 1 into e1
+   put abs(pTop1 - item 2 of tInterceptRectangle) + 1 into t1
+   put abs(pTop1 - item 4 of tInterceptRectangle) + 1 into b1
+   put abs(pLeft2 - item 1 of tInterceptRectangle) + 1 into s2
+   put abs(pLeft2 - item 3 of tInterceptRectangle) + 1 into e2
+   put abs(pTop2 - item 2 of tInterceptRectangle) + 1 into t2
+   put abs(pTop2 - item 4 of tInterceptRectangle) + 1 into b2
+
+   return s1, e1, t1, b1, s2, e2, t2, b2
 end maskComparePoints
 
-function midLeft theObject
-   local midPoint
-   try
-      put round(the bottom of theObject - the height of theObject / 2) into midPoint
-      return the left of theObject, midPoint
-   catch theerror
-      return "error: " & theError
-   end try
+//TODO: DELETE THIS FUNCION
+function midLeft pLongId
+   if there is not a pLongId then return empty
+   return the left of pLongId, item 2 of the loc of pLongId
 end midleft
 
-function midRight theObject
-   local midPoint
-   try
-      put round(the bottom of theObject - the height of theObject / 2) into midPoint
-      return the right of theObject, midPoint
-   catch theerror
-      return "error: " & theError
-   end try
+//TODO: DELETE THIS FUNCION
+function midRight pLongId
+   if there is not a pLongId then return empty
+   return the right of pLongId, item 2 of the loc of pLongId
 end midRight
 
-function midTop theObject
-   local midPoint
-   try
-      put round(the right of theObject - the width of theObject / 2) into midPoint
-      return midPoint, the top of theObject
-   catch theerror
-      return "error: " & theError
-   end try
+//TODO: DELETE THIS FUNCION
+function midTop pLongId
+   if there is not a pLongId then return empty
+   return item 1 of the loc of pLongId, the top of pLongId
 end midTop
 
-function midBottom theObject
-   local midPoint
-   try
-      put round(the right of theObject - the width of theObject / 2) into midPoint
-      return midPoint, the bottom of theObject
-   catch theerror
-      return "error: " & theError
-   end try
+//TODO: DELETE THIS FUNCION
+function midBottom pLongId
+   if there is not a pLongId then return empty
+   return item 1 of the loc of pLongId, the bottom of pLongId
 end midBottom
 
-function splitAlpha theObject
-   local i, tAlpha, theData, theLength
-   local theLoops
-   try
-      put the alphadata of theObject into tAlpha
-      replace numtochar(10) with numtochar(17) in tAlpha
-      replace numtochar(13) with numtochar(17) in tAlpha
-      put the number of chars of tAlpha div the width of theObject into theLoops
-      put the width of theObject into theLength
-      put tAlpha into theData
-      repeat with i = theLoops down to 1
-         put char theLength * i of theData & cr into char theLength * i of theData
-      end repeat
-      return theData
-   catch theerror
-      return "error: " & theError
-   end try
+
+function splitAlpha pLongId
+   local i = 0, tAlpha, tData, tLength, tLoops
+
+   if there is a pLongId then return "Error: The object you reference does not exist."
+   if first word of pLongId is not "image" then return "Error: The object you are referencing is not an image."
+
+   put the alphaData of pLongId into tAlpha
+   put the width of pLongId
+   replace numtochar(10) with numtochar(17) in tAlpha
+   replace numtochar(13) with numtochar(17) in tAlpha
+
+   put the width of pLongId into tLength
+   put the number of chars of tAlpha div tLength into tLoops
+   put tAlpha into tData
+
+   repeat with i = tLoops down to 1
+      put char tLength * i of tData & cr into char tLength * i of tData
+      wait 0 with messages
+   end repeat
+
+   return tData
 end splitAlpha
 
--- completely obsolete with the new intersect fnction!
--- deprecate it
-function imageCollide object1, object2, threshold
-   try
-      if threshold is empty then put 0 into threshold
-      if imageCollide2(object1, object2, threshold) <> true then
+
+function imageCollide pLongIdObject1, pLongIdObject2, pThreshold
+   local tData1, tData2, tMaskComparePoints, tOffset1, tOffset2, tOffset3, tOffset4
+   local tEndCounterLine, tEndCounterChar, tCounterLine, tCounterChar, tFirst, tSecond
+
+   if there is a pLongIdObject1 then return "Error: The object referenced in the first parameter does not exist."
+   if there is a pLongIdObject2 then return "Error: The object referenced in the second parameter does not exist."
+   if first word of pLongIdObject1 is not "image" then return "Error: The object you reference in the first parameter is not an image."
+   if first word of pLongIdObject2 is not "image" then return "Error: The object you reference in the second parameter is not an image."
+   if pThreshold is empty then put 0 into pThreshold
+
+   if not intersect (pLongIdObject1, pLongIdObject1, "bounds") then return false
+
+   put splitAlpha(pLongIdObject1) into tData1
+   put splitAlpha(pLongIdObject2) into tData2
+
+   put maskComparePoints(the rect of pLongIdObject1, the rect of pLongIdObject2) into tMaskComparePoints
+   if tMaskComparePoints then return false
+
+   put item 3 of tMaskComparePoints into tOffset1
+   put item 1 of tMaskComparePoints into tOffset2
+   put item 7 of tMaskComparePoints into tOffset3
+   put item 5 of tMaskComparePoints into tOffset4
+   put item 4 of tMaskComparePoints - item 3 of tMaskComparePoints into tEndCounterLine
+   put item 2 of tMaskComparePoints - item 1 of tMaskComparePoints into tEndCounterChar
+   put - 1 into tCounterLine
+
+   repeat for each line tLine in tData1
+      add 1 to tCounterLine
+      put - 1 into tCounterChar
+
+      repeat for each char tChar in line (tOffset1 + tCounterLine) of tData1
+         add 1 to tCounterChar
+         if tCounterChar > tEndcounterchar then
+            exit repeat
+         end if
+
+         put chartonum(char(tCounterChar + tOffset2) of line (tCounterLine + tOffset1) of tData1) into tFirst
+         put chartonum(char(tCounterChar + tOffset4) of line (tCounterLine + tOffset3) of tData2) into tSecond
+         if tFirst + tSecond > 255 + pThreshold then
+            return true
+         end if
+      end repeat
+
+      if tCounterLine > tEndCounterLine then
          return false
-       else
-         return true
       end if
-   catch theerror
-      return "error: " & theError
-   end try
+   end repeat
+
+   return false
 end imageCollide
 
-function imageCollide2 object1, object2, threshold
-   local abc, counterChar, counterLine, endCounterChar
-   local endCounterLine, offset1, offset2, offset3
-   local offset4, theChar, theData1, theData2
-   local theFirst, theLine, theSecond
-   try
-      if threshold is empty then put 0 into threshold
-      if intersect (object1, object2, "bounds") = "false" then return "false"
-      put splitAlpha(object1) into theData1
-      put splitAlpha(object2) into theData2
-      put maskComparePoints(the rect of object1, the rect of object2) into abc
-      if abc <> "false" then
-         put item 3 of abc into offset1
-         put item 1 of abc into offset2
-         put item 7 of abc into offset3
-         put item 5 of abc into offset4
-         put item 4 of abc - item 3 of abc into endCounterLine
-         put item 2 of abc - item 1 of abc into endCounterChar
-         put - 1 into counterLine
-         repeat for each line theLine in thedata1
-            add 1 to counterLine
-            put - 1 into counterChar
-            repeat for each char theChar in line (offset1 + counterline) of thedata1
-               add 1 to counterChar
-               if counterChar > endcounterchar then
-                  exit repeat
-                else
-                  put chartonum(char(counterchar + offset2) of line (counterLine + offset1) of thedata1) into theFirst
-                  put chartonum(char(counterchar + offset4) of line (counterLine + offset3) of thedata2) into theSecond
-                  if thefirst + thesecond > 255 + threshold then
-                     return "true"
-                  end if
-               end if
-            end repeat
-            if counterLine > endcounterline then
-               return "false"
-            end if
-         end repeat
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
-end imageCollide2
 
-function pointOnCircle
-   local centerX, centerY, i, isAngle
-   local isNewX, isNewY, isRadius, theValue
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
+function pointOnCircle pCenterX, pCenterY, pAngle, pRadius
+   local tParameters, tNewX, tNewY
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit pointOnCircle
-            exit repeat
-         end if
-      end repeat
+   put pCenterX, pCenterY, pAngle, pRadius into tParameters
+   put item 1 of tParameters into pCenterX
+   put item 2 of tParameters into pCenterY
+   put item 3 of tParameters into pAngle
+   put item 4 of tParameters into pRadius
 
-      put item 1 of theValue into centerX
-      put item 2 of theValue into centerY
-      put item 3 of theValue into isAngle
-      put item 4 of theValue into isRadius
-      put centerX + cos(isAngle * pi / 180) * isRadius into isNewX
-      put centerY + sin(isAngle * pi / 180) * isRadius into isNewY
-      return round(isNewX), round(isNewY)
-   catch theerror
-      return "error: " & theError
-   end try
+   if tParameters is not a rectangle
+   then return "Error: Syntax is pointOnCircle(CenterX, CenterY, Angle, Radius)."
+
+   put pCenterX + cos(pAngle * pi / 180) * pRadius into tNewX
+   put pCenterY + sin(pAngle * pi / 180) * pRadius into tNewY
+   return floor(tNewX), floor(tNewY)
 end pointOnCircle
 
-function pointOnEllipse
-   local centerX, centerY, ellipseNewX, ellipseNewY
-   local i, isAngle, isRadiusX, isRadiusY
-   local theValue
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit pointOnEllipse
-            exit repeat
-         end if
-      end repeat
+function pointOnEllipse pCenterX, pCenterY, pAngle, pRadiusx, pRadiusY
+   local tParameters, tEllipseNewX, tEllipseNewY
 
-      put item 1 of theValue into centerX
-      put item 2 of theValue into centerY
-      put item 3 of theValue into isAngle
-      put item 4 of theValue into isRadiusX
-      put item 5 of theValue into isRadiusY
-      --put atan((isRadiusY^2/isRadiusx^2)*tan(isangle/180*pi))*180/pi into isAngle
+   put pCenterX, pCenterY, pAngle, pRadiusX, pRadiusY into tParameters
+   put item 1 of tParameters into pCenterX
+   put item 2 of tParameters into pCenterY
+   put item 3 of tParameters into pAngle
+   put item 4 of tParameters into pRadiusX
+   put item 5 of tParameters into pRadiusY
 
-      put centerX + cos(isAngle * pi / 180) * isRadiusX into ellipseNewX
-      put centerY + sin(isAngle * pi / 180) * isRadiusY into ellipseNewY
-      return ellipseNewX, ellipseNewY
-   catch theerror
-      return "error: " & theError
-   end try
+   if (pCenterX, pCenterY, pAngle, pRadiusX) is not a rectangle or pRadiusY is not a number
+   then return "Error: Syntax is pointOnEllipse(CenterX, CenterY, Angle, RadiusX, RadiusY)."
+   --put atan((isRadiusY^2/isRadiusx^2)*tan(isangle/180*pi))*180/pi into isAngle
+
+   put pCenterX + cos(pAngle * pi / 180) * pRadiusX into tEllipseNewX
+   put pCenterY + sin(pAngle * pi / 180) * pRadiusY into tEllipseNewY
+   return tEllipseNewX, tEllipseNewY
 end pointOnEllipse
 
-function pointOnLine
-   local i, isDistance, myAngle, newX
-   local newY, theValue, x1, x2
-   local y1, y2
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
 
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit pointOnLine
-            exit repeat
-         end if
-      end repeat
+function pointOnLine pX1, pY1, pX2, pY2, pDistance
+   local tParameters, tMyAngle, tNewX, tNewY
 
-      put item 1 of theValue into x1
-      put item 2 of theValue into y1
-      put item 3 of theValue into x2
-      put item 4 of theValue into y2
-      put item 5 of theValue into isDistance
-      put findAngle(x1, y1, x2, y2) - 90 into myAngle
-      put round(x1 + cos(myangle * pi / 180) * isDistance) into newX
-      put round(y1 + sin(myAngle * pi / 180) * isdistance) into newY
-      return newX, newY
-   catch theerror
-      return "error: " & theError
-   end try
+   put pX1, pY1, pX2, pY2, pDistance into tParameters
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+   put item 5 of tParameters into pDistance
+
+   if (pX1, pY1, pX2, pY2) is not a rectangle or pDistance is not a number
+   then return "Error: Syntax is pointOnLine(x1, y1, x2, y2, distance) or pointOnLine(point1, point2, distance)."
+
+   put findAngle(pX1, pY1, pX2, pY2) - 90 into tMyAngle
+   put round(pX1 + cos(tMyAngle * pi / 180) * pDistance) into tNewX
+   put round(pY1 + sin(tMyAngle * pi / 180) * pdistance) into tNewY
+   return tNewX, tNewY
 end pointOnLine
-
 
 --Added in AE 1.5
 
-function whereIsThePoint
-   local i, theParameters, tWhere, x1
-   local x2, x3, y1, y2
-   local y3
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theParameters
-          else
-            put param(i) after theParameters
-         end if
-      end repeat
-      put item 1 of theParameters into x1
-      put item 2 of theParameters into y1
-      put item 3 of theParameters into x2
-      put item 4 of theParameters into y2
-      put item 5 of theParameters into x3
-      put item 6 of theParameters into y3
-      if x1 is not a number or y1 is not a number or x2 is not a number or y2 is not a number or x3 is not a number or y3 is not a number then
-         return "Error: One of the parameters is not a point."
-      end if
-      put (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1) into tWhere
-      switch
-         case tWhere < 0
-            return "right"
-            break
-         case tWhere > 0
-            return "left"
-            break
-         default
-            return "on"
-            break
-      end switch
-   catch theError
-      return "error: " & theError
-   end try
+function whereIsThePoint pX1, pY1, pX2, pY2, pX3, pY3
+   local tParameters, tWhere
+
+   put pX1, pY1, pX2, pY2, pX3, pY3 into tParameters
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+   put item 5 of tParameters into pX3
+   put item 6 of tParameters into pY3
+
+   if (pX1, pY1, pX2, pY2) is not a rectangle or (pX3, pY3) is not a point
+   then return "Error: Syntax is whereIsThePoint(x1, y1, x2, y2, x3, y3) or whereIsThePoint(point1, point2, point3)."
+
+   put (pX2 - pX1) * (pY3 - pY1) - (pX3 - pX1) * (pY2 - pY1) into tWhere
+
+   switch
+      case tWhere < 0
+         return "right"
+         break
+      case tWhere > 0
+         return "left"
+         break
+      default
+         return "on"
+         break
+   end switch
 end whereIsThePoint
 
-function pointInPoly
-   local containsP, i, j, mycounter
-   local pts, tot, x, y
-   try
-      if paramcount() < 3 then
-         if the number of items of param(1) <> 2 then
-            return "Error in parameters." & cr & "Syntax: pointInPoly(x,y,pointlist)"
-          else
-            put item 1 of param(1) into x
-            put item 2 of param(1) into y
-            put param(2) into pts
+
+function pointInPoly pX, pY, pPointlist
+   local tParameters, tMyCounter = 0, tLength = 0, tTot, tContainsP = false
+
+   put pX, pY, pPointlist into tParameters
+   put item 1 of tParameters into pX
+   put item 2 of tParameters into pY
+   put item 3 to - 1 of tParameters into pPointlist
+
+   if (pX, pY) is not a point and pPointlist is empty then return "Error in parameters." & cr & "Syntax: pointInPoly(x,y,pointlist) or pointInPoly(point,pointlist)."
+   if the number of lines of pPointlist < 3 then return "error. Pointlist must contain at least 3 lines"
+
+   put the number of lines of pPointlist into tLength
+   put tLength into tTot
+
+   repeat with i = 1 to tTot
+      if (item 1 of line i of pPointlist is not a number or item 2 of line i of pPointlist is not a number) or \
+            (item 1 of line tLength of pPointlist is not a number or item 2 of line tLength of pPointlist is not a number) then
+         return "Error in pointlist."
+      end if
+
+      if ((item 2 of line i of pPointlist <= pY and pY < item 2 of line tLength of pPointlist)) or ((item 2 of line tLength of pPointlist <= pY) and (pY < item 2 of line i of pPointlist)) then
+         if pX <((item 1 of line tLength of pPointlist - item 1 of line i of pPointlist) * (pY - item 2 of line i of pPointlist) / (item 2 of line tLength of pPointlist - item 2 of line i of pPointlist)) + item 1 of line i of pPointlist then
+            put not tContainsP into tContainsP
          end if
       end if
-      if paramcount() = 3 then
-         put param(1) into x
-         put param(2) into y
-         put param(3) into pts
-      end if
-      if paramcount() > 3 then return "error: Syntax is pointInPoly(x,y,pointlist)"
-      if x is not a number then return "Error in Parameters. X is not a number!"
-      if y is not a number then return "Error in Parameters. y is not a number!"
-      if the number of lines of pts < 3 then return "error. Pointlist must contain at least 3 lines"
-      put 0 into mycounter
-      put the number of lines of pts into j
-      put the number of lines of pts into tot
-      put false into containsP
-      repeat with i = 1 to tot
-         if item 1 of line i of pts is not a number or item 2 of line i of pts is not a number then
-            return "Error in pointlist."
-         end if
-         if item 1 of line j of pts is not a number or item 2 of line j of pts is not a number then
-            return "Error in pointlist."
-         end if
-         if ((item 2 of line i of pts <= y and y < item 2 of line j of pts)) or ((item 2 of line j of pts <= y) and (y < item 2 of line i of pts)) then
-            if x <((item 1 of line j of pts - item 1 of line i of pts) * (y - item 2 of line i of pts) / (item 2 of line j of pts - item 2 of line i of pts)) + item 1 of line i of pts then
-               put not containsP into containsP
-            end if
-         end if
-         put i into j
-      end repeat
-      return containsP
-   catch theError
-      return "error: " & theError
-   end try
+
+      put i into tLength
+   end repeat
+
+   return tContainsP
 end pointInPoly
 
+-- https://stackoverflow.com/questions/54865655/we-have-2-lines-how-can-we-get-point-where-that-2-lines-intersect-with-javascri
+function lineSegmentIntersectionPoint pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4
+   local tParameters, tXS = "", tXRange1, tXRange2, tYRange1, tYRange2
+   local tZ1, tZ2, tZ3, tZ4, tDistance, tTempA, tTempB, tXCoor, tYCoor
 
-function lineSegmentIntersectionPoint
-   local ap1x, ap1y, ap2x, ap2y
-   local ep1x, ep1y, ep2x, ep2y
-   local i, m1, m2, t1
-   local t2, thePoint, theValue, xrange1
-   local xrange2, xs, yRange1, yRange2
-   local ys
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
+   put pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4 into tParameters
 
-      put item 1 of theValue into ap1x
-      put item 2 of theValue into ap1y
-      put item 3 of theValue into ep1x
-      put item 4 of theValue into ep1y
-      put item 5 of theValue into ap2x
-      put item 6 of theValue into ap2y
-      put item 7 of theValue into ep2x
-      put item 8 of theValue into ep2y
-      put empty into xs
+   -- To be able to use the points property of graphics
+   if cr is in tParameters then replace cr with comma in tParameters
 
-      --Workaround funktioniert nicht...
-      --Die zurückgegebene Steigung ist einfach zu groß.
-      --Kannst Du mal versuchen deine Parallel zur y Achse version einzubauen?
-      if ep1x is not ap1x and ep2x is not ap2x then
-         put (ep1y - ap1y) / (ep1x - ap1x) into m1
-         put (ep2y - ap2y) / (ep2x - ap2x) into m2
-         if m1 = m2 then return "no intersectionpoint"
-         put - (m1 * ap1x - ap1y) into t1
-         put - (m2 * ap2x - ap2y) into t2
-         put (t2 - t1) / (m1 - m2) into xs
-         put m1 * xs + t1 into ys
-       else if ep1x is ap1x and ep2x is not ap2x then
-         put (ep2y - ap2y) / (ep2x - ap2x) into m2
-         put - (m2 * ap2x - ap2y) into t2
-         put ep1x into xs
-         put m2 * xs + t2 into ys
-       else if ep1x is not ap1x and ep2x is ap2x then
-         put (ep1y - ap1y) / (ep1x - ap1x) into m1
-         put - (m1 * ap1x - ap1y) into t1
-         put ep2x into xs
-         put m1 * xs + t1 into ys
-         --put m1
-       else if ep1x is ap1x and ep2x is ap2x and ep2x is ep1x then
-         put ep2x into xs
-         put ep2y into ys
-         --- ep2y ist einfach so gewählt, müsste man noch schaun was man da dann nimmt.
-      end if
-      --parallel lines have no intersection point
-      --hier eventuell prüfen ob die ranges sich überlappen
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+   put item 5 of tParameters into pX3
+   put item 6 of tParameters into pY3
+   put item 7 of tParameters into pX4
+   put item 8 of tParameters into pY4
 
-      if m1 = m2 then
-         if getSlope(ap1x, ap1y, ep1x, ep1y) = getSlope(ap2x, ap2y, ep2x, ep2y) then
-            return "no intersectionPoint"
-          else
-            put closestpointOnLine(ap1x, ap1y, ep1x, ep1y, ap2x, ap2y) into thePoint
-            put item 1 of thepoint into xs
-            put item 2 of thePoint into ys
-         end if
+   if (pX1, pY1, pX2, pY2) is not a rectangle or (pX3, pY3, pX4, pY4) is not a rectangle
+   then return "Error: Syntax is lineSegmentIntersectionPoint(x1, y1, x2, y2, x3, y3, x4, y4) or lineSegmentIntersectionPoint(point1, point2, point3, point4)."
 
-      end if
-      --is the intersectionPoint on the lineSegment?
-      put ap1x, ep1x into xrange1
-      put ap2x, ep2x into xrange2
-      put ap1y, ep1y into yRange1
-      put ap2y, ep2y into yRange2
-      if xs < min(xRange1) or xs < min(xRange2) or xs > max(xRange1) or xs > max(xRange2) then return "no intersectionPoint"
-      if ys < min(yRange1) or ys < min(yRange2) or ys > max(yRange1) or ys > max(yRange2) then return "no intersectionPoint"
-      --calculate y coordinate of intersectionpoint
-      return xs, ys
-   catch theError
-      return "error: " & theError
-   end try
+   put pX1 - pX2 into tZ1
+   put pX3 - pX4 into tZ2
+   put pY1 - pY2 into tZ3
+   put pY3 - pY4 into tZ4
+   put tZ1 * tZ4 - tZ3 * tZ2 into tDistance
+
+   # no intersectionPoint
+   if tDistance is 0 then return "no intersectionPoint"
+
+   put pX1 * pY2 - pY1 * pX2 into tTempA
+   put pX3 * pY4 - pY3 * pX4 into tTempB
+   put (tTempA * tZ2 - tZ1 * tTempB) / tDistance into tXCoor
+   put (tTempA * tZ4 - tZ3 * tTempB) / tDistance into tYCoor
+
+   if (tXCoor < min(pX1, pX2) or tXCoor > max(pX1, pX2) or tXCoor < min(pX3, pX4) or tXCoor > max(pX3, pX4)) then
+      # no intersectionPoint
+      return "no intersectionPoint"
+   end if
+
+   if (tYCoor < min(pY1, pY2) or tYCoor > max(pY1, pY2) or tYCoor < min(pY3, pY4) or tYCoor > max(pY3, pY4)) then -- in Y
+      # no intersectionPoint
+      return "no intersectionPoint"
+   end if
+
+   return trunc(tXCoor), trunc(tYCoor)
 end lineSegmentIntersectionPoint
 
-function lineIntersectionPoint
-   local ap1x, ap1y, ap2x, ap2y
-   local ep1x, ep1y, ep2x, ep2y
+
+function lineIntersectionPoint pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4
    local i, m1, m2, t1
-   local t2, theValue, xs, ys
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
+   local t2, tParameters, xs = "", ys
 
-      put item 1 of theValue into ap1x
-      put item 2 of theValue into ap1y
-      put item 3 of theValue into ep1x
-      put item 4 of theValue into ep1y
-      put item 5 of theValue into ap2x
-      put item 6 of theValue into ap2y
-      put item 7 of theValue into ep2x
-      put item 8 of theValue into ep2y
-      put empty into xs
+   put pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4 into tParameters
 
-      --Workaround funktioniert nicht...
-      --Die zurückgegebene Steigung ist einfach zu groß.
-      --Kannst Du mal versuchen deine Parallel zur y Achse version einzubauen?
-      if ep1x is not ap1x and ep2x is not ap2x then
-         put (ep1y - ap1y) / (ep1x - ap1x) into m1
-         put (ep2y - ap2y) / (ep2x - ap2x) into m2
+   -- To be able to use the points property of graphics
+   if cr is in tParameters then replace cr with comma in tParameters
+
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+   put item 5 of tParameters into pX3
+   put item 6 of tParameters into pY3
+   put item 7 of tParameters into pX4
+   put item 8 of tParameters into pY4
+
+   if (pX1, pY1, pX2, pY2) is not a rectangle or (pX3, pY3, pX4, pY4) is not a rectangle
+   then return "Error: Syntax is lineIntersectionPoint(x1, y1, x2, y2, x3, y3, x4, y4) or lineIntersectionPoint(point1, point2, point3, point4)."
+
+   --Workaround funktioniert nicht...
+   --Die zurückgegebene Steigung ist einfach zu groß.
+   --Kannst Du mal versuchen deine Parallel zur y Achse version einzubauen?
+   switch
+      case pX2 is not pX1 and pX4 is not pX3
+         put (pY2 - pY1) / (pX2 - pX1) into m1
+         put (pY4 - pY3) / (pX4 - pX3) into m2
+
          if m1 = m2 then return "parallel"
-         put - (m1 * ap1x - ap1y) into t1
-         put - (m2 * ap2x - ap2y) into t2
+
+         put - (m1 * pX1 - pY1) into t1
+         put - (m2 * pX3 - pY3) into t2
          put (t2 - t1) / (m1 - m2) into xs
          put m1 * xs + t1 into ys
-       else if ep1x is ap1x and ep2x is not ap2x then
-         put (ep2y - ap2y) / (ep2x - ap2x) into m2
-         put - (m2 * ap2x - ap2y) into t2
-         put ep1x into xs
-         put m2 * xs + t2 into ys
-       else if ep1x is not ap1x and ep2x is ap2x then
-         put (ep1y - ap1y) / (ep1x - ap1x) into m1
-         put - (m1 * ap1x - ap1y) into t1
-         put ep2x into xs
-         put m1 * xs + t1 into ys
-         --put m1
-       else if ep1x is ap1x and ep2x is ap2x and ep2x is ep1x then
-         put ep2x into xs
-         put ep2y into ys
-         --- ep2y ist einfach so gewählt, müsste man noch schaun was man da dann nimmt.
-      end if
-      --parallel lines have no intersection point
-      --hier eventuell prüfen ob die ranges sich überlappen
+         break
 
-      if m1 = m2 then
-         if getSlope(ap1x, ap1y, ep1x, ep1y) = getSlope(ap2x, ap2y, ep2x, ep2y) then
-            return "parallel"
-          else
-            return closestpointOnLine(ap1x, ap1y, ep1x, ep1y, ap2x, ap2y)
-         end if
+      case pX2 is pX1 and pX4 is not pX3
+         put (pY4 - pY3) / (pX4 - pX3) into m2
+         put - (m2 * pX3 - pY3) into t2
+         put pX2 into xs
+         put m2 * xs + t2 into ys
+         break
+
+      case pX2 is not pX1 and pX4 is pX3
+         put (pY2 - pY1) / (pX2 - pX1) into m1
+         put - (m1 * pX1 - pY1) into t1
+         put pX4 into xs
+         put m1 * xs + t1 into ys
+         break
+
+      case pX2 is pX1 and pX4 is pX3 and pX4 is pX2
+         put pX4 into xs
+         put pY4 into ys
+         --- pY4 ist einfach so gewählt, müsste man noch schaun was man da dann nimmt.
+         break
+   end switch
+   --parallel lines have no intersection point
+   --hier eventuell prüfen ob die ranges sich überlappen
+
+   if m1 = m2 then
+      if getSlope(pX1, pY1, pX2, pY2) = getSlope(pX3, pY3, pX4, pY4) then
+         return "parallel"
+       else
+         return closestPointOnLine(pX1, pY1, pX2, pY2, pX3, pY3)
       end if
-      return xs, ys
-   catch theError
-      return "error: " & theError
-   end try
+   end if
+
+   return trunc(xs), trunc(ys)
 end lineIntersectionPoint
 
-function polyCollide pointlist1, pointlist2, method
-   local firstpoint, fourthpoint, linecounter, linecounter2
-   local p1x, p1y, p2x, p2y
-   local p3x, p3y, p4x, p4y
-   local secondpoint, t, test1, test2
-   local theLine, thirdpoint, x, xx
-   local y, yy
-   try
-      put 0 into firstpoint
-      repeat for each line secondpoint in pointlist1
-         add 1 to firstpoint
-         if firstpoint = 1 then next repeat
-         put item 1 of line (firstpoint - 1) of pointlist1 into p1x
-         put item 2 of line (firstpoint - 1) of pointlist1 into p1y
-         put item 1 of secondpoint into p2x
-         put item 2 of secondpoint into p2y
-         put 0 into thirdpoint
-         repeat for each line fourthpoint in pointlist2
-            add 1 to thirdpoint
-            if thirdpoint = 1 then next repeat
-            put item 1 of line (thirdpoint - 1) of pointlist2 into p3x
-            put item 2 of line (thirdpoint - 1) of pointlist2 into p3y
-            put item 1 of fourthpoint into p4x
-            put item 2 of fourthpoint into p4y
-            put (p1y - p2y) into xx
-            put (p2x - p1x) into yy
-            repeat for each line t in pointlist1
-               put item 1 of t * xx + item 2 of t * yy & comma after test1
-            end repeat
-            repeat for each line t in pointlist2
-               put item 1 of t * xx + item 2 of t * yy & comma after test2
-            end repeat
-            if the last char of test1 = "," then delete char - 1 of test1
-            if the last char of test2 = "," then delete char - 1 of test2
-            if min(test2) > max(test1) or min(test1) > max(test2) then
-               return false
-            end if
-            put empty into test1
-            put empty into test2
+
+function polyCollide pPointlist1, pPointlist2, pMethod
+   local tFirstPoint = 0, tFourthPoint, tLineCounter, tLineCounter2
+   local tP1x, tP1y, tP2x, tP2y
+   local tP3x, tP3y, tP4x, tP4y
+   local tSecondPoint, t, tTest1, tTest2
+   local theLine, tThirdpoint, x, xx, y, yy
+
+   repeat for each line tSecondPoint in pPointlist1
+      add 1 to tFirstPoint
+
+      if tFirstPoint = 1 then next repeat
+
+      put item 1 of line (tFirstPoint - 1) of pPointlist1 into tP1x
+      put item 2 of line (tFirstPoint - 1) of pPointlist1 into tP1y
+      put item 1 of tSecondPoint into tP2x
+      put item 2 of tSecondPoint into tP2y
+      put 0 into tThirdpoint
+
+      repeat for each line tFourthPoint in pPointlist2
+         add 1 to tThirdpoint
+
+         if tThirdpoint = 1 then next repeat
+
+         put item 1 of line (tThirdpoint - 1) of pPointlist2 into tP3x
+         put item 2 of line (tThirdpoint - 1) of pPointlist2 into tP3y
+         put item 1 of tFourthPoint into tP4x
+         put item 2 of tFourthPoint into tP4y
+         put (tP1y - tP2y) into xx
+         put (tP2x - tP1x) into yy
+
+         repeat for each line t in pPointlist1
+            put item 1 of t * xx + item 2 of t * yy & comma after tTest1
          end repeat
+
+         repeat for each line t in pPointlist2
+            put item 1 of t * xx + item 2 of t * yy & comma after tTest2
+         end repeat
+
+         if the last char of tTest1 = "," then delete char - 1 of tTest1
+         if the last char of tTest2 = "," then delete char - 1 of tTest2
+         if min(tTest2) > max(tTest1) or min(tTest1) > max(tTest2) then
+            return false
+         end if
+
+         put empty into tTest1
+         put empty into tTest2
       end repeat
+   end repeat
 
-      switch method
-         case "SAT"
-            return true
-            break
+   switch pMethod
+      case "SAT"
+         return true
+         break
 
-         case "pip"
-            repeat for each line theLine in pointlist1
-               put item 1 of theLine into x
-               put item 2 of theLine into y
-               if pointInPoly(x, y, pointlist2) then return true
-            end repeat
-            repeat for each line theLine in pointlist2
-               put item 1 of theLine into x
-               put item 2 of theLine into y
-               if pointInPoly(x, y, pointlist1) then return true
-            end repeat
-            return false
-            break
+      case "pip"
+         repeat for each line theLine in pPointlist1
+            put item 1 of theLine into x
+            put item 2 of theLine into y
+            if pointInPoly(x, y, pPointlist2) then return true
+         end repeat
 
-         default
-            put 0 into linecounter
-            repeat for each line secondpoint in pointlist1
-               add 1 to linecounter
-               if linecounter = 1 then next repeat
-               put 0 into linecounter2
-               repeat for each line fourthpoint in pointlist2
-                  add 1 to linecounter2
-                  if linecounter2 = 1 then next repeat
-                  if item 1 of lineSegmentIntersectionPoint(line (linecounter - 1) of pointlist1, secondpoint, line (linecounter2 - 1) of pointlist2, fourthpoint) is a number then
-                     --put lineSegmentintersectionPoint(line counter-1 of pointlist1,secondpoint1,line counter2-1 of pointlist2,fourthpoint)into xyz
-                     return true
-                  end if
-               end repeat
+         repeat for each line theLine in pPointlist2
+            put item 1 of theLine into x
+            put item 2 of theLine into y
+            if pointInPoly(x, y, pPointlist1) then return true
+         end repeat
+
+         return false
+         break
+
+      default
+         put 0 into tLineCounter
+
+         repeat for each line tSecondPoint in pPointlist1
+            add 1 to tLineCounter
+
+            if tLineCounter = 1 then next repeat
+
+            put 0 into tLineCounter2
+
+            repeat for each line tFourthPoint in pPointlist2
+               add 1 to tLineCounter2
+
+               if tLineCounter2 = 1 then next repeat
+
+               if item 1 of lineSegmentIntersectionPoint(line (tLineCounter - 1) of pPointlist1, tSecondPoint, line (tLineCounter2 - 1) of pPointlist2, tFourthPoint) is a number then
+                  --put lineSegmentintersectionPoint(line counter-1 of pPointlist1,tSecondPoint1,line counter2-1 of pPointlist2,tFourthPoint)into xyz
+                  return true
+               end if
             end repeat
-            return false
-            break
-      end switch
-   catch theError
-      return "error: " & theError
-   end try
+         end repeat
+         return false
+         break
+   end switch
+
 end polyCollide
 
 --end added in 1.5
 
-function superformula m, n1, n2, n3, phi, a, b
+private function superformula m, n1, n2, n3, phi, a, b
    local i, r, t1, t2
-   local theValue, x, y
-   try
-      put m & "," & n1 & "," & n2 & "," & n3 & "," & phi & "," & a & "," & b into theValue
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit superformula
-            exit repeat
-         end if
-      end repeat
+   local tParameters, x, y
 
-      put cos(m * phi / 4) / a into t1
-      put abs(t1) into t1
-      put (t1) ^ n2 into t1
+   put m, n1, n2, n3, phi, a, b into tParameters
 
-      put sin(m * phi / 4) / b into t2
-      put abs(t2) into t2
-      put (t2) ^ n3 into t2
-
-      put (t1 + t2) ^(1 / n1) into r
-      if abs(r) = 0 then
-         put 0 into x
-         put 0 into y
-       else
-         put 1 / r into r
-         put r * cos(phi) into x
-         put r * sin(phi) into y
+   repeat with i = 1 to the number of items of tParameters
+      if item i of tParameters is not a number then
+         return "Error: All Parameters must be numbers!"
       end if
-      return round(x), round(y)
-   catch theerror
-      return "error: " & theError
-   end try
-end superformula
+   end repeat
 
-on animationEngineHelp topic
-   -- Ist besser in dem Doku stack Aufgehoben
-   -- Seit 5.0 im PDF
-   try
-      switch topic
-         default
-            put "There is help for the following topics:" & cr & the helpTopics of me
-      end switch
-   catch theerror
-      return "error: " & theError
-   end try
-end animationEngineHelp
+   put cos(m * phi / 4) / a into t1
+   put abs(t1) into t1
+   put (t1) ^ n2 into t1
+
+   put sin(m * phi / 4) / b into t2
+   put abs(t2) into t2
+   put (t2) ^ n3 into t2
+
+   put (t1 + t2) ^(1 / n1) into r
+   if abs(r) = 0 then
+      put 0 into x
+      put 0 into y
+    else
+      put 1 / r into r
+      put r * cos(phi) into x
+      put r * sin(phi) into y
+   end if
+
+   return round(x), round(y)
+end superformula
 
 
 on moveCircular
-   local cX, cY, isAngle, isRadius
-   try
-      --The handler creates a customPropertySet "moveCircular" for the target
-      --It sets the following custom properties of the target in that customPropertySet
-      --centerX is the X coordinate of the circle
-      --centerY is the Y coordinate of the circle
-      --isAngle is the center angle of the circle
-      --isRadius is the radius
+   local tLoc, tLongId, tAnimationEngineArray, tMoveCircularArray
 
-      --If the custom properties are not set yet,
-      --we need to initialize them first
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["moveCircular"] into tMoveCircularArray
+   put the loc of tLongId into tLoc
 
-      --default speed is 1
+   --The handler creates a customPropertySet "moveCircular" for the target
+   --It sets the following custom properties of the target in that customPropertySet
+   --centerX is the X coordinate of the circle
+   --centerY is the Y coordinate of the circle
+   --tAngle is the center angle of the circle
+   --isRadius is the radius
 
-      if the moveCircular["step"] of the target is empty then
-         set the moveCircular["step"] of the target to 1
-      end if
+   --If the custom properties are not set yet,
+   --we need to initialize them first
 
-      --default x-location is item 1 of the loc of the target
+   --default speed is 1
+   if tMoveCircularArray["step"] is empty then put 1 into tMoveCircularArray["step"]
 
-      if the moveCircular["centerX"] of the target is empty then
-         set the moveCircular["centerX"] of the target to item 1 of the loc of the target
-      end if
+   --default x-location is item 1 of the loc of the target
+   if tMoveCircularArray["centerX"] is empty then put item 1 of tLoc into tMoveCircularArray["centerX"]
 
-      --default y location is item 2 of the loc of the target
+   --default y location is item 2 of the loc of the target
+   if tMoveCircularArray["centerY"] is empty then put item 2 of tLoc into tMoveCircularArray["centerY"]
 
-      if the moveCircular["centerY"] of the target is empty then
-         set the moveCircular["centerY"] of the target to item 2 of the loc of the target
-      end if
+   --default angle is 360 degrees
+   if tMoveCircularArray["angle"] is empty then put 360 into tMoveCircularArray["angle"]
 
-      --default angle is 360 degrees
+   --default radius is 50 pixel
+   if tMoveCircularArray["radius"] is empty then put 50 into tMoveCircularArray["radius"]
 
-      if the moveCircular["isAngle"] of the target is empty then
-         set the moveCircular["isAngle"] of the target to 360
-      end if
+   --calculate the next angle
+   put tMoveCircularArray["angle"] + tMoveCircularArray["step"] into tMoveCircularArray["angle"]
 
-      --default radius is 50 pixel
+   if tMoveCircularArray["angle"] >= 360 or tMoveCircularArray["angle"] < 0 then
+      put tMoveCircularArray["angle"] mod 360 into tMoveCircularArray["angle"]
+   end if
 
-      if the moveCircular["isRadius"] of the target is empty then
-         set the moveCircular["isRadius"] of the target to 50
-      end if
+   _setAnimationEngine tLongId, "moveCircular", tMoveCircularArray
 
-      --calculate the next angle
-
-      set the moveCircular["isAngle"] of the target to the moveCircular["isAngle"] of the target + the moveCircular["step"] of the target
-      if the moveCircular["isAngle"] of the target >= 360 or the moveCircular["isAngle"] of the target < 0 then
-         set the moveCircular["isAngle"] of the target to the moveCircular["isAngle"] of the target mod 360
-      end if
-
-      --now calculate the new location.
-
-      put the moveCircular["centerX"] of the target into cX
-      put the moveCircular["centerY"] of the target into cY
-      put the moveCircular["isAngle"] of the target into isAngle
-      put the moveCircular["isRadius"] of the target into isRadius
-      set the loc of the target to pointOnCircle((cX, cY, isAngle, isRadius))
-   catch theerror
-      return "error: " & theError
-   end try
+   --now calculate the new location.
+   set the loc of tLongId to pointOnCircle((tMoveCircularArray["centerX"], tMoveCircularArray["centerY"], tMoveCircularArray["angle"], tMoveCircularArray["radius"]))
 end moveCircular
 
+
 on moveCircularReversePath
-   local newStep
-   try
-      put the moveCircular["step"] of the target into newStep
-      put newStep * - 1 into newStep
-      set the moveCircular["step"] of the target to newStep
-   catch theerror
-      return "error: " & theError
-   end try
+   local tLongId, tAnimationEngineArray, tMoveCircularArray
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["moveCircular"] into tMoveCircularArray
+
+   if tMoveCircularArray is not an array then exit moveCircularReversePath
+
+   put tMoveCircularArray["step"] * - 1 into tMoveCircularArray["step"]
+   _setAnimationEngine tLongId, "moveCircular", tMoveCircularArray
+
 end moveCircularReversePath
 
 
+setProp moveCircularReversePath
+   moveCircularReversePath
+   exit moveCircularReversePath
+end moveCircularReversePath
+
+//TODO-----
 on moveElliptical
    local cX, cY, isAngle, isRadiusX
    local isRadiusY
@@ -1825,6 +1443,7 @@ on moveElliptical
       return "error: " & theError
    end try
 end moveElliptical
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 on moveEllipticalReversePath
    local newStep
@@ -1874,7 +1493,7 @@ on moveLinear
 end moveLinear
 
 on moveLinearMoveDone
-   return the name of the target && "completed it´s linear move"
+   return the name of the target && "completed it's linear move"
 end moveLinearMoveDone
 
 on moveLinearReversePath
@@ -2021,7 +1640,7 @@ on numbersOnly theKey
 end numbersOnly
 
 
-setprop superShape theValue
+setprop superShape tParameters
    local a, b, i, loops
    local m, n1, n2, n3
    local oldloc, phi, theCallBack, thePoints
@@ -2029,19 +1648,19 @@ setprop superShape theValue
       if word 1 of the long id of the target = "graphic" then
          set the style of the long id of the target to "curve"
 
-         if the number of items of theValue < 7 then
+         if the number of items of tParameters < 7 then
             return "Error: syntax is set the supershape of grc " & quote & "yourGraphic" & quote & " to m,n1,n2,n3,xScale,yScale,loops"
             exit superShape
          end if
 
          put empty into thePoints
-         put item 1 of theValue into m
-         put item 2 of theValue into n1
-         put item 3 of theValue into n2
-         put item 4 of theValue into n3
-         put item 5 of theValue into a
-         put item 6 of theValue into b
-         put item 7 of theValue into loops
+         put item 1 of tParameters into m
+         put item 2 of tParameters into n1
+         put item 3 of tParameters into n2
+         put item 4 of tParameters into n3
+         put item 5 of tParameters into a
+         put item 6 of tParameters into b
+         put item 7 of tParameters into loops
          repeat with i = 1 to loops
             put i * ((pi * 2) / loops) into phi
             put phi * 180 / pi into phi
@@ -2067,7 +1686,7 @@ on superShapeCallBack
 
 end superShapeCallBack
 
-setprop superPath theValue
+setprop superPath tParameters
    local a, b, i, loops
    local m, n1, n2, n3
    local oldloc, phi, thePoints
@@ -2075,18 +1694,18 @@ setprop superPath theValue
       if word 1 of the long id of the target = "graphic" then
          set the style of the long id of the target to "curve"
 
-         if the number of items of theValue < 3 then
+         if the number of items of tParameters < 3 then
             return "Error: syntax is set the supershape of grc " & quote & "yourGraphic" & quote & " to m,xScale,yScale"
             exit superPath
          end if
 
          put empty into thePoints
-         put item 1 of theValue into m
+         put item 1 of tParameters into m
          put 1 into n1
          put 1 into n2
          put 1 into n3
-         put item 2 of theValue into a
-         put item 3 of theValue into b
+         put item 2 of tParameters into a
+         put item 3 of tParameters into b
          put 1400 into loops
          repeat with i = 1 to loops
             put i * ((pi * 2) / loops) into phi
@@ -2115,7 +1734,7 @@ setprop superPath theValue
 end superPath
 
 
-setprop spiral theValue
+setprop spiral tParameters
    local accuracy, cx, cY, i
    local isWinding, myAngle, myRadius, pointList
    local Step, windings
@@ -2123,28 +1742,28 @@ setprop spiral theValue
       if word 1 of the long id of the target = "graphic" then
          set the style of the long id of the target to "curve"
 
-         if the number of items of theValue < 4 then
+         if the number of items of tParameters < 4 then
             return "Error: syntax is set the spiral of grc " & quote & "yourGraphic" & quote & " to cx,cy,step,windings,[high/low/draft]"
             exit spiral
          end if
 
          repeat with i = 1 to 4
-            if item i of theValue is not a number then
+            if item i of tParameters is not a number then
                return "Error: syntax is set the spiral of grc " & quote & "yourGraphic" & quote & " to cx,cy,step,windings"
                exit spiral
             end if
          end repeat
 
-         if item 5 of theValue is a number then
-            put item 5 of theValue into accuracy
-            if item 5 of theValue < 1 then
+         if item 5 of tParameters is a number then
+            put item 5 of tParameters into accuracy
+            if item 5 of tParameters < 1 then
                put 1 into accuracy
             end if
-            if item 5 of theValue > 36 then
+            if item 5 of tParameters > 36 then
                put 36 into accuracy
             end if
           else
-            switch item 5 of theValue
+            switch item 5 of tParameters
                case "high"
                   put 2 into accuracy
                   break
@@ -2160,10 +1779,10 @@ setprop spiral theValue
             end switch
          end if
 
-         put item 1 of theValue into cx
-         put item 2 of theValue into cY
-         put item 3 of theValue into Step
-         put item 4 of theValue into windings
+         put item 1 of tParameters into cx
+         put item 2 of tParameters into cY
+         put item 3 of tParameters into Step
+         put item 4 of tParameters into windings
 
          put 0 into isWinding
          put 0 into myAngle
@@ -2374,17 +1993,17 @@ setprop constrainElliptical
    end try
 end constrainElliptical
 
-setprop aspectScale theValue
+setprop aspectScale tParameters
    try
-      get aspectResize(item 1 to 4 of thevalue)
+      get aspectResize(item 1 to 4 of tParameters)
       set the width of the target to item 1 of it
       set the height of the target to item 2 of it
       set the lockloc of the target to false
-      set the loc of the target to item 1 of thevalue + (item 3 of theValue - item 1 of theValue) / 2, item 2 of theValue + (item 4 of theValue - item 2 of theValue) / 2
-      if item 5 of theValue = "true" then
+      set the loc of the target to item 1 of tParameters + (item 3 of tParameters - item 1 of tParameters) / 2, item 2 of tParameters + (item 4 of tParameters - item 2 of tParameters) / 2
+      if item 5 of tParameters = "true" then
          set the lockloc of the target to true
       end if
-      if item 5 of theValue = "false" then
+      if item 5 of tParameters = "false" then
          set the lockloc of the target to false
       end if
       pass aspectScale
@@ -2393,19 +2012,19 @@ setprop aspectScale theValue
    end try
 end aspectScale
 
-setprop movePolyGonal[whichkey] theValue
+setprop movePolyGonal[whichkey] tParameters
    local myVal, counter, reversePoints
    try
-      put the number of lines of theValue into myVal
+      put the number of lines of tParameters into myVal
       if whichKey = "pointlist" then
          put - 1 into counter
-         repeat for each line theLine in theValue
+         repeat for each line theLine in tParameters
             add 1 to counter
-            put line (myVal - counter) of theValue & cr after reversePoints
+            put line (myVal - counter) of tParameters & cr after reversePoints
          end repeat
          delete the last char of reversePoints
          set the movePolygonal["reversedPoints"] of the target to reversePoints
-         set the movePolygonal["currentpoints"] of the target to theValue
+         set the movePolygonal["currentpoints"] of the target to tParameters
          --beep
       end if
       pass movePolygonal
@@ -3006,33 +2625,33 @@ end aeMathEaseOut
 
 function isoToScreenX
    local i, pOriginX, pX, pY
-   local pZ, theValue, tXCartesian
+   local pZ, tParameters, tXCartesian
    try
       --assemble one string from parameters
       repeat with i = 1 to paramcount()
          if i < paramcount() then
-            put param(i) & "," after theValue
+            put param(i) & "," after tParameters
           else
-            put param(i) after theValue
+            put param(i) after tParameters
          end if
       end repeat
       --check syntax
-      if the number of items of theValue <> 4 then
+      if the number of items of tParameters <> 4 then
          return "Error: Syntax is isoToScreenX(pX,pY,pZ,pOriginX)"
          exit isoToScreenX
       end if
       --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
+      repeat with i = 1 to the number of items of tParameters
+         if item i of tParameters is not a number then
             return "Error: All Parameters must be numbers!"
             exit isoToScreenX
             exit repeat
          end if
       end repeat
-      put item 1 of theValue into pX
-      put item 2 of theValue into pY
-      put item 3 of theValue into pZ
-      put item 4 of theValue into pOriginX
+      put item 1 of tParameters into pX
+      put item 2 of tParameters into pY
+      put item 3 of tParameters into pZ
+      put item 4 of tParameters into pOriginX
       -- generates x in cartesian coordinates from classic iso view
       --put (pX-pZ)*cos(0.46365) into tXCartesian
       --commented line might be needed for changeing cam position later on
@@ -3045,33 +2664,33 @@ end isoToScreenX
 
 function isoToScreenY
    local i, pOriginY, pX, pY
-   local pZ, theValue, tYCartesian
+   local pZ, tParameters, tYCartesian
    try
       --assemble one string from parameters
       repeat with i = 1 to paramcount()
          if i < paramcount() then
-            put param(i) & "," after theValue
+            put param(i) & "," after tParameters
           else
-            put param(i) after theValue
+            put param(i) after tParameters
          end if
       end repeat
       --check syntax
-      if the number of items of theValue <> 4 then
+      if the number of items of tParameters <> 4 then
          return "Error: Syntax is isoToScreenY(pX,pY,pZ,pOriginY)"
          exit isoToScreenY
       end if
       --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
+      repeat with i = 1 to the number of items of tParameters
+         if item i of tParameters is not a number then
             return "Error: All Parameters must be numbers!"
             exit isoToScreenY
             exit repeat
          end if
       end repeat
-      put item 1 of theValue into pX
-      put item 2 of theValue into pY
-      put item 3 of theValue into pZ
-      put item 4 of theValue into pOriginY
+      put item 1 of tParameters into pX
+      put item 2 of tParameters into pY
+      put item 3 of tParameters into pZ
+      put item 4 of tParameters into pOriginY
 
       --put pY+(pX+pZ)*sin(0.46365) into tYCartesian
       put pY + (pX + pZ) * 0.447216 into tYCartesian
@@ -3083,34 +2702,34 @@ end isoToScreenY
 
 function isoToScreen
    local i, pOriginX, pOriginY, pX
-   local pY, pZ, theValue
+   local pY, pZ, tParameters
    try
       --assemble one string from parameters
       repeat with i = 1 to paramcount()
          if i < paramcount() then
-            put param(i) & "," after theValue
+            put param(i) & "," after tParameters
           else
-            put param(i) after theValue
+            put param(i) after tParameters
          end if
       end repeat
       --check syntax
-      if the number of items of theValue <> 5 then
+      if the number of items of tParameters <> 5 then
          return "Error: Syntax is isoToScreen(pX,pY,pZ,pOriginX,pOriginY)"
          exit isoToScreen
       end if
       --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
+      repeat with i = 1 to the number of items of tParameters
+         if item i of tParameters is not a number then
             return "Error: All Parameters must be numbers!"
             exit isoToScreen
             exit repeat
          end if
       end repeat
-      put item 1 of theValue into pX
-      put item 2 of theValue into pY
-      put item 3 of theValue into pZ
-      put item 4 of theValue into pOriginX
-      put item 5 of theValue into pOriginY
+      put item 1 of tParameters into pX
+      put item 2 of tParameters into pY
+      put item 3 of tParameters into pZ
+      put item 4 of tParameters into pOriginX
+      put item 5 of tParameters into pOriginY
       return round(isoToScreenX(pX, pY, pZ, pOriginX)), round(isoToScreenY(pX, pY, pZ, pOriginY))
    catch theError
       return theError
@@ -3120,37 +2739,37 @@ end isoToScreen
 on drawIsoLine
    local i, pOriginX, pOriginY, pX1
    local pX2, pY1, pY2, pZ1
-   local pZ2, theValue, tPointList
+   local pZ2, tParameters, tPointList
    try
       --assemble one string from parameters
       repeat with i = 1 to paramcount()
          if i < paramcount() then
-            put param(i) & "," after theValue
+            put param(i) & "," after tParameters
           else
-            put param(i) after theValue
+            put param(i) after tParameters
          end if
       end repeat
       --check syntax
-      if the number of items of theValue <> 8 then
+      if the number of items of tParameters <> 8 then
          return "Error: Syntax is drawIsoLine pX1,pY1,pZ1,pX2,pY2,pZ2,pOriginX,pOriginY"
          exit drawIsoLine
       end if
       --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
+      repeat with i = 1 to the number of items of tParameters
+         if item i of tParameters is not a number then
             return "Error: All Parameters must be numbers!"
             exit drawIsoLine
             exit repeat
          end if
       end repeat
-      put item 1 of theValue into pX1
-      put item 2 of theValue into pY1
-      put item 3 of theValue into pZ1
-      put item 4 of theValue into pX2
-      put item 5 of theValue into pY2
-      put item 6 of theValue into pZ2
-      put item 7 of theValue into pOriginX
-      put item 8 of theValue into pOriginY
+      put item 1 of tParameters into pX1
+      put item 2 of tParameters into pY1
+      put item 3 of tParameters into pZ1
+      put item 4 of tParameters into pX2
+      put item 5 of tParameters into pY2
+      put item 6 of tParameters into pZ2
+      put item 7 of tParameters into pOriginX
+      put item 8 of tParameters into pOriginY
       put isoToScreen(pX1, pY1, pZ1, pOriginX, pOriginY) into tPointList
       put cr after tPointList
       put isoToScreen(pX2, pY2, pZ2, pOriginX, pOriginY) after tPointList
@@ -3165,37 +2784,37 @@ end drawIsoLine
 on drawIsoBox
    local i, pA, pB, pC
    local pointlist, pOriginX, pOriginY, pX
-   local pY, pZ, theValue
+   local pY, pZ, tParameters
    try
       --assemble one string from parameters
       repeat with i = 1 to paramcount()
          if i < paramcount() then
-            put param(i) & "," after theValue
+            put param(i) & "," after tParameters
           else
-            put param(i) after theValue
+            put param(i) after tParameters
          end if
       end repeat
       --check syntax
-      if the number of items of theValue <> 8 then
+      if the number of items of tParameters <> 8 then
          return "Error: Syntax is drawIsoBox(pX,pY,pZ,pA,pB,pC,pOriginX,pOriginY)"
          exit drawIsoBox
       end if
       --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
+      repeat with i = 1 to the number of items of tParameters
+         if item i of tParameters is not a number then
             return "Error: All Parameters must be numbers!"
             exit drawIsoBox
             exit repeat
          end if
       end repeat
-      put item 1 of theValue into pX
-      put item 2 of theValue into pY
-      put item 3 of theValue into pZ
-      put item 4 of theValue into pA
-      put item 5 of theValue into pB
-      put item 6 of theValue into pC
-      put item 7 of theValue into pOriginX
-      put item 8 of theValue into pOriginY
+      put item 1 of tParameters into pX
+      put item 2 of tParameters into pY
+      put item 3 of tParameters into pZ
+      put item 4 of tParameters into pA
+      put item 5 of tParameters into pB
+      put item 6 of tParameters into pC
+      put item 7 of tParameters into pOriginX
+      put item 8 of tParameters into pOriginY
       put isoToScreen(pX, pY, pZ, pOriginX, pOriginY) & cr into pointlist
       put isoToScreen(pX + pA, pY, pZ, pOriginX, pOriginY) & cr after pointlist
       put isoToScreen(px + pa, py + pb, pz, pOriginX, pOriginY) & cr after pointlist
@@ -3224,37 +2843,37 @@ function rotateIsoPoint
    local newX, newY, newZ, pFocalLength
    local pX, pXRotation, pY, pYRotation
    local pZ, pZRotation, sX, sY
-   local sZ, theValue, xY, xZ
+   local sZ, tParameters, xY, xZ
    local yX, yZ, zX, zY
    try
       --assemble one string from parameters
       repeat with i = 1 to paramcount()
          if i < paramcount() then
-            put param(i) & "," after theValue
+            put param(i) & "," after tParameters
           else
-            put param(i) after theValue
+            put param(i) after tParameters
          end if
       end repeat
       --check syntax
-      if the number of items of theValue < 6 then
+      if the number of items of tParameters < 6 then
          return "Error: Syntax is rotateIsoPoint(pX,pY,pZ,pXRotation,pYrotation,pZrotation)"
          exit rotateIsoPoint
       end if
       --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
+      repeat with i = 1 to the number of items of tParameters
+         if item i of tParameters is not a number then
             return "Error: All Parameters must be numbers!"
             exit rotateIsoPoint
             exit repeat
          end if
       end repeat
-      put item 1 of theValue into pX
-      put item 2 of theValue into pY
-      put item 3 of theValue into pZ
-      put item 4 of theValue into pXRotation
-      put item 5 of theValue into pYRotation
-      put item 6 of theValue into pZRotation
-      put item 7 of theValue into pFocalLength
+      put item 1 of tParameters into pX
+      put item 2 of tParameters into pY
+      put item 3 of tParameters into pZ
+      put item 4 of tParameters into pXRotation
+      put item 5 of tParameters into pYRotation
+      put item 6 of tParameters into pZRotation
+      put item 7 of tParameters into pFocalLength
       put pXrotation * pi / 180 into pXrotation
       put pYrotation * pi / 180 into pYrotation
       put pZrotation * pi / 180 into pZrotation
@@ -3286,36 +2905,36 @@ end rotateIsoPoint
 
 function ae3dConvertToScreen
    local i, pFocalLength, pOriginX, pOriginy
-   local pX, pY, pZ, theValue
+   local pX, pY, pZ, tParameters
    local tScalefactor, tXCartesian, tYCartesian
    try
       --assemble one string from parameters
       repeat with i = 1 to paramcount()
          if i < paramcount() then
-            put param(i) & "," after theValue
+            put param(i) & "," after tParameters
           else
-            put param(i) after theValue
+            put param(i) after tParameters
          end if
       end repeat
       --check syntax
-      if the number of items of theValue < 5 then
+      if the number of items of tParameters < 5 then
          return "Error: Syntax is ae3dConvertToScreen(pX,pY,pZ,pOriginX,pOriginY[,pFocalLength])"
          exit ae3dConvertToScreen
       end if
       --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
+      repeat with i = 1 to the number of items of tParameters
+         if item i of tParameters is not a number then
             return "Error: All Parameters must be numbers!"
             exit ae3dConvertToScreen
             exit repeat
          end if
       end repeat
-      put item 1 of theValue into pX
-      put item 2 of theValue into pY
-      put item 3 of theValue into pZ
-      put item 4 of theValue into pOriginX
-      put item 5 of theValue into pOriginy
-      put item 6 of theValue into pFocalLength
+      put item 1 of tParameters into pX
+      put item 2 of tParameters into pY
+      put item 3 of tParameters into pZ
+      put item 4 of tParameters into pOriginX
+      put item 5 of tParameters into pOriginy
+      put item 6 of tParameters into pFocalLength
       if pFocalLength is empty then put 300 into pFocalLength
       put ae3dScaleRatio(pZ, pFocalLength) into tScalefactor
       put px * tScalefactor into tXCartesian
@@ -3333,38 +2952,38 @@ function rotate3DPoint
    local newX, newY, newZ, pFocalLength
    local pX, pXRotation, pY, pYRotation
    local pZ, pZRotation, tScalefactor, sX
-   local sY, sZ, theValue, xY
+   local sY, sZ, tParameters, xY
    local xZ, yX, yZ, zX
    local zY
    try
       --assemble one string from parameters
       repeat with i = 1 to paramcount()
          if i < paramcount() then
-            put param(i) & "," after theValue
+            put param(i) & "," after tParameters
           else
-            put param(i) after theValue
+            put param(i) after tParameters
          end if
       end repeat
       --check syntax
-      if the number of items of theValue < 6 then
+      if the number of items of tParameters < 6 then
          return "Error: Syntax is rotate3DPoint(pX,pY,pZ,pXRotation,pYrotation,pZrotation[,pFocalLength])"
          exit rotate3DPoint
       end if
       --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
+      repeat with i = 1 to the number of items of tParameters
+         if item i of tParameters is not a number then
             return "Error: All Parameters must be numbers!"
             exit rotate3DPoint
             exit repeat
          end if
       end repeat
-      put item 1 of theValue into pX
-      put item 2 of theValue into pY
-      put item 3 of theValue into pZ
-      put item 4 of theValue into pXRotation
-      put item 5 of theValue into pYRotation
-      put item 6 of theValue into pZRotation
-      put item 7 of theValue into pFocalLength
+      put item 1 of tParameters into pX
+      put item 2 of tParameters into pY
+      put item 3 of tParameters into pZ
+      put item 4 of tParameters into pXRotation
+      put item 5 of tParameters into pYRotation
+      put item 6 of tParameters into pZRotation
+      put item 7 of tParameters into pFocalLength
       if pFocalLength is empty then put 300 into pFocalLength
       put pXrotation * pi / 180 into pXrotation
       put pYrotation * pi / 180 into pYrotation
@@ -3556,23 +3175,23 @@ end aeResetFrameRate
 
 
 on aeChangeAngleCircular
-   local tControl, tX, tY, tRadius, tNewAngle, tDuration, tMethod, theValue, tCurrentAngle, tDirection
+   local tControl, tX, tY, tRadius, tNewAngle, tDuration, tMethod, tParameters, tCurrentAngle, tDirection
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tX
-   put item 3 of theValue into tY
-   put item 4 of theValue into tRadius
-   put item 5 of theValue into tNewAngle
-   put item 6 of theValue into tDuration
-   put item 7 of theValue into tDirection
-   put item 8 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tX
+   put item 3 of tParameters into tY
+   put item 4 of tParameters into tRadius
+   put item 5 of tParameters into tNewAngle
+   put item 6 of tParameters into tDuration
+   put item 7 of tParameters into tDirection
+   put item 8 of tParameters into tMethod
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if word 1 of the long name of tControl is "card" then return "error: can not move a card"
    if tX is not an integer then return "error:" && tX & "," & tY && "is not a valid point"
@@ -3601,22 +3220,22 @@ on aeChangeAngleCircular
 end aeChangeAngleCircular
 
 on aeMoveTo
-   local tControl, tX, tY, tDuration, tMethod, theValue
+   local tControl, tX, tY, tDuration, tMethod, tParameters
 
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
 
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tX
-   put item 3 of theValue into tY
-   put item 4 of theValue into tDuration
-   put item 5 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tX
+   put item 3 of tParameters into tY
+   put item 4 of tParameters into tDuration
+   put item 5 of tParameters into tMethod
 
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if word 1 of the long name of tControl is "card" then return "error: can not move a card"
@@ -3858,10 +3477,10 @@ command aeGeneral
                   end switch
 
                   /*
-                  put item 1 of theValue into centerX
-                  put item 2 of theValue into centerY
-                  put item 3 of theValue into isAngle
-                  put item 4 of theValue into isRadius
+                  put item 1 of tParameters into centerX
+                  put item 2 of tParameters into centerY
+                  put item 3 of tParameters into isAngle
+                  put item 4 of tParameters into isRadius
                   */
 
                   set the loc of theControl to pointOnCircle(sAERotateGroup[theGroup]["center"], tNewAngle, sAERotateGroup[theGroup]["controls"][theControl]["Distance"])
@@ -3925,20 +3544,20 @@ end aeStopMoving
 
 function aeWithinEllipse
    -- params center of ellipse,xRadius,yRadius,testPoint
-   local tX, tY, tRadX, tRadY, tX2, tY2, theValue
+   local tX, tY, tRadX, tRadY, tX2, tY2, tParameters
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tX
-   put item 2 of theValue into tY
-   put item 3 of theValue into tRadX
-   put item 4 of theValue into tRadY
-   put item 5 of theValue into tX2
-   put item 6 of theValue into tY2
+   put item 1 of tParameters into tX
+   put item 2 of tParameters into tY
+   put item 3 of tParameters into tRadX
+   put item 4 of tParameters into tRadY
+   put item 5 of tParameters into tX2
+   put item 6 of tParameters into tY2
    if tx is not a number then return "error: x-loc of ellipse is not a number"
    if ty is not a number then return "error: y-loc of ellipse is not a number"
    if tradx is not a number then return "error: x-radius of ellipse is not a number"
@@ -4223,21 +3842,21 @@ end aeDebug
 --> 3.0 update
 
 on aeRotateGroup
-   local tControl, tX, tY, tDuration, tMethod, theValue, tDistance, tAngle
+   local tControl, tX, tY, tDuration, tMethod, tParameters, tDistance, tAngle
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tX
-   put item 3 of theValue into tY
-   put item 4 of theValue into tAngle
-   put item 5 of theValue into tDuration
-   put item 6 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tX
+   put item 3 of tParameters into tY
+   put item 4 of tParameters into tAngle
+   put item 5 of tParameters into tDuration
+   put item 6 of tParameters into tMethod
 
    repeat with i = 1 to the number of controls of tControl
       if the name of control i of tControl begins with "group" then next repeat
@@ -4376,22 +3995,22 @@ local sAELockRectChanging, tAeChangeRect
 local sAELockScrolls, tAeScrolling
 
 on aeChangeRect
-   local tControl, tLeft, tRight, tTop, tBottom, tDuration, tMethod, theValue
+   local tControl, tLeft, tRight, tTop, tBottom, tDuration, tMethod, tParameters
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tLeft
-   put item 3 of theValue into tTop
-   put item 4 of theValue into tRight
-   put item 5 of theValue into tBottom
-   put item 6 of theValue into tDuration
-   put item 7 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tLeft
+   put item 3 of tParameters into tTop
+   put item 4 of tParameters into tRight
+   put item 5 of tParameters into tBottom
+   put item 6 of tParameters into tDuration
+   put item 7 of tParameters into tMethod
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    aeStopChangingWidth tControl
    aeStopChangingHeight tControl
@@ -4534,19 +4153,19 @@ end aeChangeRectDone
 local sAELockHeightChanging, tAeChangeHeight
 
 on aeChangeHeight
-   local tControl, tHeight, tDuration, tMethod, theValue
+   local tControl, tHeight, tDuration, tMethod, tParameters
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tHeight
-   put item 3 of theValue into tDuration
-   put item 4 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tHeight
+   put item 3 of tParameters into tDuration
+   put item 4 of tParameters into tMethod
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if word 1 of the long name of tControl is "card" then return "error: can not resize a card"
    if tHeight is not an integer then return "error:" && tHeight && "is not a valid height"
@@ -4658,19 +4277,19 @@ end aeChangeHeightDone
 local sAELockWidthChanging, tAeChangeWidth
 
 on aeChangeWidth
-   local tControl, tWidth, tDuration, tMethod, theValue
+   local tControl, tWidth, tDuration, tMethod, tParameters
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tWidth
-   put item 3 of theValue into tDuration
-   put item 4 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tWidth
+   put item 3 of tParameters into tDuration
+   put item 4 of tParameters into tMethod
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if word 1 of the long name of tControl is "card" then return "error: can not resize a card"
    if tWidth is not an integer then return "error:" && tWidth && "is not a valid Width"
@@ -4782,19 +4401,19 @@ end aeChangeWidthDone
 local sAELockHScrollChanging, tAeChangeHScroll
 
 on aeChangeHScroll
-   local tControl, tHScroll, tDuration, tMethod, theValue, tType
+   local tControl, tHScroll, tDuration, tMethod, tParameters, tType
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tHScroll
-   put item 3 of theValue into tDuration
-   put item 4 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tHScroll
+   put item 3 of tParameters into tDuration
+   put item 4 of tParameters into tMethod
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    put word 1 of the long name of tControl into tType
    if word 1 of the long name of tControl is not among the items of "group,field" then return "error: can not scroll a" && tType
@@ -4906,19 +4525,19 @@ end aeChangeHScrollDone
 local sAELockVScrollChanging, tAeChangeVScroll
 
 on aeChangeVScroll
-   local tControl, tVScroll, tDuration, tMethod, theValue
+   local tControl, tVScroll, tDuration, tMethod, tParameters
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tVScroll
-   put item 3 of theValue into tDuration
-   put item 4 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tVScroll
+   put item 3 of tParameters into tDuration
+   put item 4 of tParameters into tMethod
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if word 1 of the long name of tControl is "card" then return "error: can not resize a card"
    if tVScroll is not an integer then return "error:" && tVScroll && "is not a valid VScroll"
@@ -5029,7 +4648,7 @@ end aeChangeVScrollDone
 local sAELockBackColorChanging, tAeChangeBackColor
 
 on aeChangeBackColor
-   local tControl, tBackColor, tDuration, tMethod, theValue, tCurrentBackColor
+   local tControl, tBackColor, tDuration, tMethod, tParameters, tCurrentBackColor
    if sAEFrameRate is empty then aeResetFrameRate
    /*
    -- Gott sei Dank bin ich den Scheiss mit der 5er Engine los geworden. Ein Grund mehr engine 4.x nicht mehr zu unterstützen.
@@ -5043,26 +4662,26 @@ on aeChangeBackColor
    */
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   if item 2 of theValue is a color and item 2 of theValue is not a number then
+   put item 1 of tParameters into tControl
+   if item 2 of tParameters is a color and item 2 of tParameters is not a number then
       -- we got no RGB values here
-      set the backcolor of grc "testColor" of me to item 2 of theValue
+      set the backcolor of grc "testColor" of me to item 2 of tParameters
 
       set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
 
       put the backcolor of grc "testColor" of me into tBackColor
 
-      put item 3 of theValue into tDuration
-      put item 4 of theValue into tMethod
+      put item 3 of tParameters into tDuration
+      put item 4 of tParameters into tMethod
     else
-      put item 2 to 4 of theValue into tBackColor
-      put item 5 of theValue into tDuration
-      put item 6 of theValue into tMethod
+      put item 2 to 4 of tParameters into tBackColor
+      put item 5 of tParameters into tDuration
+      put item 6 of tParameters into tMethod
    end if
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if tBackColor is not a color then return "error:" && tBackColor && "is not a valid color"
@@ -5197,7 +4816,7 @@ end aeChangeBackColorDone
 local sAELockforeColorChanging, tAeChangeforeColor
 
 on aeChangeforeColor
-   local tControl, tforeColor, tDuration, tMethod, theValue, tCurrentforeColor
+   local tControl, tforeColor, tDuration, tMethod, tParameters, tCurrentforeColor
    if sAEFrameRate is empty then aeResetFrameRate
    --   if "animationEngine" is not among the lines of the openstacks then
    --      local tDefault
@@ -5208,23 +4827,23 @@ on aeChangeforeColor
    --   end if
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   if item 2 of theValue is a color and item 2 of theValue is not a number then
+   put item 1 of tParameters into tControl
+   if item 2 of tParameters is a color and item 2 of tParameters is not a number then
       -- we got no RGB values here
-      set the backcolor of grc "testColor" of me to item 2 of theValue
+      set the backcolor of grc "testColor" of me to item 2 of tParameters
       set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
       put the backcolor of grc "testColor" of me into tforeColor
-      put item 3 of theValue into tDuration
-      put item 4 of theValue into tMethod
+      put item 3 of tParameters into tDuration
+      put item 4 of tParameters into tMethod
     else
-      put item 2 to 4 of theValue into tforeColor
-      put item 5 of theValue into tDuration
-      put item 6 of theValue into tMethod
+      put item 2 to 4 of tParameters into tforeColor
+      put item 5 of tParameters into tDuration
+      put item 6 of tParameters into tMethod
    end if
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if tforeColor is not a color then return "error:" && tforeColor && "is not a valid color"
@@ -5357,19 +4976,19 @@ end aeChangeforeColorDone
 local sAELockThumbPositionChanging, tAeChangeThumbPosition
 
 on aeChangeThumbPosition
-   local tControl, tThumbPosition, tDuration, tMethod, theValue, tType
+   local tControl, tThumbPosition, tDuration, tMethod, tParameters, tType
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tThumbPosition
-   put item 3 of theValue into tDuration
-   put item 4 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tThumbPosition
+   put item 3 of tParameters into tDuration
+   put item 4 of tParameters into tMethod
    if there is no tControl then return "error:" && tControl && "does not exist"
    put word 1 of the long name of tControl into tType
    if word 1 of the long name of tControl is not among the items of "scrollbar" then return "error: can not set the thumbPosition of a" && tType
@@ -5483,7 +5102,7 @@ end aeChangeThumbPositionDone
 local sAELockBackColorOfChunkChanging, tAeChangeBackColorOfChunk
 
 on aeChangeBackColorOfChunk
-   local tControl, tBackColorOfChunk, tDuration, tMethod, theValue, tCurrentBackColorOfChunk, tChunk
+   local tControl, tBackColorOfChunk, tDuration, tMethod, tParameters, tCurrentBackColorOfChunk, tChunk
 
    if sAEFrameRate is empty then aeResetFrameRate
    --   if "animationEngine" is not among the lines of the openstacks then
@@ -5495,14 +5114,14 @@ on aeChangeBackColorOfChunk
    --   end if
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
 
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tChunk
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tChunk
    local tTest, tTest2
    put tChunk && "of" && tControl into tTest
    try
@@ -5519,20 +5138,20 @@ on aeChangeBackColorOfChunk
     else
       put "char 1 of" && tTest into tTest2
    end if
-   if item 3 of theValue is a color and item 2 of theValue is not a number then
+   if item 3 of tParameters is a color and item 2 of tParameters is not a number then
       -- we got no RGB values here
-      set the backcolor of grc "testColor" of me to item 3 of theValue
+      set the backcolor of grc "testColor" of me to item 3 of tParameters
 
       set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
 
       put the backcolor of grc "testColor" of me into tBackColorOfChunk
 
-      put item 4 of theValue into tDuration
-      put item 5 of theValue into tMethod
+      put item 4 of tParameters into tDuration
+      put item 5 of tParameters into tMethod
     else
-      put item 3 to 5 of theValue into tBackColorOfChunk
-      put item 6 of theValue into tDuration
-      put item 7 of theValue into tMethod
+      put item 3 to 5 of tParameters into tBackColorOfChunk
+      put item 6 of tParameters into tDuration
+      put item 7 of tParameters into tMethod
    end if
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if tBackColorOfChunk is not a color then return "error:" && tBackColorOfChunk && "is not a valid color"
@@ -5670,7 +5289,7 @@ end aeChangeBackColorOfChunkDone
 local sAELockforecolorOfChunkChanging, tAeChangeforecolorOfChunk
 
 on aeChangeforecolorOfChunk
-   local tControl, tforecolorOfChunk, tDuration, tMethod, theValue, tCurrentforecolorOfChunk, tChunk
+   local tControl, tforecolorOfChunk, tDuration, tMethod, tParameters, tCurrentforecolorOfChunk, tChunk
 
    if sAEFrameRate is empty then aeResetFrameRate
    --   if "animationEngine" is not among the lines of the openstacks then
@@ -5682,14 +5301,14 @@ on aeChangeforecolorOfChunk
    --   end if
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
 
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tChunk
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tChunk
    local tTest, tTest2
    put tChunk && "of" && tControl into tTest
    try
@@ -5706,20 +5325,20 @@ on aeChangeforecolorOfChunk
     else
       put "char 1 of" && tTest into tTest2
    end if
-   if item 3 of theValue is a color and item 2 of theValue is not a number then
+   if item 3 of tParameters is a color and item 2 of tParameters is not a number then
       -- we got no RGB values here
-      set the backcolor of grc "testColor" of me to item 3 of theValue
+      set the backcolor of grc "testColor" of me to item 3 of tParameters
 
       set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
 
       put the backcolor of grc "testColor" of me into tforecolorOfChunk
 
-      put item 4 of theValue into tDuration
-      put item 5 of theValue into tMethod
+      put item 4 of tParameters into tDuration
+      put item 5 of tParameters into tMethod
     else
-      put item 3 to 5 of theValue into tforecolorOfChunk
-      put item 6 of theValue into tDuration
-      put item 7 of theValue into tMethod
+      put item 3 to 5 of tParameters into tforecolorOfChunk
+      put item 6 of tParameters into tDuration
+      put item 7 of tParameters into tMethod
    end if
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if tforecolorOfChunk is not a color then return "error:" && tforecolorOfChunk && "is not a valid color"
@@ -5951,20 +5570,20 @@ end aeStopMorphing
 --> 4.0 update
 
 on aeScrollTo
-   local tControl, tX, tY, tDuration, tMethod, theValue
+   local tControl, tX, tY, tDuration, tMethod, tParameters
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
-         put param(i) & "," after theValue
+         put param(i) & "," after tParameters
        else
-         put param(i) after theValue
+         put param(i) after tParameters
       end if
    end repeat
-   put item 1 of theValue into tControl
-   put item 2 of theValue into tX
-   put item 3 of theValue into tY
-   put item 4 of theValue into tDuration
-   put item 5 of theValue into tMethod
+   put item 1 of tParameters into tControl
+   put item 2 of tParameters into tX
+   put item 3 of tParameters into tY
+   put item 4 of tParameters into tDuration
+   put item 5 of tParameters into tMethod
    if there is no tControl then return "error:" && tControl && "is not a valid group or field"
    if word 1 of the long name of tControl <> "group" and word 1 of the long name of tControl <> "field" then return "error: can only scroll groups or fields"
    if tX is not an integer then return "error:" && tX & "," & tY && "is not a valid scroll"
@@ -6176,7 +5795,7 @@ function rotate3DPointList pointList, pXRotation, pYRotation, pZRotation, pFocal
    local newX, newY, newZ
    local pX, pY
    local pZ, tScaleFactor, sX
-   local sY, sZ, theValue, xY
+   local sY, sZ, tParameters, xY
    local xZ, yX, yZ, zX
    local zY
    local tReturnList
@@ -6222,7 +5841,7 @@ end rotate3DPointList
 
 function ae3dConvertListToScreen pointList, pOriginX, pOriginY, pFocalLength
    local i
-   local pX, pY, pZ, theValue
+   local pX, pY, pZ, tParameters
    local tScaleFactor, tXCartesian, tYCartesian, tReturnList
    if pFocalLength is empty then put 300 into pFocalLength
    try
