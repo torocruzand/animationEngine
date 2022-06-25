@@ -62,35 +62,17 @@ Tags:
 animations
 */
 
-global animationEngineCurrentStackName
-
 local sAELockMorph, sAEMorphing
 local sAELockMorphGradientRamp, sAEMorphGradientRamp
 local sAELockRotateGroup, sAERotateGroup
 --> global stuff
 
-
-/**
-summary
-
-Example:
-example
-
-Description:
-description
-
-Parameters:
-parameters
-
-Returns:
-returns
-
-Tags: tags
-**/
+//TODO : Where this is used
+/* 
 on aeWhatAmI
-   put me & cr & "mode:" && the mode of stack animationEngineCurrentStackName & cr & "style:" && the style of stack animationEngineCurrentStackName & cr & "decorations:" && the decorations of stack animationEngineCurrentStackName & cr & "path:" && the effective filename of stack animationEngineCurrentStackName
+   put me & cr & "mode:" && the mode of  me  & cr & "style:" && the style of  me  & cr & "decorations:" && the decorations of  me  & cr & "path:" && the effective filename of  me
 end aeWhatAmI
-
+ */
 --> constrain handlers
 
 on touchStart pID
@@ -316,7 +298,7 @@ end animationEngineInfo
 function animationEngineVersion
    try
       --which version is animationEngine?
-      return the versionnumber of stack animationEngineCurrentStackName
+      return the versionnumber of  me
    catch theError
       return "error: " & theError
    end try
@@ -325,7 +307,7 @@ end animationEngineVersion
 function animationEngineDate
    try
       --which creation date?
-      return the CreationDate of stack animationEngineCurrentStackName
+      return the CreationDate of  me
    catch theerror
       return "error: " & theError
    end try
@@ -1657,7 +1639,7 @@ on animationEngineHelp topic
    try
       switch topic
          default
-            put "There is help for the following topics:" & cr & the helpTopics of stack animationEngineCurrentStackName
+            put "There is help for the following topics:" & cr & the helpTopics of  me
       end switch
    catch theerror
       return "error: " & theError
@@ -1667,12 +1649,12 @@ end animationEngineHelp
 on animationEngineInfo
    -- obsolete
    try
-      set the loc of stack animationEngineCurrentStackName to the screenloc
-      put "animationEngine v. " & the versionnumber of stack animationEngineCurrentStackName into fld "version" of stack animationEngineCurrentStackName
+      set the loc of  me  to the screenloc
+      put "animationEngine v. " & the versionnumber of  me  into fld "version" of  me 
       toplevel me
-      go cd 1 of stack animationEngineCurrentStackName
+      go cd 1 of  me
       show me
-      set the decorations of stack animationEngineCurrentStackName to default
+      set the decorations of  me  to default
    catch theerror
       return "error: " & theError
    end try
@@ -5048,11 +5030,11 @@ on aeChangeBackColor
    put item 1 of theValue into tControl
    if item 2 of theValue is a color and item 2 of theValue is not a number then
       -- we got no RGB values here
-      set the backcolor of grc "testColor" of stack "animationEngine" to item 2 of theValue
+      set the backcolor of grc "testColor" of  me  to item 2 of theValue
 
-      set the backpixel of grc "testColor" of stack "animationEngine" to the effective backpixel of grc "testColor" of stack "animationEngine"
+      set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
 
-      put the backcolor of grc "testColor" of stack "animationEngine" into tBackColor
+      put the backcolor of grc "testColor" of me into tBackColor
 
       put item 3 of theValue into tDuration
       put item 4 of theValue into tMethod
@@ -5065,9 +5047,9 @@ on aeChangeBackColor
    if tBackColor is not a color then return "error:" && tBackColor && "is not a valid color"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
    if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
-   set the backcolor of grc "testColor" of stack "animationEngine" to the effective backcolor of tControl
-   set the backpixel of grc "testColor" of stack "animationEngine" to the effective backpixel of grc "testColor" of stack "animationEngine"
-   put the backcolor of grc "testColor" of stack "animationEngine" into tCurrentBackColor
+   set the backcolor of grc "testColor" of me to the effective backcolor of tControl
+   set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
+   put the backcolor of grc "testColor" of me into tCurrentBackColor
    if not sAELockBackColorChanging then
       put tBackColor, tDuration, tMethod, tCurrentBackColor, the milliseconds into tAeChangeBackColor[the long id of tControl]
       if "aeChangingBackColor" is not in the pendingmessages then
@@ -5213,9 +5195,9 @@ on aeChangeforeColor
    put item 1 of theValue into tControl
    if item 2 of theValue is a color and item 2 of theValue is not a number then
       -- we got no RGB values here
-      set the backcolor of grc "testColor" of stack "animationEngine" to item 2 of theValue
-      set the backpixel of grc "testColor" of stack "animationEngine" to the effective backpixel of grc "testColor" of stack "animationEngine"
-      put the backcolor of grc "testColor" of stack "animationEngine" into tforeColor
+      set the backcolor of grc "testColor" of me to item 2 of theValue
+      set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
+      put the backcolor of grc "testColor" of me into tforeColor
       put item 3 of theValue into tDuration
       put item 4 of theValue into tMethod
     else
@@ -5227,9 +5209,9 @@ on aeChangeforeColor
    if tforeColor is not a color then return "error:" && tforeColor && "is not a valid color"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
    if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
-   set the backcolor of grc "testColor" of stack "animationEngine" to the effective forecolor of tControl
-   set the backpixel of grc "testColor" of stack "animationEngine" to the effective backpixel of grc "testColor" of stack "animationEngine"
-   put the backcolor of grc "testColor" of stack "animationEngine" into tCurrentforeColor
+   set the backcolor of grc "testColor" of me to the effective forecolor of tControl
+   set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
+   put the backcolor of grc "testColor" of me into tCurrentforeColor
    if not sAELockforeColorChanging then
       put tforeColor, tDuration, tMethod, tCurrentforeColor, the milliseconds into tAeChangeforeColor[the long id of tControl]
       if "aeChangingforeColor" is not in the pendingmessages then
@@ -5518,11 +5500,11 @@ on aeChangeBackColorOfChunk
    end if
    if item 3 of theValue is a color and item 2 of theValue is not a number then
       -- we got no RGB values here
-      set the backcolor of grc "testColor" of stack "animationEngine" to item 3 of theValue
+      set the backcolor of grc "testColor" of me to item 3 of theValue
 
-      set the backpixel of grc "testColor" of stack "animationEngine" to the effective backpixel of grc "testColor" of stack "animationEngine"
+      set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
 
-      put the backcolor of grc "testColor" of stack "animationEngine" into tBackColorOfChunk
+      put the backcolor of grc "testColor" of me into tBackColorOfChunk
 
       put item 4 of theValue into tDuration
       put item 5 of theValue into tMethod
@@ -5535,9 +5517,9 @@ on aeChangeBackColorOfChunk
    if tBackColorOfChunk is not a color then return "error:" && tBackColorOfChunk && "is not a valid color"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
    if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
-   set the backcolor of grc "testColor" of stack "animationEngine" to the effective backcolor of tTest2
-   set the backpixel of grc "testColor" of stack "animationEngine" to the effective backpixel of grc "testColor" of stack "animationEngine"
-   put the backcolor of grc "testColor" of stack "animationEngine" into tCurrentBackColorOfChunk
+   set the backcolor of grc "testColor" of me to the effective backcolor of tTest2
+   set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
+   put the backcolor of grc "testColor" of me into tCurrentBackColorOfChunk
    local tKey
    put (tControl & "," & tChunk) into tKey
    if not sAELockBackColorOfChunkChanging then
@@ -5705,11 +5687,11 @@ on aeChangeforecolorOfChunk
    end if
    if item 3 of theValue is a color and item 2 of theValue is not a number then
       -- we got no RGB values here
-      set the backcolor of grc "testColor" of stack "animationEngine" to item 3 of theValue
+      set the backcolor of grc "testColor" of me to item 3 of theValue
 
-      set the backpixel of grc "testColor" of stack "animationEngine" to the effective backpixel of grc "testColor" of stack "animationEngine"
+      set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
 
-      put the backcolor of grc "testColor" of stack "animationEngine" into tforecolorOfChunk
+      put the backcolor of grc "testColor" of me into tforecolorOfChunk
 
       put item 4 of theValue into tDuration
       put item 5 of theValue into tMethod
@@ -5722,9 +5704,9 @@ on aeChangeforecolorOfChunk
    if tforecolorOfChunk is not a color then return "error:" && tforecolorOfChunk && "is not a valid color"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
    if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
-   set the backcolor of grc "testColor" of stack "animationEngine" to the effective forecolor of tTest2
-   set the backpixel of grc "testColor" of stack "animationEngine" to the effective backpixel of grc "testColor" of stack "animationEngine"
-   put the backcolor of grc "testColor" of stack "animationEngine" into tCurrentforecolorOfChunk
+   set the backcolor of grc "testColor" of me to the effective forecolor of tTest2
+   set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
+   put the backcolor of grc "testColor" of me into tCurrentforecolorOfChunk
    local tKey
    put (tControl & "," & tChunk) into tKey
    if not sAELockforecolorOfChunkChanging then
