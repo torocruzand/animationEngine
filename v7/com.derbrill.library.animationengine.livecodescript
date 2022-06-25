@@ -22,7 +22,7 @@ on extensionInitialize
    set the _ideoverride of me to true
 
    if first item of the version < 8 then
-      if "dev" is in the environment then
+      if "dev" begins with the environment then
          answer "Sorry, this version of animationEngine requires a Livecode 8.0 or higher engine."
       end if
       remove the script of me from back
@@ -62,8 +62,8 @@ Tags:
 animations
 */
 
-constant kVersionNumber = "7.0.1"
-constant kCreationDate = ""
+constant kVersionNumber = "7.0.0"
+constant kCreationDate = "©2005 by derbrill IT service"
 
 local sAELockMorph, sAEMorphing
 local sAELockMorphGradientRamp, sAEMorphGradientRamp
@@ -217,12 +217,13 @@ on aeConstrainHandler pX, pY, pID
    end if
 
    # constrainElliptical
-   if tAnimationEngineArray["constrainElliptical"] is a rectangle then
+   if tAnimationEngineArray["constrainElliptical"] is a rectangle and tRadiusY <> 0 then
 
       put item 1 of tAnimationEngineArray["constrainElliptical"] into tTX
       put item 2 of tAnimationEngineArray["constrainElliptical"] into tTY
       put item 3 of tAnimationEngineArray["constrainElliptical"] into tRadiusX
       put item 4 of tAnimationEngineArray["constrainElliptical"] into tRadiusY
+
       put findAngleX(tTX, tTY, pX, pY) into tIsAngle
       put atan(tRadiusX / tRadiusY * tan(tIsAngle * pi / 180)) * 180 / pi into tTheAngle
 
@@ -349,6 +350,7 @@ on aeDragRelease
       _setAnimationEngine tLongId, "AllowConstrainDrag", empty
       _setAnimationEngine tLongId, "ConstrainID", empty
       put false into tUpdate
+
       dispatch "constrainRectangularExit" to tLongId
    end if
 
@@ -359,6 +361,7 @@ on aeDragRelease
          _setAnimationEngine tLongId, "ConstrainID", empty
          put false into tUpdate
       end if
+
       dispatch "constrainLinearExit" to tLongId
    end if
 
@@ -369,6 +372,7 @@ on aeDragRelease
          _setAnimationEngine tLongId, "ConstrainID", empty
          put false into tUpdate
       end if
+
       dispatch "constrainCircularExit" to tLongId
    end if
 
@@ -379,13 +383,14 @@ on aeDragRelease
          _setAnimationEngine tLongId, "ConstrainID", empty
          put false into tUpdate
       end if
+
       dispatch "constrainEllipticalExit" to tLongId
    end if
 end aeDragRelease
 
 
 on touchEnd
-   if _getAnimationEngine(the long id of target,"AllowConstrainDrag") is not empty then dispatch "aeDragRelease"
+   if _getAnimationEngine(the long id of target, "AllowConstrainDrag") is not empty then dispatch "aeDragRelease"
 end touchEnd
 
 --> aeinfos
@@ -396,15 +401,13 @@ end aeInfo
 
 
 function animationEngineInfo
-   local animationEngineInfo
-
    --assemble info text
-   put "You are using animationEngine " & kVersionNumber & " " into animationEngineInfo
-   put "built " & animationEngineDate() & " by derbrill Multimedia" & cr after animationEngineInfo
-   put "type animationEngineInfo for details on usage" after animationEngineInfo
-
-   return animationEngineInfo
+   return "You are using animationEngine " & kVersionNumber & " built in " & animationEngineDate()
 end animationEngineInfo
+
+function aeVersion
+   return animationEngineInfo()
+end aeVersion
 
 
 function animationEngineVersion
@@ -414,139 +417,106 @@ end animationEngineVersion
 
 
 function animationEngineDate
-   try
-      --which creation date?
-      return the CreationDate of me
-   catch theerror
-      return "error: " & theError
-   end try
+   --which creation date?
+   return kCreationDate
 end animationEngineDate
-
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 --> aspect ratio
 
 function aspectRatio isWidth, isHeight
-   try
-      --return the width-to-height ratio
-      if isWidth is not a number or isHeight is not a number then
-         return "Error: Both parameters must be numbers!"
-      end if
-      return isWidth / isHeight
-   catch theerror
-      return "error: " & theError
-   end try
+   --return the width-to-height ratio
+   if isWidth is a number and isHeight is a number and isHeight <> 0 then return isWidth / isHeight
+   return "Error: Both parameters must be numbers!"
 end aspectRatio
 
 
--- toDo update to pass a control reference!!!
--- Der blöde Mist funktioniert nicht recht.
--- Irgendwie ist der ganze aspectResize Kram nicht das was ich mir vorgestellt habe.
-function aspectResize
-   local i, isBottom, isLeft, isRectRatio
-   local isRight, isTargetRatio, isTop, theValue
-   try
-      --assemble one string from parameters
+function aspectResize pLongId, pLeft, pTop, pRight, pBottom
+   local tLeft, tTop, tRight, tBottom, tRectRatio
+   local tParameters, tRectangle
+   local tAnimationEngineArray, tAspectResizeArray
 
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
+   --assemble one string from parameters
+   put pLongId, pLeft, pTop, pRight, pBottom into tParameters
 
-      --check syntax
-      if the number of items of theValue <> 4 then
-         return "Error: Syntax is aspectResize(left,top,right,bottom)"
+   --check syntax
+   switch
+
+      case there is a first item of tParameters and item 2 to 5 of tParameters is a rectangle
+         put the long id of (first item of tParameters) into pLongId
+         put item 2 to 5 of tParameters into tRectangle
+         break
+
+      case item 1 to 4 of tParameters is a rectangle
+         put the long id of target into pLongId
+         put item 1 to 4 of tParameters into tRectangle
+         break
+
+      default
+         return "Error: Syntax is aspectResize(the rectangle ) or aspectResize(the long id of contol, the rectangle)."
          exit aspectResize
-      end if
+   end switch
 
-      --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers"
-            exit aspectResize
-            exit repeat
-         end if
-      end repeat
+   --split rectangle into 4 single values
+   split tRectangle by comma
+   put tRectangle[1] into tLeft
+   put tRectangle[2] into tTop
+   put tRectangle[3] into tRight
+   put tRectangle[4] into tBottom
 
-      --split rectangle into 4 single values
-      put item 1 of theValue into isLeft
-      put item 2 of theValue into isTop
-      put item 3 of theValue into isRight
-      put item 4 of theValue into isBottom
+   put _getAnimationEngine(pLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["aspectResize"] into tAspectResizeArray
 
-      --if it isn´t already set
-      --set the custom property holding the width-to-height ratio
-      --to avoid rounding errors later
-      if the aspectResize["ratio"] of the target is empty then
-         set the aspectResize["ratio"] of the target to aspectRatio(the width of the target, the height of the target)
-      end if
+   --if it isn´t already set
+   --set the custom property holding the width-to-height ratio
+   --to avoid rounding errors later
+   if tAspectResizeArray["ratio"] is empty then
+      put aspectRatio(the width of pLongId, the height of pLongId) into tAspectResizeArray["ratio"]
+      _setAnimationEngine pLongId, "aspectResize", tAspectResizeArray["ratio"]
+   end if
 
-      --get width-to-height ratio of the target and the rectangle
-      put the aspectResize["ratio"] of the target into isTargetRatio
-      put aspectRatio(isRight - isLeft, isBottom - isTop) into isRectRatio
 
-      --equal!
-      if isTargetRatio = isRectRatio then
-         return isRight - isLeft, isBottom - isTop
-       else
-         --not equal,target ratio is bigger/target is heigher
-         if isRectRatio < isTargetRatio then
-            return (isRight - isLeft),(isRight - isLeft) / isTargetRatio
-          else
-            --not equal, target ratio is smaller/target is broader
-            return (isBottom - isTop) * istargetRatio, isbottom - isTop
-         end if
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
+
+   --get width-to-height ratio of the target and the rectangle
+   put aspectRatio(tRight - tLeft, tBottom - tTop) into tRectRatio
+
+   --equal!
+   if tAspectResizeArray["ratio"] = tRectRatio then
+      return tRight - tLeft, tBottom - tTop
+   end if
+
+   --not equal,target ratio is bigger/target is heigher
+   if tRectRatio < tAspectResizeArray["ratio"] then
+      if tAspectResizeArray["ratio"] <> 0 then return "Error description : numeric : divide by zero."
+      return (tRight - tLeft),(tRight - tLeft) / tAspectResizeArray["ratio"]
+    else
+      --not equal, target ratio is smaller/target is broader
+      return (tBottom - tTop) * tAspectResizeArray["ratio"], tBottom - tTop
+   end if
 end aspectResize
 
 --> collision detection
 
-function circleCollide
-   local i, theValue, threshold, x1
-   local x2, y1, y2
-   try
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
+function circleCollide pX1, pY1, pX2, pY2, pThreshold
+   local tParameters
 
-      --check syntax
-      if the number of items of theValue <> 5 then
-         return "Error: Syntax is circleCollide(x1,y1,x2,y2,threshold)"
-         exit circleCollide
-      end if
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2, pThreshold into tParameters
+   put item 1 to 5 of tParameters into tParameters
 
-      --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit circleCollide
-            exit repeat
-         end if
-      end repeat
-      put item 1 of theValue into x1
-      put item 2 of theValue into y1
-      put item 3 of theValue into x2
-      put item 4 of theValue into y2
-      put item 5 of theValue into threshold
-      if distance(x1, y1, x2, y2) < threshold then
-         return true
-       else
-         return false
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
+
+   --check syntax
+   if item 1 to 4 of tParameters is not a rectangle or item 5 of tParameters is not a number
+   then return "Error: Syntax is circleCollide(x1,y1,x2,y2,threshold)"
+
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+   put item 5 of tParameters into pThreshold
+
+   return distance(pX1, pY1, pX2, pY2) < pThreshold
 end circleCollide
+
 
 function circleLineSegmentCollide
    local i, intersectionPointX, intersectionPointY, radius
@@ -607,7 +577,7 @@ function circleLineSegmentCollide
    end try
 end circleLineSegmentCollide
 
-
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 --> closest points
 
 function closestpointOnLine
