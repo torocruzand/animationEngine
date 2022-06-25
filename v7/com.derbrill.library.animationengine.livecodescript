@@ -453,7 +453,6 @@ function aspectResize pLongId, pLeft, pTop, pRight, pBottom
 
       default
          return "Error: Syntax is aspectResize(the rectangle ) or aspectResize(the long id of contol, the rectangle)."
-         exit aspectResize
    end switch
 
    --split rectangle into 4 single values
@@ -473,8 +472,6 @@ function aspectResize pLongId, pLeft, pTop, pRight, pBottom
       put aspectRatio(the width of pLongId, the height of pLongId) into tAspectResizeArray["ratio"]
       _setAnimationEngine pLongId, "aspectResize", tAspectResizeArray["ratio"]
    end if
-
-
 
    --get width-to-height ratio of the target and the rectangle
    put aspectRatio(tRight - tLeft, tBottom - tTop) into tRectRatio
@@ -503,7 +500,6 @@ function circleCollide pX1, pY1, pX2, pY2, pThreshold
    put pX1, pY1, pX2, pY2, pThreshold into tParameters
    put item 1 to 5 of tParameters into tParameters
 
-
    --check syntax
    if item 1 to 4 of tParameters is not a rectangle or item 5 of tParameters is not a number
    then return "Error: Syntax is circleCollide(x1,y1,x2,y2,threshold)"
@@ -518,63 +514,37 @@ function circleCollide pX1, pY1, pX2, pY2, pThreshold
 end circleCollide
 
 
-function circleLineSegmentCollide
-   local i, intersectionPointX, intersectionPointY, radius
-   local theValue, u, x1, x2
-   local x3, y1, y2, y3
-   try
-      --assemble one string from parameters
+function circleLineSegmentCollide pX1, pY1, pX2, pY2, pX3, pY3, pRadius
+   local tIntersectionPointX, tIntersectionPointY, tTemp, tU, tParameters
 
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2, pX3, pY3, pRadius into tParameters
 
-      --check syntax
-      if the number of items of theValue <> 7 then
-         return "Error: Syntax is circleLineSegmentCollide(x1,y1,x2,y2,x3,y3,radius)"
-         exit circleLineSegmentCollide
-      end if
+   --check syntax
+   if item 1 to 4 of tParameters is not a rectangle or item 5 to 6 of tParameters is not a point or item 7 of tParameters is not a number then
+      return "Error: Syntax is circleLineSegmentCollide(x1,y1,x2,y2,x3,y3,radius)"
+   end if
 
-      --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit circleLineSegmentCollide
-            exit repeat
-         end if
-      end repeat
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+   put item 5 of tParameters into pX3
+   put item 6 of tParameters into pY3
+   put item 7 of tParameters into pRadius
 
-      put item 1 of theValue into x1
-      put item 2 of thevalue into y1
-      put item 3 of theValue into x2
-      put item 4 of thevalue into y2
-      put item 5 of theValue into x3
-      put item 6 of thevalue into y3
-      put item 7 of theValue into radius
+   put (pX2 - pX1) ^ 2 + (pY2 - pY1) ^ 2 into tTemp
+   if tTemp = 0 then return "Error description : numeric : divide by zero."
 
-      put ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)) / ((x2 - x1) ^ 2 + (y2 - y1) ^ 2) into u
-      put x1 + u * (x2 - x1) into intersectionPointX
-      put y1 + u * (y2 - y1) into intersectionPointY
-      if u < 1 and u > 0 then
-         if distance(intersectionPointX, intersectionPointY, x3, y3) < radius then
-            return "true"
-          else
-            return "false"
-         end if
-       else
-         if distance(x1, y1, x3, y3) > radius and distance(x2, y2, x3, y3) > radius then
-            return "false"
-          else
-            return "true"
-         end if
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
+   put ((pX3 - pX1) * (pX2 - pX1) + (pY3 - pY1) * (pY2 - pY1)) / tTemp into tU
+   put pX1 + tU * (pX2 - pX1) into tIntersectionPointX
+   put pY1 + tU * (pY2 - pY1) into tIntersectionPointY
+
+   if tU < 1 and tU > 0 then
+      return distance(tIntersectionPointX, tIntersectionPointY, pX3, pX3) < pRadius
+   end if
+
+   return distance(pX1, pY1, pX3, pY3) > pRadius and distance(pX2, pY2, pX3, pY3) > pRadius
 end circleLineSegmentCollide
 
 #xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
