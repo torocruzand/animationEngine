@@ -4,3 +4,5 @@
 [] - See if there is any way to create a cache of these properties and everything that is possible.
 [] - Improve or change the way of choosing the parameters.
 [] - Document the handlers so that they are seen in the LiveCode documentation.
+[] - The manipulators that are to be used only in the library, put them private.
+[] - Remove features that are deprecated.
