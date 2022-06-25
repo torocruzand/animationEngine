@@ -63,6 +63,7 @@ animations
 */
 
 constant kVersionNumber = "7.0.1"
+constant kCreationDate = ""
 
 local sAELockMorph, sAEMorphing
 local sAELockMorphGradientRamp, sAEMorphGradientRamp
@@ -71,250 +72,346 @@ local sAELockRotateGroup, sAERotateGroup
 --> global stuff
 
 //TODO : Where this is used
-/*
 on aeWhatAmI
-   put me & cr & "mode:" && the mode of  me  & cr & "style:" && the style of  me  & cr & "decorations:" && the decorations of  me  & cr & "path:" && the effective filename of  me
+   put me & cr & "mode:" && the mode of me & cr & "style:" && the style of me & cr & "decorations:" && the decorations of me & cr & "path:" && the effective filename of me
 end aeWhatAmI
-*/
 
 --> constrain handlers
 
 on touchStart pID
-   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
-   try
-      if the constrainRectangular of the target is not empty then
-         set the uConstrainID of the target to pID
-         send "constrainRectangularInit" to the target
-      end if
-      if the constrainElliptical of the target is not empty then
-         set the uAllowConstrainDrag of the target to true
-         set the uConstrainID of the target to pID
-         send "constrainEllipticalInit" to the target
-      end if
-      if the constrainCircular of the target is not empty then
-         set the uAllowConstrainDrag of the target to true
-         set the uConstrainID of the target to pID
+   if the environment <> "mobile" then pass touchStart
 
-         send "constrainCircularInit" to the target
-      end if
-      if the constrainLinear of the target is not empty then
-         set the uAllowConstrainDrag of the target to the mouseloc
-         set the uConstrainID of the target to pID
+   local tLongId, tAnimationEngineArray
 
-         send "constrainLinearInit" to the target
-      end if
-      pass touchStart
-   catch theError
-      return "Error: " & theError
-   end try
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+
+   if tAnimationEngineArray is not an array then pass touchStart
+
+   # constrainRectangular
+   if tAnimationEngineArray["constrainRectangular"] is not empty then
+      _setAnimationEngine tLongId, "ConstrainID", pID
+      dispatch "constrainRectangularInit" to tLongId
+   end if
+
+   # constrainElliptical
+   if tAnimationEngineArray["constrainElliptical"] is not empty then
+      _setAnimationEngine tLongId, "AllowConstrainDrag", true
+      _setAnimationEngine tLongId, "ConstrainID", pID
+      dispatch "constrainEllipticalInit" to tLongId
+   end if
+
+   # constrainCircular
+   if tAnimationEngineArray["constrainCircular"] is not empty then
+      _setAnimationEngine tLongId, "AllowConstrainDrag", true
+      _setAnimationEngine tLongId, "ConstrainID", pID
+      dispatch "constrainCircularInit" to tLongId
+   end if
+
+   # constrainLinear
+   if tAnimationEngineArray["constrainLinear"] is not empty then
+      _setAnimationEngine tLongId, "AllowConstrainDrag", true
+      _setAnimationEngine tLongId, "ConstrainID", pID
+      dispatch "constrainLinearInit" to tLongId
+   end if
+
+   pass touchStart
 end touchStart
 
 
 on mouseDown
    if the environment = "mobile" then pass mouseDown
-   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
-   try
-      if the constrainRectangular of the target is not empty then
-         set the uAllowConstrainDrag of the target to the mouseh - item 1 of loc of target, the mousev - item 2 of loc of the target
-         send "constrainRectangularInit" to the target
-      end if
-      if the constrainElliptical of the target is not empty then
-         set the uAllowConstrainDrag of the target to true
-         send "constrainEllipticalInit" to the target
-      end if
-      if the constrainCircular of the target is not empty then
-         set the uAllowConstrainDrag of the target to true
-         send "constrainCircularInit" to the target
-      end if
-      if the constrainLinear of the target is not empty then
-         set the uAllowConstrainDrag of the target to the mouseloc
-         send "constrainLinearInit" to the target
-      end if
-      pass mouseDown
-   catch theError
-      return "Error: " & theError
-   end try
+
+   local tLongId, tAnimationEngineArray
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+
+   if tAnimationEngineArray is not an array then pass mouseDown
+
+   # constrainRectangular
+   if tAnimationEngineArray["constrainRectangular"] is not empty then
+      _setAnimationEngine tLongId, "AllowConstrainDrag", the mouseH - item 1 of loc of tLongId, the mouseV - item 2 of loc of tLongId
+      dispatch "constrainRectangularInit" to tLongId
+   end if
+
+   # constrainElliptical
+   if tAnimationEngineArray["constrainElliptical"] is not empty then
+      _setAnimationEngine tLongId, "AllowConstrainDrag", true
+      dispatch "constrainEllipticalInit" to tLongId
+   end if
+
+   # constrainCircular
+   if tAnimationEngineArray["constrainCircular"] is not empty then
+      _setAnimationEngine tLongId, "AllowConstrainDrag", true
+      dispatch "constrainCircularInit" to tLongId
+   end if
+
+   # constrainLinear
+   if tAnimationEngineArray["constrainLinear"] is not empty then
+      _setAnimationEngine tLongId, "AllowConstrainDrag", the mouseloc
+      dispatch "constrainLinearInit" to tLongId
+   end if
+
+   pass mouseDown
 end mouseDown
 
-on touchMove pID, x, y
-   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
-   if the constrainRectangular of the target is not empty then
-      if the uConstrainID of the target = pID and the uAllowConstrainDrag of the target is empty then
-         set the uAllowConstrainDrag of the target to x - item 1 of loc of target, y - item 2 of loc of the target
+
+on touchMove pID, pX, pY
+   local tLongId, tAnimationEngineArray
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+
+   if tAnimationEngineArray is not an array then pass touchMove
+
+   # constrainRectangular
+   if tAnimationEngineArray["constrainRectangular"] is not empty then
+      if tAnimationEngineArray["ConstrainID"] = pID and tAnimationEngineArray["AllowConstrainDrag"] is empty then
+         _setAnimationEngine tLongId, "AllowConstrainDrag", pX - item 1 of loc of tLongId, pY - item 2 of loc of tLongId
       end if
-      send "constrainRectangularInit" to the target
+
+      dispatch "constrainRectangularInit" to tLongId
    end if
-   if the uAllowConstrainDrag of the target is not empty then
-      send "aeConstrainHandler" && x & "," & y & "," & pID to the target
+
+   if tAnimationEngineArray["AllowConstrainDrag"] is not empty then
+      dispatch "aeConstrainHandler" to tLongId with pX, pY, pID
    end if
 end touchMove
 
-on mouseMove x, y
-   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
 
+on mouseMove pX, pY
    if the environment = "mobile" then pass mouseMove
-   if the uAllowConstrainDrag of the target is not empty then
-      send "aeConstrainHandler" && x & "," & y to the target
+
+   local tLongId
+   put the long id of target into tLongId
+
+   if _getAnimationEngine(tLongId, "AllowConstrainDrag") is not empty then
+      dispatch "aeConstrainHandler" to tLongId with pX, pY
    end if
    pass mouseMove
 end mouseMove
 
-on aeConstrainHandler x, y, pID
-   local allowDragOnLine, isAngle, radiusX, radiusY
-   local theAngle, x1, x2, y1, TX, TY
-   local y2
-   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
-   if the constrainRectangular of the target is not empty then
-      if the uAllowConstrainDrag of the target is empty then exit aeConstrainHandler
-      if pID = the uConstrainID of the target then
-         set the loc of the target to min(max(x - item 1 of the uAllowConstrainDrag of the target, item 1 of the constrainRectangular of the target + (the width of the target / 2)), item 3 of the constrainRectangular of the target - (the width of the target / 2)), min(max(y - item 2 of the uAllowConstraindrag of the target, item 2 of the constrainRectangular of the target + (the height of the target / 2)), item 4 of the constrainRectangular of the target - (the height of the target / 2))
-         send "constrainRectangularCallBack" to the target
-      end if
-   end if
-   if the constrainElliptical of the target is not empty then
-      if the uAllowConstrainDrag of the target is empty then exit aeConstrainHandler
-      if pID = the uConstrainID of the target then
-         put item 1 of the constrainElliptical of the target into tx
-         put item 2 of the constrainElliptical of the target into ty
-         put item 3 of the constrainElliptical of the target into radiusX
-         put item 4 of the constrainElliptical of the target into radiusY
-         put findAngleX(tx, ty, x, y) into isAngle
-         put atan(radiusX / radiusY * tan(isAngle * pi / 180)) * 180 / pi into theAngle
-         if isAngle > 90 and isAngle <= 270 then
-            add 180 to theAngle
-         end if
-         set the loc of the target to pointOnEllipse(tx, ty, theAngle, radiusX, radiusY)
-         send "constrainEllipticalCallBack" to the target
-      end if
-   end if
-   if the constrainCircular of the target is not empty then
-      if the uAllowConstrainDrag of the target is empty then exit aeConstrainHandler
-      if pID = the uConstrainID of the target then
-         put item 1 of the constrainCircular of the target into tX
-         put item 2 of the constrainCircular of the target into tY
-         put item 3 of the constrainCircular of the target into radiusX
-         set the loc of the target to pointOnCircle(tx, ty, findangleX(tx, ty, x, y), radiusX)
-         send "constrainCircularCallBack" to the target
-      end if
-   end if
-   if the constrainLinear of the target is not empty then
-      if the uAllowConstrainDrag of the target is empty then exit aeConstrainHandler
-      if pID = the uConstrainID of the target then
 
-         if item 1 of the constrainLinear of the target < item 3 of the constrainLinear of the target then
-            put item 1 of the constrainLinear of the target into x1
-            put item 2 of the constrainLinear of the target into y1
-            put item 3 of the constrainLinear of the target into x2
-            put item 4 of the constrainLinear of the target into y2
-          else
-            put item 3 of the constrainLinear of the target into x1
-            put item 4 of the constrainLinear of the target into y1
-            put item 1 of the constrainLinear of the target into x2
-            put item 2 of the constrainLinear of the target into y2
-         end if
-         put closestpointOnLine(x1, y1, x2, y2, x, y) into allowDragOnLine
-         put round(item 1 of allowDragOnLine) into item 1 of allowDragOnLine
-         put round(item 2 of allowDragOnLine) into item 2 of allowDragOnLine
+on aeConstrainHandler pX, pY, pID
+   local tAllowDragOnLine, tIsAngle, tRadiusX, tRadiusY, tTheAngle, tX1, tX2, tY1, tY2, tTX, tTY
+   local tLongId, tAnimationEngineArray, tWidth = 0, tHeight = 0
 
-         if circleLineSegmentCollide(x1, y1, x2, y2, allowDragOnLine, 1) = false then
-            if distance(x, y, x1, y1) < distance(x, y, x2, y2) then
-               set the loc of the target to x1, y1
-             else
-               set the loc of the target to x2, y2
-            end if
-          else
-            set the loc of the target to allowDragOnLine
-         end if
-         send "constrainLinearCallBack" to the target
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+
+   if tAnimationEngineArray is not an array then exit aeConstrainHandler
+   if tAnimationEngineArray["AllowConstrainDrag"] is empty or pID <> tAnimationEngineArray["ConstrainID"] then exit aeConstrainHandler
+
+   put the width of tLongId into tWidth
+   put the height of tLongId into tHeight
+
+   # constrainRectangular
+   if tAnimationEngineArray["constrainRectangular"] is a rectangle then
+      if tAnimationEngineArray["AllowConstrainDrag"] is not a point then exit aeConstrainHandler
+
+      if tAnimationEngineArray["constrainRectangular"] is a rectangle then
+         set the loc of tLongId to min(max(pX - item 1 of tAnimationEngineArray["AllowConstrainDrag"], item 1 of tAnimationEngineArray["constrainRectangular"] + (tWidth / 2)), item 3 of tAnimationEngineArray["constrainRectangular"] - (tWidth / 2)), min(max(pY - item 2 of tAnimationEngineArray["AllowConstrainDrag"], item 2 of tAnimationEngineArray["constrainRectangular"] + (tHeight / 2)), item 4 of tAnimationEngineArray["constrainRectangular"] - (tHeight / 2))
+         dispatch "constrainRectangularCallBack" to tLongId
       end if
+   end if
+
+   # constrainElliptical
+   if tAnimationEngineArray["constrainElliptical"] is a rectangle then
+
+      put item 1 of tAnimationEngineArray["constrainElliptical"] into tTX
+      put item 2 of tAnimationEngineArray["constrainElliptical"] into tTY
+      put item 3 of tAnimationEngineArray["constrainElliptical"] into tRadiusX
+      put item 4 of tAnimationEngineArray["constrainElliptical"] into tRadiusY
+      put findAngleX(tTX, tTY, pX, pY) into tIsAngle
+      put atan(tRadiusX / tRadiusY * tan(tIsAngle * pi / 180)) * 180 / pi into tTheAngle
+
+      if tIsAngle > 90 and tIsAngle <= 270 then
+         add 180 to tTheAngle
+      end if
+
+      set the loc of tLongId to pointOnEllipse(tTX, tTY, tTheAngle, tRadiusX, tRadiusY)
+      dispatch "constrainEllipticalCallBack" to tLongId
+   end if
+
+   # constrainCircular
+   if tAnimationEngineArray["constrainCircular"] is a rectangle then
+      put item 1 of tAnimationEngineArray["constrainCircular"] into tTX
+      put item 2 of tAnimationEngineArray["constrainCircular"] into tTY
+      put item 3 of tAnimationEngineArray["constrainCircular"] into tRadiusX
+      set the loc of tLongId to pointOnCircle(tTX, tTY, findangleX(tTX, tTY, pX, pY), tRadiusX)
+      dispatch "constrainCircularCallBack" to tLongId
+   end if
+
+   # constrainLinear
+   if tAnimationEngineArray["constrainLinear"] is a rectangle then
+      if item 1 of tAnimationEngineArray["constrainLinear"] < item 3 of tAnimationEngineArray["constrainLinear"] then
+         put item 1 of tAnimationEngineArray["constrainLinear"] into tX1
+         put item 2 of tAnimationEngineArray["constrainLinear"] into tY1
+         put item 3 of tAnimationEngineArray["constrainLinear"] into tX2
+         put item 4 of tAnimationEngineArray["constrainLinear"] into tY2
+       else
+         put item 3 of tAnimationEngineArray["constrainLinear"] into tX1
+         put item 4 of tAnimationEngineArray["constrainLinear"] into tY1
+         put item 1 of tAnimationEngineArray["constrainLinear"] into tX2
+         put item 2 of tAnimationEngineArray["constrainLinear"] into tY2
+      end if
+
+      put closestpointOnLine(tX1, tY1, tX2, tY2, pX, pY) into tAllowDragOnLine
+      put round(item 1 of tAllowDragOnLine) into item 1 of tAllowDragOnLine
+      put round(item 2 of tAllowDragOnLine) into item 2 of tAllowDragOnLine
+
+      if circleLineSegmentCollide(tX1, tY1, tX2, tY2, tAllowDragOnLine, 1) = false then
+
+         if distance(pX, pY, tX1, tY1) < distance(pX, pY, tX2, tY2) then
+            set the loc of tLongId to tX1, tY1
+          else
+            set the loc of tLongId to tX2, tY2
+         end if
+
+       else
+         set the loc of tLongId to tAllowDragOnLine
+      end if
+
+      dispatch "constrainLinearCallBack" to tLongId
    end if
 end aeConstrainHandler
 
-on mouseUp
-   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
 
-   if the constrainRectangular of the target is not empty then
-      set the uAllowConstrainDrag of the target to empty
-      send "constrainRectangularExit" to the target
+on mouseUp
+   local tLongId, tAnimationEngineArray, tUpdate = true
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+
+   if tAnimationEngineArray is not an array then pass mouseUp
+
+   # constrainRectangular
+   if tAnimationEngineArray["constrainRectangular"] is not empty then
+      _setAnimationEngine tLongId, "AllowConstrainDrag", empty
+      dispatch "constrainRectangularExit" to tLongId
+      put false into tUpdate
    end if
-   if the constrainLinear of the target is not empty then
-      set the uAllowConstrainDrag of the target to empty
-      send "constrainLinearExit" to the target
+
+   # constrainLinear
+   if tAnimationEngineArray["constrainLinear"] is not empty then
+      if tUpdate then
+         _setAnimationEngine tLongId, "AllowConstrainDrag", empty
+         put false into tUpdate
+      end if
+
+      dispatch "constrainLinearExit" to tLongId
    end if
-   if the constrainCircular of the target is not empty then
-      set the uAllowConstrainDrag of the target to empty
-      send "constrainCircularExit" to the target
+
+   # constrainCircular
+   if tAnimationEngineArray["constrainCircular"] is not empty then
+      if tUpdate then
+         _setAnimationEngine tLongId, "AllowConstrainDrag", empty
+         put false into tUpdate
+      end if
+      dispatch "constrainCircularExit" to tLongId
    end if
-   if the constrainElliptical of the target is not empty then
-      set the uAllowConstrainDrag of the target to empty
-      send "constrainEllipticalExit" to the target
+
+   # constrainElliptical
+   if tAnimationEngineArray["constrainElliptical"] is not empty then
+      if tUpdate then
+         _setAnimationEngine tLongId, "AllowConstrainDrag", empty
+         put false into tUpdate
+      end if
+      dispatch "constrainEllipticalExit" to tLongId
    end if
+
    pass mouseUp
 end mouseUp
 
+
 on mouseRelease
-   send "aeDragRelease" to the target
+   dispatch "aeDragRelease"
    pass mouseRelease
 end mouseRelease
 
+
 on touchRelease
-   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
-   if the uAllowConstrainDrag of the target is not empty then send "aeDragRelease" to the target
+   if _getAnimationEngine(the long id of target, "AllowConstrainDrag") is not empty then dispatch "aeDragRelease"
 end touchRelease
 
+
 on aeDragRelease
-   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+   local tLongId, tAnimationEngineArray, tUpdate = true
 
-   if the constrainRectangular of the target is not empty then
-      set the uAllowConstrainDrag of the target to empty
-      set the uConstrainID of the target to empty
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
 
-      send "constrainRectangularExit" to the target
+   if tAnimationEngineArray is not an array then exit aeDragRelease
+
+   # constrainRectangular
+   if tAnimationEngineArray["constrainRectangular"] is a rectangle then
+      _setAnimationEngine tLongId, "AllowConstrainDrag", empty
+      _setAnimationEngine tLongId, "ConstrainID", empty
+      put false into tUpdate
+      dispatch "constrainRectangularExit" to tLongId
    end if
-   if the constrainLinear of the target is not empty then
-      set the uAllowConstrainDrag of the target to empty
-      set the uConstrainID of the target to empty
 
-      send "constrainLinearExit" to the target
+   # constrainLinear
+   if tAnimationEngineArray["constrainLinear"] is not empty then
+      if tUpdate then
+         _setAnimationEngine tLongId, "AllowConstrainDrag", empty
+         _setAnimationEngine tLongId, "ConstrainID", empty
+         put false into tUpdate
+      end if
+      dispatch "constrainLinearExit" to tLongId
    end if
-   if the constrainCircular of the target is not empty then
-      set the uAllowConstrainDrag of the target to empty
-      set the uConstrainID of the target to empty
 
-      send "constrainCircularExit" to the target
+   # constrainCircular
+   if tAnimationEngineArray["constrainCircular"] is not empty then
+      if tUpdate then
+         _setAnimationEngine tLongId, "AllowConstrainDrag", empty
+         _setAnimationEngine tLongId, "ConstrainID", empty
+         put false into tUpdate
+      end if
+      dispatch "constrainCircularExit" to tLongId
    end if
-   if the constrainElliptical of the target is not empty then
-      set the uAllowConstrainDrag of the target to empty
-      set the uConstrainID of the target to empty
 
-      send "constrainEllipticalExit" to the target
+   # constrainElliptical
+   if tAnimationEngineArray["constrainElliptical"] is not empty then
+      if tUpdate then
+         _setAnimationEngine tLongId, "AllowConstrainDrag", empty
+         _setAnimationEngine tLongId, "ConstrainID", empty
+         put false into tUpdate
+      end if
+      dispatch "constrainEllipticalExit" to tLongId
    end if
 end aeDragRelease
 
+
 on touchEnd
-   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
-   if the uAllowConstrainDrag of the target is not empty then send "aeDragRelease" to the target
+   if _getAnimationEngine(the long id of target,"AllowConstrainDrag") is not empty then dispatch "aeDragRelease"
 end touchEnd
 
 --> aeinfos
 
+function aeInfo
+   return animationEngineInfo()
+end aeInfo
+
+
 function animationEngineInfo
    local animationEngineInfo
-   try
-      --assemble info text
-      put "You are using animationEngine " & animationEngineVersion() & " " into animationEngineInfo
-      put "built " & animationEngineDate() & " by derbrill Multimedia" & cr after animationEngineInfo
-      put "type animationEngineInfo for details on usage" after animationEngineInfo
-      return animationEngineInfo
-   catch theError
-      return "error: " & theError
-   end try
+
+   --assemble info text
+   put "You are using animationEngine " & kVersionNumber & " " into animationEngineInfo
+   put "built " & animationEngineDate() & " by derbrill Multimedia" & cr after animationEngineInfo
+   put "type animationEngineInfo for details on usage" after animationEngineInfo
+
+   return animationEngineInfo
 end animationEngineInfo
+
 
 function animationEngineVersion
    --which version is animationEngine?
    return kVersionNumber
 end animationEngineVersion
+
 
 function animationEngineDate
    try
@@ -324,6 +421,8 @@ function animationEngineDate
       return "error: " & theError
    end try
 end animationEngineDate
+
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 --> aspect ratio
 
@@ -6243,6 +6342,6 @@ end _setAnimationEngine
 private function _getAnimationEngine pLongID, pProp
    if there is not a pLongID then return empty
    get the cAnimationEngine of pLongID
-   if pProp is not empty then return it[pProp]
+   if pProp is not empty then return it [pProp]
    return it
 end _getAnimationEngine
