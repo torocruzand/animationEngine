@@ -75,12 +75,12 @@ local sAELockRotateGroup, sAERotateGroup
 on aeWhatAmI
    put me & cr & "mode:" && the mode of  me  & cr & "style:" && the style of  me  & cr & "decorations:" && the decorations of  me  & cr & "path:" && the effective filename of  me
 end aeWhatAmI
- */
+*/
 
 --> constrain handlers
 
 on touchStart pID
-//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    try
       if the constrainRectangular of the target is not empty then
          set the uConstrainID of the target to pID
@@ -137,7 +137,7 @@ on mouseDown
 end mouseDown
 
 on touchMove pID, x, y
-//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    if the constrainRectangular of the target is not empty then
       if the uConstrainID of the target = pID and the uAllowConstrainDrag of the target is empty then
          set the uAllowConstrainDrag of the target to x - item 1 of loc of target, y - item 2 of loc of the target
@@ -150,7 +150,7 @@ on touchMove pID, x, y
 end touchMove
 
 on mouseMove x, y
-//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
 
    if the environment = "mobile" then pass mouseMove
    if the uAllowConstrainDrag of the target is not empty then
@@ -163,7 +163,7 @@ on aeConstrainHandler x, y, pID
    local allowDragOnLine, isAngle, radiusX, radiusY
    local theAngle, x1, x2, y1, TX, TY
    local y2
-//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    if the constrainRectangular of the target is not empty then
       if the uAllowConstrainDrag of the target is empty then exit aeConstrainHandler
       if pID = the uConstrainID of the target then
@@ -231,7 +231,7 @@ on aeConstrainHandler x, y, pID
 end aeConstrainHandler
 
 on mouseUp
-//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
 
    if the constrainRectangular of the target is not empty then
       set the uAllowConstrainDrag of the target to empty
@@ -258,12 +258,12 @@ on mouseRelease
 end mouseRelease
 
 on touchRelease
-//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    if the uAllowConstrainDrag of the target is not empty then send "aeDragRelease" to the target
 end touchRelease
 
 on aeDragRelease
-//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
 
    if the constrainRectangular of the target is not empty then
       set the uAllowConstrainDrag of the target to empty
@@ -292,7 +292,7 @@ on aeDragRelease
 end aeDragRelease
 
 on touchEnd
-//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    if the uAllowConstrainDrag of the target is not empty then send "aeDragRelease" to the target
 end touchEnd
 
@@ -319,7 +319,7 @@ end animationEngineVersion
 function animationEngineDate
    try
       --which creation date?
-      return the CreationDate of  me
+      return the CreationDate of me
    catch theerror
       return "error: " & theError
    end try
@@ -1651,7 +1651,7 @@ on animationEngineHelp topic
    try
       switch topic
          default
-            put "There is help for the following topics:" & cr & the helpTopics of  me
+            put "There is help for the following topics:" & cr & the helpTopics of me
       end switch
    catch theerror
       return "error: " & theError
@@ -3580,7 +3580,7 @@ end aeChangeAngleCircular
 
 on aeMoveTo
    local tControl, tX, tY, tDuration, tMethod, theValue
-   
+
    if sAEFrameRate is empty then aeResetFrameRate
    repeat with i = 1 to paramcount()
       if i < paramcount() then
@@ -3589,13 +3589,13 @@ on aeMoveTo
          put param(i) after theValue
       end if
    end repeat
-   
+
    put item 1 of theValue into tControl
    put item 2 of theValue into tX
    put item 3 of theValue into tY
    put item 4 of theValue into tDuration
    put item 5 of theValue into tMethod
-   
+
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if word 1 of the long name of tControl is "card" then return "error: can not move a card"
    if tX is not an integer then return "error:" && tX & "," & tY && "is not a valid point"
@@ -5029,7 +5029,7 @@ on aeChangeBackColor
    put item 1 of theValue into tControl
    if item 2 of theValue is a color and item 2 of theValue is not a number then
       -- we got no RGB values here
-      set the backcolor of grc "testColor" of  me  to item 2 of theValue
+      set the backcolor of grc "testColor" of me to item 2 of theValue
 
       set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
 
@@ -6223,3 +6223,26 @@ function ae3dConvertListToScreen pointList, pOriginX, pOriginY, pFocalLength
    end try
 end ae3dConvertListToScreen
 
+
+# This command is to create and update the value of the properties of the objects
+# in the custom property set used by this library.
+# The parameters are:
+# - pLongID: The long id of the control
+# - pProp: The name of the property
+# - pValue: The value of the property
+private command _setAnimationEngine pLongID, pProp, pValue
+   if there is not a pLongID or pProp is empty then exit _setAnimationEngine
+   set the cAnimationEngine[pProp] of pLongID to pValue
+end _setAnimationEngine
+
+# This function is to get the value of a property from the library's custom property set.
+#If the property name is not specified, the full array is returned.
+# The parameters are:
+# - pLongID: The long id of the control
+# - pProp: The name of the property
+private function _getAnimationEngine pLongID, pProp
+   if there is not a pLongID then return empty
+   get the cAnimationEngine of pLongID
+   if pProp is not empty then return it[pProp]
+   return it
+end _getAnimationEngine
