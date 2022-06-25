@@ -43,7 +43,7 @@ Type: library
 
 Title: animationEngine 7
 
-Author: derbrill IT - Service
+Author: derbrill IT-Service
 
 Version: 7.0.0
 
@@ -62,20 +62,25 @@ Tags:
 animations
 */
 
+constant kVersionNumber = "7.0.1"
+
 local sAELockMorph, sAEMorphing
 local sAELockMorphGradientRamp, sAEMorphGradientRamp
 local sAELockRotateGroup, sAERotateGroup
+
 --> global stuff
 
 //TODO : Where this is used
-/* 
+/*
 on aeWhatAmI
    put me & cr & "mode:" && the mode of  me  & cr & "style:" && the style of  me  & cr & "decorations:" && the decorations of  me  & cr & "path:" && the effective filename of  me
 end aeWhatAmI
  */
+
 --> constrain handlers
 
 on touchStart pID
+//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    try
       if the constrainRectangular of the target is not empty then
          set the uConstrainID of the target to pID
@@ -107,6 +112,7 @@ end touchStart
 
 on mouseDown
    if the environment = "mobile" then pass mouseDown
+   //TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    try
       if the constrainRectangular of the target is not empty then
          set the uAllowConstrainDrag of the target to the mouseh - item 1 of loc of target, the mousev - item 2 of loc of the target
@@ -131,6 +137,7 @@ on mouseDown
 end mouseDown
 
 on touchMove pID, x, y
+//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    if the constrainRectangular of the target is not empty then
       if the uConstrainID of the target = pID and the uAllowConstrainDrag of the target is empty then
          set the uAllowConstrainDrag of the target to x - item 1 of loc of target, y - item 2 of loc of the target
@@ -143,6 +150,8 @@ on touchMove pID, x, y
 end touchMove
 
 on mouseMove x, y
+//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+
    if the environment = "mobile" then pass mouseMove
    if the uAllowConstrainDrag of the target is not empty then
       send "aeConstrainHandler" && x & "," & y to the target
@@ -154,6 +163,7 @@ on aeConstrainHandler x, y, pID
    local allowDragOnLine, isAngle, radiusX, radiusY
    local theAngle, x1, x2, y1, TX, TY
    local y2
+//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    if the constrainRectangular of the target is not empty then
       if the uAllowConstrainDrag of the target is empty then exit aeConstrainHandler
       if pID = the uConstrainID of the target then
@@ -221,6 +231,8 @@ on aeConstrainHandler x, y, pID
 end aeConstrainHandler
 
 on mouseUp
+//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+
    if the constrainRectangular of the target is not empty then
       set the uAllowConstrainDrag of the target to empty
       send "constrainRectangularExit" to the target
@@ -246,10 +258,13 @@ on mouseRelease
 end mouseRelease
 
 on touchRelease
+//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    if the uAllowConstrainDrag of the target is not empty then send "aeDragRelease" to the target
 end touchRelease
 
 on aeDragRelease
+//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
+
    if the constrainRectangular of the target is not empty then
       set the uAllowConstrainDrag of the target to empty
       set the uConstrainID of the target to empty
@@ -277,6 +292,7 @@ on aeDragRelease
 end aeDragRelease
 
 on touchEnd
+//TODO: Put here what to get the animationEngine property set. To work with a variable instead of asking for the properties.
    if the uAllowConstrainDrag of the target is not empty then send "aeDragRelease" to the target
 end touchEnd
 
@@ -296,12 +312,8 @@ function animationEngineInfo
 end animationEngineInfo
 
 function animationEngineVersion
-   try
-      --which version is animationEngine?
-      return the versionnumber of  me
-   catch theError
-      return "error: " & theError
-   end try
+   --which version is animationEngine?
+   return kVersionNumber
 end animationEngineVersion
 
 function animationEngineDate
@@ -1646,19 +1658,6 @@ on animationEngineHelp topic
    end try
 end animationEngineHelp
 
-on animationEngineInfo
-   -- obsolete
-   try
-      set the loc of  me  to the screenloc
-      put "animationEngine v. " & the versionnumber of  me  into fld "version" of  me 
-      toplevel me
-      go cd 1 of  me
-      show me
-      set the decorations of  me  to default
-   catch theerror
-      return "error: " & theError
-   end try
-end animationEngineInfo
 
 on moveCircular
    local cX, cY, isAngle, isRadius
