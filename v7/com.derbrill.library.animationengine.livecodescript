@@ -547,54 +547,37 @@ function circleLineSegmentCollide pX1, pY1, pX2, pY2, pX3, pY3, pRadius
    return distance(pX1, pY1, pX3, pY3) > pRadius and distance(pX2, pY2, pX3, pY3) > pRadius
 end circleLineSegmentCollide
 
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 --> closest points
 
-function closestpointOnLine
-   local closestPointX, closestPointY, i, theValue
-   local u, x1, x2, x3
-   local y1, y2, y3
-   try
-      --assemble one string from parameters
-      repeat with i = 1 to paramcount()
-         if i < paramcount() then
-            put param(i) & "," after theValue
-          else
-            put param(i) after theValue
-         end if
-      end repeat
-      --check syntax
-      if the number of items of theValue <> 6 then
-         return "Error: Syntax is closestpointOnLine(x1,y1,x2,y2,x3,y3)"
-         exit closestPointOnLine
-      end if
-      --check syntax
-      repeat with i = 1 to the number of items of theValue
-         if item i of theValue is not a number then
-            return "Error: All Parameters must be numbers!"
-            exit closestpointOnLine
-            exit repeat
-         end if
-      end repeat
+function closestpointOnLine pX1, pY1, pX2, pY2, pX3, pY3
+   local tClosestPointX,tClosestPointY, tTemp, tU, tParameters
 
-      put item 1 of theValue into x1
-      put item 2 of thevalue into y1
-      put item 3 of theValue into x2
-      put item 4 of thevalue into y2
-      put item 5 of theValue into x3
-      put item 6 of thevalue into y3
-      if ((x2 - x1) ^ 2 + (y2 - y1) ^ 2) <> 0 then
-         put ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)) / ((x2 - x1) ^ 2 + (y2 - y1) ^ 2) into u
-         put x1 + u * (x2 - x1) into closestPointX
-         put y1 + u * (y2 - y1) into closestPointY
-         return closestPointX, closestPointY
-       else
-         return x1, y1
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
+   --assemble one string from parameters
+   put pX1, pY1, pX2, pY2, pX3, pY3 into tParameters
+   if item 1 to 4 of tParameters is not a rectangle or item 5 to 6 of tParameters is not a point then
+      return "Error: Syntax is closestpointOnLine(x1, y1, x2, y2, x3, y3)"
+   end if
+
+   put item 1 of tParameters into pX1
+   put item 2 of tParameters into pY1
+   put item 3 of tParameters into pX2
+   put item 4 of tParameters into pY2
+   put item 5 of tParameters into pX3
+   put item 6 of tParameters into pY3
+
+   put ((pX2 - pX1) ^ 2 + (pY2 - pY1) ^ 2) into tTemp
+
+   if tTemp <> 0 then
+      put ((pX3 - pX1) * (pX2 - pX1) + (pY3 - pY1) * (pY2 - pY1)) / tTemp into tU
+      put pX1 + tU * (pX2 - pX1) into tClosestPointX
+      put pY1 + tU * (pY2 - pY1) into tClosestPointY
+
+      return tClosestPointX, tClosestPointY
+   end if
+
+   return pX1, pY1
 end closestPointOnLine
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 --> basic geometry
 
