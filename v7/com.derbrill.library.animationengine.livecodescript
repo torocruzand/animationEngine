@@ -69,30 +69,6 @@ local sAELockMorph, sAEMorphing
 local sAELockMorphGradientRamp, sAEMorphGradientRamp
 local sAELockRotateGroup, sAERotateGroup
 
---> global stuff
-
-//TODO : Where this is used
-/**
-summary
-
-Example:
-example
-
-Description:
-description
-
-Parameters:
-parameters
-
-Returns:
-returns
-
-Tags: tags
-**/
-on aeWhatAmI
-   put me & cr & "mode:" && the mode of me & cr & "style:" && the style of me & cr & "decorations:" && the decorations of me & cr & "path:" && the effective filename of me
-end aeWhatAmI
-
 --> constrain handlers
 
 on touchStart pID
@@ -411,7 +387,23 @@ on touchEnd
 end touchEnd
 
 --> aeinfos
+/**
+summary
 
+Example:
+example
+
+Description:
+description
+
+Parameters:
+parameters
+
+Returns:
+returns
+
+Tags: tags
+**/
 function aeInfo
    return animationEngineInfo()
 end aeInfo
@@ -423,7 +415,7 @@ function animationEngineInfo
 end animationEngineInfo
 
 function aeVersion
-   return animationEngineInfo()
+   return kVersionNumber
 end aeVersion
 
 
@@ -515,7 +507,6 @@ function circleCollide pX1, pY1, pX2, pY2, pThreshold
 
    --assemble one string from parameters
    put pX1, pY1, pX2, pY2, pThreshold into tParameters
-   put item 1 to 5 of tParameters into tParameters
 
    --check syntax
    if item 1 to 4 of tParameters is not a rectangle or item 5 of tParameters is not a number
@@ -845,25 +836,25 @@ function maskComparePoints pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRig
    return s1, e1, t1, b1, s2, e2, t2, b2
 end maskComparePoints
 
-//TODO: DELETE THIS FUNCION?
+
 function midLeft pLongId
    if there is not a pLongId then return empty
    return the left of pLongId, item 2 of the loc of pLongId
 end midleft
 
-//TODO: DELETE THIS FUNCION?
+
 function midRight pLongId
    if there is not a pLongId then return empty
    return the right of pLongId, item 2 of the loc of pLongId
 end midRight
 
-//TODO: DELETE THIS FUNCION?
+
 function midTop pLongId
    if there is not a pLongId then return empty
    return item 1 of the loc of pLongId, the top of pLongId
 end midTop
 
-//TODO: DELETE THIS FUNCION?
+
 function midBottom pLongId
    if there is not a pLongId then return empty
    return item 1 of the loc of pLongId, the bottom of pLongId
@@ -1322,23 +1313,14 @@ private function superformula m, n1, n2, n3, phi, a, b
 end superformula
 
 
-command moveCircular pLongId, pCenterX, pCenterY, pAngle, pRadius, pStep, pReversePath
+command moveCircular
    local tLoc, tLongId, tAnimationEngineArray, tMoveCircularArray
 
-   if there is a pLongId then put pLongId into tLongId
-   else put the long id of target into tLongId
-
+   put the long id of target into tLongId
    put _getAnimationEngine(tLongId) into tAnimationEngineArray
    put tAnimationEngineArray["moveCircular"] into tMoveCircularArray
    put the loc of tLongId into tLoc
 
-   if pCenterX is a number then put pCenterX into tMoveCircularArray["centerX"]
-   if pCenterY is a number then put pCenterY into tMoveCircularArray["centerY"]
-   if pAngle is a number then put pAngle into tMoveCircularArray["angle"]
-   if pRadius is a number then put pRadius into tMoveCircularArray["radius"]
-   if pStep is a number then put pStep into tMoveCircularArray["step"]
-   if pCenterX is a number then put pCenterX into tMoveCircularArray["centerX"]
-   if pReversePath is true then put tMoveCircularArray["step"] * - 1 into tMoveCircularArray["step"]
    --The handler creates a customPropertySet "moveCircular" for the target
    --It sets the following custom properties of the target in that customPropertySet
    --centerX is the X coordinate of the circle

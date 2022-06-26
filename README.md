@@ -4,17 +4,21 @@ animationEngine is an animation library for liveCode
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=T8FSXQUVTB92N)
 
 <p align="center">
-  <img src="./v7/images/animationEngine7.svg" alt="FerrusLogic logo" style="max-width: 100%;">
+  <img src="./assets/images/animationEngine7.svg" alt="animationEngine7 logo" style="max-width: 100%;">
 </p>
 
 ## What's new in version 7?
 
-- This version is compatible with versions 8 or higher of LiveCode. If this is a problem for you, use the older versions.
+- This version is compatible with versions 8 or higher of LiveCode.
 - The library can now be installed as an extension to the LiveCode IDE. So now we will have the documentation in the dictionary and the other advantages that this represents.
 - The validation process of the parameters of the functions and commands has been optimized.
 - Implemented a new way to get and save custom properties that use the library.
-- (*new function*) rectanglesIntersect: function that tells us if two rectangles intersect or not.
 
+### List of handles added or changed in this version of the library.
+- ***rectanglesIntersect***(new): function that tells us if two rectangles intersect or not.
+- ***aeInfo***(new): As a synonym for the animationEngineInfo() function that already existed in previous versions.
+- ***animationEngineVersion***(update): Now this function just returns the version number of the library, without any other information.
+- ***aeVersion***(new): An abbreviation or synonym for the above function.
 
 ## What is new in version 6?
 
