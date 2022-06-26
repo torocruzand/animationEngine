@@ -1,4 +1,4 @@
-[] - Define what type of license the library has(Ask derbrill IT - Service) .
+[x] - Define what type of license the library has(Ask derbrill IT - Service) .
 [] - Make the library integrate with LiveCode as an extension.(A code - only stack, only compatible with LiveCode version 8 or later.)
 [] - Create a set of custom properties for all the properties handled by the library.
 [] - See if there is any way to create a cache of these properties and everything that is possible.
