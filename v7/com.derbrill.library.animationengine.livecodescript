@@ -387,23 +387,6 @@ on touchEnd
 end touchEnd
 
 --> aeinfos
-/**
-summary
-
-Example:
-example
-
-Description:
-description
-
-Parameters:
-parameters
-
-Returns:
-returns
-
-Tags: tags
-**/
 function aeInfo
    return animationEngineInfo()
 end aeInfo
@@ -431,17 +414,34 @@ function animationEngineDate
 end animationEngineDate
 
 --> aspect ratio
+/**
+This function returns the width-to-height ratio of the specified width and height.
 
-function aspectRatio isWidth, isHeight
-   --return the width-to-height ratio
-   if isWidth is a number and isHeight is a number and isHeight <> 0 then return isWidth / isHeight
+Syntax: aspectRatio(pWidth, pHeight)
+
+Example:
+get aspectRatio(the width of grc 1, the height of grc 1)
+
+Description:
+This function returns the width-to-height ratio of the specified width and height.
+
+Parameters:
+pWidth: A positive integer.
+
+pHeight: A positive integer.
+
+Returns:
+the aspect ratio.
+
+**/
+function aspectRatio pWidth, pHeight
+   if pWidth is a number and pHeight is a number and pHeight <> 0 then return pWidth / pHeight
    return "Error: Both parameters must be numbers!"
 end aspectRatio
 
-
-function aspectResize pLongId, pLeft, pTop, pRight, pBottom
-   local tLeft, tTop, tRight, tBottom, tRectRatio
-   local tParameters, tRectangle
+-- Reserved for internal use
+private function aspectResize pLongId, pLeft, pTop, pRight, pBottom
+   local tLeft, tTop, tRight, tBottom, tRectRatio, tParameters, tRectangle
    local tAnimationEngineArray, tAspectResizeArray
 
    --assemble one string from parameters
@@ -501,7 +501,30 @@ function aspectResize pLongId, pLeft, pTop, pRight, pBottom
 end aspectResize
 
 --> collision detection
+/**
+This function returns true if there is a circular collision of the 2 objects. Else it returns false.
 
+Syntax: circleCollide(x1, y1, x2, y2, threshold)
+Syntax: circleCollide(point1, point2, threshold)
+
+Example:
+get circleCollide(100,150,200,140,80)
+get circleCollide(the loc of grc "test",the loc of img "myImage",80)
+
+Description:
+This function returns true if there is a circular collision of the 2 objects. Else it returns false. Threshold is the sum of both circles
+radii.
+
+Parameters:
+point1: the loc 1 of control 1
+
+point2: the loc 2 of control 2
+
+threshold: the sum of both circles radii.
+
+Returns:
+true or false
+**/
 function circleCollide pX1, pY1, pX2, pY2, pThreshold
    local tParameters
 
@@ -521,7 +544,32 @@ function circleCollide pX1, pY1, pX2, pY2, pThreshold
    return distance(pX1, pY1, pX2, pY2) < pThreshold
 end circleCollide
 
+/**
+get circle line segment collision
 
+Syntax: circleLineSegmentCollide(x1,y1,x2,y2,x3,y3,radius)
+Syntax: circleLineSegmentCollide(point1, point2, point3, radius)
+
+Example:
+get circleLineSegmentCollide(100,200,200,250,80,80,40)
+get circleLineSegmentCollide(line 1 of the points of grc "line",line 2 of the points of grc "line",the loc of img "circle",40)
+
+Description:
+This function returns true if there is a collision between a line segment (specified by startpoint x1,y1 and the endpoint x2,y2 and
+a circle (specified by the circles centerpoint x3,y3 and it´s radius). Else it returns false.
+
+Parameters:
+Point1: First point
+
+Point2: Second point
+
+Point3: Third point
+
+Radio: The radio
+
+Returns:
+true or false
+**/
 function circleLineSegmentCollide pX1, pY1, pX2, pY2, pX3, pY3, pRadius
    local tIntersectionPointX, tIntersectionPointY, tTemp, tU, tParameters
 
@@ -556,7 +604,23 @@ function circleLineSegmentCollide pX1, pY1, pX2, pY2, pX3, pY3, pRadius
 end circleLineSegmentCollide
 
 --> closest points
+/**
+summary
 
+Example:
+example
+
+Description:
+description
+
+Parameters:
+parameters
+
+Returns:
+returns
+
+Tags: tags
+**/
 function closestPointOnLine pX1, pY1, pX2, pY2, pX3, pY3
    local tClosestPointX, tClosestPointY, tTemp, tU, tParameters
 

@@ -15,6 +15,7 @@ animationEngine is an animation library for liveCode
 - Implemented a new way to get and save custom properties that use the library.
 
 ### List of handles added or changed in this version of the library.
+
 - ***rectanglesIntersect***(new): function that tells us if two rectangles intersect or not.
 - ***aeInfo***(new): As a synonym for the animationEngineInfo() function that already existed in previous versions.
 - ***animationEngineVersion***(update): Now this function just returns the version number of the library, without any other information.
