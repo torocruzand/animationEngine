@@ -70,7 +70,23 @@ local sAELockMorphGradientRamp, sAEMorphGradientRamp
 local sAELockRotateGroup, sAERotateGroup
 
 --> constrain handlers
+/**
+summary TODO: PON UN MENSAGES DE LOS QUE GENERA LA LIBRERIA AK POR QUE SI NO SE RECONOCE COMO EXTENCION
 
+Example:
+example
+
+Description:
+description
+
+Parameters:
+parameters
+
+Returns:
+returns
+
+Tags: tags
+**/
 on touchStart pID
    if the environment <> "mobile" then pass touchStart
 
@@ -185,7 +201,7 @@ on mouseMove pX, pY
    pass mouseMove
 end mouseMove
 
-
+//TODO: Doc?
 on aeConstrainHandler pX, pY, pID
    local tAllowDragOnLine, tIsAngle, tRadiusX, tRadiusY, tTheAngle, tX1, tX2, tY1, tY2, tTX, tTY
    local tLongId, tAnimationEngineArray, tWidth = 0, tHeight = 0
@@ -329,7 +345,7 @@ on touchRelease
    if _getAnimationEngine(the long id of target, "AllowConstrainDrag") is not empty then dispatch "aeDragRelease"
 end touchRelease
 
-
+//TODO: Doc?
 on aeDragRelease
    local tLongId, tAnimationEngineArray, tUpdate = true
 
@@ -435,7 +451,7 @@ the aspect ratio.
 
 **/
 function aspectRatio pWidth, pHeight
-   if pWidth is a number and pHeight is a number and pHeight <> 0 then return pWidth / pHeight
+   if pWidth is an integer and pHeight is an integer and pHeight <> 0 then return pWidth / pHeight
    return "Error: Both parameters must be numbers!"
 end aspectRatio
 
@@ -449,7 +465,6 @@ private function aspectResize pLongId, pLeft, pTop, pRight, pBottom
 
    --check syntax
    switch
-
       case there is a first item of tParameters and item 2 to 5 of tParameters is a rectangle
          put the long id of (first item of tParameters) into pLongId
          put item 2 to 5 of tParameters into tRectangle
@@ -461,7 +476,7 @@ private function aspectResize pLongId, pLeft, pTop, pRight, pBottom
          break
 
       default
-         return "Error: Syntax is aspectResize(the rectangle ) or aspectResize(the long id of contol, the rectangle)."
+         return "Error: Syntax is aspectResize(the rectangle) or aspectResize(the long id of contol, the rectangle)."
    end switch
 
    --split rectangle into 4 single values
@@ -474,7 +489,7 @@ private function aspectResize pLongId, pLeft, pTop, pRight, pBottom
    put _getAnimationEngine(pLongId) into tAnimationEngineArray
    put tAnimationEngineArray["aspectResize"] into tAspectResizeArray
 
-   --if it isn´t already set
+   --if it isn't already set
    --set the custom property holding the width-to-height ratio
    --to avoid rounding errors later
    if tAspectResizeArray["ratio"] is empty then
@@ -509,6 +524,8 @@ Syntax: circleCollide(point1, point2, threshold)
 
 Example:
 get circleCollide(100,150,200,140,80)
+
+Example:
 get circleCollide(the loc of grc "test",the loc of img "myImage",80)
 
 Description:
@@ -530,16 +547,16 @@ function circleCollide pX1, pY1, pX2, pY2, pThreshold
 
    --assemble one string from parameters
    put pX1, pY1, pX2, pY2, pThreshold into tParameters
-
-   --check syntax
-   if item 1 to 4 of tParameters is not a rectangle or item 5 of tParameters is not a number
-   then return "Error: Syntax is circleCollide(x1,y1,x2,y2,threshold) or circleCollide(point1, point2, threshold)."
-
    put item 1 of tParameters into pX1
    put item 2 of tParameters into pY1
    put item 3 of tParameters into pX2
    put item 4 of tParameters into pY2
    put item 5 of tParameters into pThreshold
+
+   --check syntax
+   if pX1, pY1, pX2, pY2 is not a rectangle or pThreshold is not a number
+   then return "Error: Syntax is circleCollide(x1,y1,x2,y2,threshold) or circleCollide(point1, point2, threshold)."
+
 
    return distance(pX1, pY1, pX2, pY2) < pThreshold
 end circleCollide
@@ -552,11 +569,13 @@ Syntax: circleLineSegmentCollide(point1, point2, point3, radius)
 
 Example:
 get circleLineSegmentCollide(100,200,200,250,80,80,40)
+
+Example:
 get circleLineSegmentCollide(line 1 of the points of grc "line",line 2 of the points of grc "line",the loc of img "circle",40)
 
 Description:
 This function returns true if there is a collision between a line segment (specified by startpoint x1,y1 and the endpoint x2,y2 and
-a circle (specified by the circles centerpoint x3,y3 and it´s radius). Else it returns false.
+a circle (specified by the circles centerpoint x3,y3 and it's radius). Else it returns false.
 
 Parameters:
 Point1: First point
@@ -575,12 +594,6 @@ function circleLineSegmentCollide pX1, pY1, pX2, pY2, pX3, pY3, pRadius
 
    --assemble one string from parameters
    put pX1, pY1, pX2, pY2, pX3, pY3, pRadius into tParameters
-
-   --check syntax
-   if item 1 to 4 of tParameters is not a rectangle or item 5 to 6 of tParameters is not a point or item 7 of tParameters is not a number then
-      return "Error: Syntax is circleLineSegmentCollide(x1,y1,x2,y2,x3,y3,radius) or circleLineSegmentCollide(point1, point2, point3, radius)."
-   end if
-
    put item 1 of tParameters into pX1
    put item 2 of tParameters into pY1
    put item 3 of tParameters into pX2
@@ -588,6 +601,13 @@ function circleLineSegmentCollide pX1, pY1, pX2, pY2, pX3, pY3, pRadius
    put item 5 of tParameters into pX3
    put item 6 of tParameters into pY3
    put item 7 of tParameters into pRadius
+
+   --check syntax
+   if pX1, pY1, pX2, pY2 is not a rectangle or pX3, pY3 is not a point or pRadius is not a number then
+      return "Error: Syntax is circleLineSegmentCollide(x1,y1,x2,y2,x3,y3,radius) or circleLineSegmentCollide(point1, point2, point3, radius)."
+   end if
+
+
 
    put (pX2 - pX1) ^ 2 + (pY2 - pY1) ^ 2 into tTemp
    if tTemp = 0 then return "Error description : numeric : divide by zero."
@@ -605,13 +625,20 @@ end circleLineSegmentCollide
 
 --> closest points
 /**
-summary
+This function returns the closest point to x3, y3 that lays on the line specified by the points x1, y1 and x2, y2.
+
+Syntax: getSlope(x1, y1, x2, y2, x3, y3)
+Syntax: getSlope(point1, point2, point3)
 
 Example:
-example
+get closestPointOnLine(10, 10, 200, 40, 20, 20)
+
+Example:
+get closestPointOnLine(line 1 of the points of grc "line", line 2 of the points of grc "line", the loc of button "myButton")
 
 Description:
-description
+This function returns the closest point to x3, y3 that lays on the line specified by the points x1, y1 and x2, y2. As a line is endless,
+this point doesn't necessarily lie on the linesegment specified by x1, y1 / x2, y2, but might lie on the extension of that line.
 
 Parameters:
 parameters
@@ -619,23 +646,22 @@ parameters
 Returns:
 returns
 
-Tags: tags
 **/
 function closestPointOnLine pX1, pY1, pX2, pY2, pX3, pY3
    local tClosestPointX, tClosestPointY, tTemp, tU, tParameters
 
    --assemble one string from parameters
    put pX1, pY1, pX2, pY2, pX3, pY3 into tParameters
-   if item 1 to 4 of tParameters is not a rectangle or item 5 to 6 of tParameters is not a point then
-      return "Error: Syntax is closestPointOnLine(x1, y1, x2, y2, x3, y3) or closestPointOnLine(point1, point2, point3)."
-   end if
-
    put item 1 of tParameters into pX1
    put item 2 of tParameters into pY1
    put item 3 of tParameters into pX2
    put item 4 of tParameters into pY2
    put item 5 of tParameters into pX3
    put item 6 of tParameters into pY3
+
+   if (pX1, pY1, pX2, pY2) is not a rectangle or (pX3, pY3) is not a point then
+      return "Error: Syntax is closestPointOnLine(x1, y1, x2, y2, x3, y3) or closestPointOnLine(point1, point2, point3)."
+   end if
 
    put ((pX2 - pX1) ^ 2 + (pY2 - pY1) ^ 2) into tTemp
 
@@ -657,14 +683,16 @@ function getSlope pX1, pY1, pX2, pY2
 
    --assemble one string from parameters
    put pX1, pY1, pX2, pY2 into tParameters
-   if item 1 to 4 of tParameters is not a rectangle then
-      return "Error: Syntax is getSlope(x1, y1, x2, y2) or getSlope(point1, point2)."
-   end if
-
    put item 1 of tParameters into pX1
    put item 2 of tParameters into pY1
    put item 3 of tParameters into pX2
    put item 4 of tParameters into pY2
+
+   if pX1, pY1, pX2, pY2 is not a rectangle then
+      return "Error: Syntax is getSlope(x1, y1, x2, y2) or getSlope(point1, point2)."
+   end if
+
+
    put pX2 - pX1 into tTemp
 
    if tTemp <> 0 then
@@ -680,12 +708,12 @@ function distance pX1, pY1, pX2, pY2
 
    --assemble one string from parameters
    put pX1, pY1, pX2, pY2 into tParameters
-   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is distance(x1, y1, x2, y2) or distance(point1, point2)."
-
    put item 1 of tParameters into pX1
    put item 2 of tParameters into pY1
    put item 3 of tParameters into pX2
    put item 4 of tParameters into pY2
+
+   if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is distance(x1, y1, x2, y2) or distance(point1, point2)."
 
    return floor(sqrt((pX1 - pX2) ^ 2 + (pY1 - pY2) ^ 2))
 end distance
@@ -708,12 +736,13 @@ function findPreciseAngle pX1, pY1, pX2, pY2
 
    --assemble one string from parameters
    put pX1, pY1, pX2, pY2 into tParameters
-   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findPreciseAngle(x1, y1, x2, y2) or findPreciseAngle(point1, point2)."
-
    put item 1 of tParameters into pX1
    put item 2 of tParameters into pY1
    put item 3 of tParameters into pX2
    put item 4 of tParameters into pY2
+
+   if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is findPreciseAngle(x1, y1, x2, y2) or findPreciseAngle(point1, point2)."
+
    put abs(pY1 - pY2) into tAdjacentLeg
 
    if tAdjacentLeg <> 0 then
@@ -1098,7 +1127,7 @@ function pointInPoly pX, pY, pPointlist
    put item 2 of tParameters into pY
    put item 3 to - 1 of tParameters into pPointlist
 
-   if (pX, pY) is not a point and pPointlist is empty then return "Error in parameters." & cr & "Syntax: pointInPoly(x,y,pointlist) or pointInPoly(point,pointlist)."
+   if (pX, pY) is not a point or pPointlist is empty then return "Error in parameters." & cr & "Syntax: pointInPoly(x,y,pointlist) or pointInPoly(point,pointlist)."
    if the number of lines of pPointlist < 3 then return "error. Pointlist must contain at least 3 lines"
 
    put the number of lines of pPointlist into tLength
@@ -1376,8 +1405,9 @@ private function superformula m, n1, n2, n3, phi, a, b
    return round(x), round(y)
 end superformula
 
-
-command moveCircular
+//Message
+//FIXME: Convierte esto a un comando que use el mecaniso de aeMoveTo
+on moveCircular
    local tLoc, tLongId, tAnimationEngineArray, tMoveCircularArray
 
    put the long id of target into tLongId
@@ -1448,7 +1478,7 @@ end moveCircularReversePath
 on moveElliptical
    local cX, cY, isAngle, isRadiusX
    local isRadiusY
-   try
+
       --The handler creates a customPropertySet "moveElliptical" for the target
       --It sets the following custom properties of the target
       --cX is the X coordinate of the ellipse center
@@ -1461,59 +1491,49 @@ on moveElliptical
       --we need to initialize them first
 
       --default speed is 1
-
       if the moveElliptical["step"] of the target is empty then
          set the moveElliptical["step"] of the target to 1
       end if
 
       --default x-location is item 1 of the location of the target
-
       if the moveElliptical["centerX"] of the target is empty then
          set the moveElliptical["centerX"] of the target to item 1 of the loc of the target
       end if
 
       --default y-location is item 2 of the location of the target
-
       if the moveElliptical["centerY"] of the target is empty then
          set the moveElliptical["centerY"] of the target to item 2 of the loc of the target
       end if
 
       --default center angle is 360 degrees
-
       if the moveElliptical["isAngle"] of the target is empty then
          set the moveElliptical["isAngle"] of the target to 360
       end if
 
       --default radiusX is 80 pixel
-
       if the moveElliptical["radiusX"] of the target is empty then
          set the moveElliptical["radiusX"] of the target to 80
       end if
 
       --default radiusY is 50 pixel
-
       if the moveElliptical["radiusY"] of the target is empty then
          set the moveElliptical["radiusY"] of the target to 50
       end if
 
       --calculate the next angle
-
       set the moveElliptical["isAngle"] of the target to the moveElliptical["isAngle"] of the target + the moveElliptical["step"] of the target
       if the moveElliptical["isAngle"] of the target >= 360 then
          set the moveElliptical["isAngle"] of the target to 0
       end if
 
       --now calculate the new location.
-
       put the moveElliptical["centerX"] of the target into cX
       put the moveElliptical["centerY"] of the target into cY
       put the moveElliptical["isAngle"] of the target into isAngle
       put the moveElliptical["radiusX"] of the target into isRadiusX
       put the moveElliptical["radiusY"] of the target into isRadiusY
+
       set the loc of the target to pointOnEllipse((cx, cy, isAngle, isRadiusX, isRadiusY))
-   catch theerror
-      return "error: " & theError
-   end try
 end moveElliptical
 #xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
@@ -1651,7 +1671,7 @@ on movePolygonal
 end movePolygonal
 
 on movePolygonalMoveDone
-   return the name of the target && "completed it´s polygonal move"
+   return the name of the target && "completed it's polygonal move"
 end movepolygonalMoveDone
 
 on movePolygonalReversePath
@@ -2067,7 +2087,7 @@ end constrainElliptical
 
 setprop aspectScale tParameters
    try
-      get aspectResize(item 1 to 4 of tParameters)
+      get aspectResize(item 1 to 4 of tParameters) --> PASA EL LONG ID
       set the width of the target to item 1 of it
       set the height of the target to item 2 of it
       set the lockloc of the target to false
