@@ -574,7 +574,7 @@ Example:
 get circleLineSegmentCollide(line 1 of the points of grc "line",line 2 of the points of grc "line",the loc of img "circle",40)
 
 Description:
-This function returns true if there is a collision between a line segment (specified by startpoint x1,y1 and the endpoint x2,y2 and
+This function returns true if there is a collision between a line segment (specified by startPoint x1,y1 and the endPoint x2,y2 and
 a circle (specified by the circles centerpoint x3,y3 and it's radius). Else it returns false.
 
 Parameters:
@@ -1474,10 +1474,14 @@ setProp moveCircularReversePath
    exit moveCircularReversePath
 end moveCircularReversePath
 
-//TODO-----
+
 on moveElliptical
-   local cX, cY, isAngle, isRadiusX
-   local isRadiusY
+   local tLoc, tLongId, tAnimationEngineArray, tMoveEllipticalArray, tCenterX, tCenterY
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["moveElliptical"] into tMoveEllipticalArray
+   put the loc of tLongId into tLoc
 
    --The handler creates a customPropertySet "moveElliptical" for the target
    --It sets the following custom properties of the target
@@ -1491,117 +1495,117 @@ on moveElliptical
    --we need to initialize them first
 
    --default speed is 1
-   if the moveElliptical["step"] of the target is empty then
-      set the moveElliptical["step"] of the target to 1
+   if tMoveEllipticalArray["step"] is not an integer then
+      put 1 into tMoveEllipticalArray["step"]
    end if
 
    --default x-location is item 1 of the location of the target
-   if the moveElliptical["centerX"] of the target is empty then
-      set the moveElliptical["centerX"] of the target to item 1 of the loc of the target
+   if tMoveEllipticalArray["centerX"] is not a number then
+      put item 1 of tLoc into tMoveEllipticalArray["centerX"]
    end if
 
    --default y-location is item 2 of the location of the target
-   if the moveElliptical["centerY"] of the target is empty then
-      set the moveElliptical["centerY"] of the target to item 2 of the loc of the target
+   if tMoveEllipticalArray["centerY"] is not a number then
+      put item 2 of tLoc into tMoveEllipticalArray["centerY"]
    end if
 
    --default center angle is 360 degrees
-   if the moveElliptical["isAngle"] of the target is empty then
-      set the moveElliptical["isAngle"] of the target to 360
+   if tMoveEllipticalArray["angle"] is not a number then
+      put 360 into tMoveEllipticalArray["angle"]
    end if
 
    --default radiusX is 80 pixel
-   if the moveElliptical["radiusX"] of the target is empty then
-      set the moveElliptical["radiusX"] of the target to 80
+   if tMoveEllipticalArray["radiusX"] is not a number then
+      put 80 into tMoveEllipticalArray["radiusX"]
    end if
 
    --default radiusY is 50 pixel
-   if the moveElliptical["radiusY"] of the target is empty then
-      set the moveElliptical["radiusY"] of the target to 50
+   if tMoveEllipticalArray["radiusY"] is not a number then
+      put 50 into tMoveEllipticalArray["radiusY"]
    end if
 
    --calculate the next angle
-   set the moveElliptical["isAngle"] of the target to the moveElliptical["isAngle"] of the target + the moveElliptical["step"] of the target
-   if the moveElliptical["isAngle"] of the target >= 360 then
-      set the moveElliptical["isAngle"] of the target to 0
+   put tMoveEllipticalArray["angle"] + tMoveEllipticalArray["step"] into tMoveEllipticalArray["angle"]
+   if tMoveEllipticalArray["angle"] >= 360 then
+      put 0 into tMoveEllipticalArray["angle"]
    end if
 
    --now calculate the new location.
-   put the moveElliptical["centerX"] of the target into cX
-   put the moveElliptical["centerY"] of the target into cY
-   put the moveElliptical["isAngle"] of the target into isAngle
-   put the moveElliptical["radiusX"] of the target into isRadiusX
-   put the moveElliptical["radiusY"] of the target into isRadiusY
+   _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
 
-   set the loc of the target to pointOnEllipse((cx, cy, isAngle, isRadiusX, isRadiusY))
+
+   set the loc of the target to pointOnEllipse((tMoveEllipticalArray["radiusX"], tMoveEllipticalArray["radiusY"], tMoveEllipticalArray["angle"], tMoveEllipticalArray["radiusX"], tMoveEllipticalArray["radiusY"]))
 end moveElliptical
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
+
 
 on moveEllipticalReversePath
-   local newStep
-   try
-      put the moveElliptical["step"] of the target into newStep
-      put newStep * - 1 into newStep
-      set the moveElliptical["step"] of the target to newStep
-   catch theerror
-      return "error: " & theError
-   end try
+   local tLongId, tAnimationEngineArray, tMoveEllipticalArray
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["moveElliptical"] into tMoveEllipticalArray
+
+   if tMoveEllipticalArray["step"] is a number then
+      put tMoveEllipticalArray["step"] * - 1 into tMoveEllipticalArray["step"]
+      _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
+   end if
 end moveEllipticalReversePath
 
 
 on moveLinear
-   try
-      if the moveLinear["startPoint"] of the target is empty then
-         set the moveLinear["startpoint"] of the target to 0, 0
+   local tLongId, tAnimationEngineArray, tMoveLinearlArray
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["moveLinear"] into tMoveLinearlArray
+
+   if tMoveLinearlArray["startPoint"] is not a point then put 0, 0 into tMoveLinearlArray["startPoint"]
+   if tMoveLinearlArray["endPoint"] is not a point then put 100, 100 into tMoveLinearlArray["endPoint"]
+   if tMoveLinearlArray["distance"] is not a number then put 0 into tMoveLinearlArray["distance"]
+   if tMoveLinearlArray["step"] is not a number then put 1 into tMoveLinearlArray["step"]
+   if tMoveLinearlArray["step"] < 0 then put tMoveLinearlArray["step"] * - 1 into tMoveLinearlArray["step"]
+
+   put tMoveLinearlArray["distance"] + tMoveLinearlArray["step"] into tMoveLinearlArray["distance"]
+
+   if tMoveLinearlArray["distance"] < distance(tMoveLinearlArray["startPoint"], tMoveLinearlArray["endPoint"]) then
+      set the loc of tLongId to (pointOnLine(tMoveLinearlArray["startPoint"], tMoveLinearlArray["endPoint"], tMoveLinearlArray["distance"]))
+
+    else
+      set the loc of tLongId to (pointOnLine(tMoveLinearlArray["startPoint"], tMoveLinearlArray["endPoint"], distance(tMoveLinearlArray["startPoint"], tMoveLinearlArray["endPoint"])))
+
+      put 0 into tMoveLinearlArray["distance"]
+      put true into tMoveLinearlArray["moveDone"]
+
+      dispatch "moveLinearMoveDone" to tLongId
+
+      if tMoveLinearlArray["pingPong"] is true then
+         moveLinearReversePath
+         put false into tMoveLinearlArray["moveDone"]
       end if
-      if the moveLinear["endpoint"] of the target is empty then
-         set the moveLinear["endpoint"] of the target to 100, 100
-      end if
-      if the movelinear["isDistance"] of the target is empty then
-         set the movelinear["isDistance"] of the target to 0
-      end if
-      if the movelinear["step"] of the target is empty then
-         set the movelinear["step"] of the target to 1
-      end if
-      if the moveLinear["step"] of the target < 0 then
-         set the movelinear["step"] of the target to the movelinear["step"] of the target * - 1
-      end if
-      set the moveLinear["isDistance"] of the target to the moveLinear["isDistance"] of the target + the moveLinear["step"] of the target
-      if the moveLinear["isDistance"] of the target < distance(the moveLinear["startpoint"] of the target, the moveLinear["endpoint"] of the target) then
-         set the loc of the target to (pointOnLine(the movelinear["startPoint"] of the target, the movelinear["endpoint"] of the target, the moveLinear["isDistance"] of the target))
-       else
-         set the loc of the target to (pointOnLine(the movelinear["startPoint"] of the target, the movelinear["endpoint"] of the target, distance(the moveLinear["startpoint"] of the target, the moveLinear["endpoint"] of the target)))
-         set the moveLinear["isDistance"] of the target to 0
-         set the movelinear["moveDone"] of the target to true
-         send "moveLinearMoveDone" to the target
-         if the movelinear["pingpong"] of the target is true then
-            moveLinearReversePath
-            set the moveLinear["moveDone"] of the target to false
-         end if
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
+   end if
+
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
 end moveLinear
 
-on moveLinearMoveDone
-   return the name of the target && "completed it's linear move"
-end moveLinearMoveDone
 
 on moveLinearReversePath
-   local swapStartPointAndEndPoint
-   try
-      put the movelinear["endpoint"] of the target into swapStartPointAndEndPoint
-      set the moveLinear["endpoint"] of the target to the moveLinear["startpoint"] of the target
-      set the moveLinear["startpoint"] of the target to swapStartPointAndEndPoint
-   catch theerror
-      return "error: " & theError
-   end try
+   local tLongId, tAnimationEngineArray, tMoveLinearlArray, tSwapStartPointAndEndPoint
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["movelinear"] into tMoveLinearlArray
+
+   put tMoveLinearlArray["endPoint"] into tSwapStartPointAndEndPoint
+   put tMoveLinearlArray["startPoint"] into tMoveLinearlArray["endPoint"]
+   put tSwapStartPointAndEndPoint into tMoveLinearlArray["startPoint"]
+
+   _setAnimationEngine tLongId, "movelinear", tMoveLinearlArray
 end moveLinearReversePath
+
 
 on movePolygonal
    local newCurr, oldDistance
-   try
+
       if the movePolygonal["currentpoints"] of the target is empty then
          set the movePolygonal["currentpoints"] of the target to 0, 0 & cr & 100, 100 & cr & 100, 0
       end if
@@ -1622,8 +1626,8 @@ on movePolygonal
          set the movePolygonal["current"] of the target to newCurr
       end if
 
-      if the movePolygonal["isDistance"] of the target is empty then
-         set the movePolygonal["isDistance"] of the target to 0
+      if the movePolygonal["distance"] of the target is empty then
+         set the movePolygonal["distance"] of the target to 0
       end if
 
       if the movePolygonal["step"] of the target is empty then
@@ -1633,46 +1637,41 @@ on movePolygonal
       if the movePolygonal["step"] of the target < 0 then
          set the movePolygonal["step"] of the target to the movePolygonal["step"] of the target * - 1
       end if
-      set the movePolygonal["startpoint"] of the target to line (the movepolygonal["current"] of the target - 1) of the movePolygonal["currentPoints"] of the target
+      set the movePolygonal["startPoint"] of the target to line (the movepolygonal["current"] of the target - 1) of the movePolygonal["currentPoints"] of the target
       set the movePolygonal["endPoint"] of the target to line (the movepolygonal["current"] of the target) of the movePolygonal["currentpoints"] of the target
-      set the movePolygonal["isDistance"] of the target to the movePolygonal["isDistance"] of the target + the movePolygonal["step"] of the target
-      if the movePolygonal["isDistance"] of the target < distance(the movePolygonal["startpoint"] of the target, the movePolygonal["endpoint"] of the target) then
-         set the loc of the target to (pointOnLine(the movePolygonal["startPoint"] of the target, the movePolygonal["endpoint"] of the target, the movePolygonal["isDistance"] of the target))
+      set the movePolygonal["distance"] of the target to the movePolygonal["distance"] of the target + the movePolygonal["step"] of the target
+      if the movePolygonal["distance"] of the target < distance(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target) then
+         set the loc of the target to (pointOnLine(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target, the movePolygonal["distance"] of the target))
        else
-         put the movepolygonal["isDistance"] of the target into oldDistance
+         put the movepolygonal["distance"] of the target into oldDistance
          repeat
-            --set the loc of the target to (the movePolygonal[ "endpoint"] of the target)
-            put oldDistance - distance(the movePolygonal["startpoint"] of the target, the movePolygonal["endpoint"] of the target) into oldDistance
+            --set the loc of the target to (the movePolygonal[ "endPoint"] of the target)
+            put oldDistance - distance(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target) into oldDistance
             if oldDistance > 0 then
                --put oldDistance*-1 into olddistance
-               set the movePolygonal["isDistance"] of the target to olddistance
+               set the movePolygonal["distance"] of the target to olddistance
                if the movePolyGonal["current"] of the target < the number of lines of the movePolygonal["currentPoints"] of the target then
                   set the movepolygonal["current"] of the target to the movePolygonal["current"] of the target + 1
                 else
                   set the movePolygonal["moveDone"] of the target to true
-                  send "movePolygonalMoveDone" to the target
+                  dispatch "movePolygonalMoveDone" to the target
                   set the movePolygonal["current"] of the target to 2
                   exit movepolygonal
                end if
-               set the movePolygonal["startpoint"] of the target to line (the movepolygonal["current"] of the target - 1) of the movePolygonal["currentPoints"] of the target
+               set the movePolygonal["startPoint"] of the target to line (the movepolygonal["current"] of the target - 1) of the movePolygonal["currentPoints"] of the target
                set the movePolygonal["endPoint"] of the target to line (the movepolygonal["current"] of the target) of the movePolygonal["currentpoints"] of the target
              else
-               set the movePolygonal["startpoint"] of the target to line (the movepolygonal["current"] of the target - 1) of the movePolygonal["currentpoints"] of the target
+               set the movePolygonal["startPoint"] of the target to line (the movepolygonal["current"] of the target - 1) of the movePolygonal["currentpoints"] of the target
                set the movePolygonal["endPoint"] of the target to line (the movepolygonal["current"] of the target) of the movePolygonal["currentpoints"] of the target
-               set the movepolyGonal["isDistance"] of the target to oldDistance + distance(the movePolygonal["startPoint"] of the target, the movePolygonal["endpoint"] of the target)
-               set the loc of the target to pointOnLine(the movePolygonal["startPoint"] of the target, the movePolygonal["endpoint"] of the target, the movePolygonal["isDistance"] of the target)
+               set the movepolyGonal["distance"] of the target to oldDistance + distance(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target)
+               set the loc of the target to pointOnLine(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target, the movePolygonal["distance"] of the target)
                exit repeat
             end if
          end repeat
       end if
-   catch theerror
-      return "error: " & theError
-   end try
 end movePolygonal
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
-on movePolygonalMoveDone
-   return the name of the target && "completed it's polygonal move"
-end movepolygonalMoveDone
 
 on movePolygonalReversePath
    local newDist, testme, thepoints
@@ -1682,8 +1681,8 @@ on movePolygonalReversePath
       set the movePolyGonal["currentpoints"] of the target to the movePolyGonal["reversedPoints"] of the target
       set the movepolygonal["reversedPoints"] of the target to thepoints
       set the movePolygonal["current"] of the target to (the number of lines of thePoints - testme) + 2
-      put the movePolyGonal["isDistance"] of the target into newDist
-      set the movePolyGonal["isDistance"] of the target to distance(the movePolyGonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target) - newdist
+      put the movePolyGonal["distance"] of the target into newDist
+      set the movePolyGonal["distance"] of the target to distance(the movePolyGonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target) - newdist
    catch theerror
       return "error: " & theError
    end try
@@ -1758,7 +1757,7 @@ setProp superShape tParameters
             put phi * 180 / pi into phi
             put superFormula(m, n1, n2, n3, phi, a, b) & cr after thePoints
             put loops - i into theCallBack
-            send "superShapeCallBack theCallBack" to the target
+            dispatch "superShapeCallBack" to the target with theCallBack
          end repeat
          delete the last line of thepoints
          put the loc of the target into oldloc
@@ -1774,9 +1773,6 @@ setProp superShape tParameters
    end try
 end superShape
 
-on superShapeCallBack
-
-end superShapeCallBack
 
 setProp superPath tParameters
    local a, b, i, loops
@@ -3412,19 +3408,19 @@ command aeGeneral
          end switch
          if the milliseconds - tStartTime < tDuration then
             set the loc of pControl to tX, tY
-          else
+         else
             if tDestx, tDestY is a point then
                set the loc of pControl to tDestX, tDestY
             end if
             delete variable tAeEasing[pControl]
-            send "aeMoveDone" to pControl
+            dispatch "aeMoveDone" to pControl
          end if
          send "aeExitFrame" && "aeMoveTo" to pControl
-       else
+      else
          delete variable tAeEasing[pControl]
       end if
    end repeat
-
+   
    local tCenterX, tCenterY, tRadius, tStartAngle, tEndAngle, tNewAngle
    -- tX,tY,tDuration,tMethod,findAngleX(tX,tY,item 1 of the the loc of tControl,item 2 of the loc of tControl), "pending"
    put the keys of tAEEasingCircular into tControls
@@ -3464,19 +3460,19 @@ command aeGeneral
          end switch
          if the milliseconds - tStartTime < tDuration then
             set the loc of pControl to pointOnCircle(tCenterX, tCenterY, tNewAngle, tRadius)
-          else
+         else
             if tDestx, tDestY is a point then
                set the loc of pControl to pointOnCircle(tCenterX, tCenterY, tEndAngle, tRadius)
             end if
             delete variable tAeEasingCircular[pControl]
-            send "aeMoveDone" to pControl
+            dispatch "aeMoveDone" to pControl
          end if
          send "aeExitFrame" && "aeChangeAngleCircular" to pControl
-       else
+      else
          delete variable tAeEasingCircular[pControl]
       end if
    end repeat
-
+   
    -- morphing
    put the keys of sAEMorphing into tControls
    repeat for each line pControl in tControls
@@ -3487,21 +3483,21 @@ command aeGeneral
                --aeMorphPointlists pList1,pList2,pDuration,pCurrentTime,pEffect
                --put the millisecs & cr & aeMorphPointlists(sAEMorphing[pControl][ "p1"],sAEMorphing[pControl]["p2"],sAEMorphing[pControl]["duration"],the milliSecs -sAEMorphing[pControl]["StartTime"] , sAEMorphing[pControl]["Effect"]  )
                set the points of pControl to aeMorphPointlists(sAEMorphing[pControl]["p1"], sAEMorphing[pControl]["p2"], sAEMorphing[pControl]["duration"], the milliSecs - sAEMorphing[pControl]["StartTime"], sAEMorphing[pControl]["Effect"])
-             else
+            else
                set the points of pControl to sAEMorphing[pControl]["p2"]
                delete variable sAEMorphing[pControl]
-               send "aeMorphDone" to pControl
+               dispatch "aeMorphDone" to pControl
             end if
          end if
          send "aeExitFrame" && "aeMorphGraphic" to pControl
-       else
+      else
          delete variable sAEMorphing[pControl]
       end if
    end repeat
-
+   
    --  sAEMorphGradientRamp
    put the keys of sAEMorphGradientRamp into tControls
-
+   
    repeat for each line pControl in tControls
       if there is a pControl then
          send "aeEnterFrame" && "aeMorphGradient" to pControl
@@ -3509,22 +3505,22 @@ command aeGeneral
             if the millisecs - sAEMorphGradientRamp[pControl]["StartTime"] < sAEMorphGradientRamp[pControl]["duration"] then
                --aeMorphPointlists pList1,pList2,pDuration,pCurrentTime,pEffect
                set the fillGradient["ramp"] of pControl to aeMorphGradient(sAEMorphGradientRamp[pControl]["p1"], sAEMorphGradientRamp[pControl]["p2"], sAEMorphGradientRamp[pControl]["duration"], the milliSecs - sAEMorphGradientRamp[pControl]["StartTime"], sAEMorphGradientRamp[pControl]["Effect"])
-             else
+            else
                set the fillGradient["ramp"] of pControl to sAEMorphGradientRamp[pControl]["p2"]
                delete variable sAEMorphGradientRamp[pControl]
-               send "aeMorphGradientDone" to pControl
+               dispatch "aeMorphGradientDone" to pControl
             end if
          end if
          send "aeExitFrame" && "aeMorphGradient" to pControl
-       else
+      else
          delete variable sAEMorphGradientRamp[pControl]
       end if
    end repeat
-
+   
    -- rotate group
-
+   
    put the keys of sAERotateGroup into tControls
-
+   
    repeat for each line theGroup in tControls
       if there is a theGroup then
          send "aeEnterFrame" && "aeRotateGroup" to theGroup
@@ -3532,13 +3528,13 @@ command aeGeneral
             put sAERotateGroup[theGroup]["duration"] into tDuration
             put sAERotateGroup[theGroup]["StartTime"] into tStartTime
             put sAERotateGroup[theGroup]["Effect"] into tMethod
-
+            
             if the millisecs - sAERotateGroup[theGroup]["StartTime"] < tDuration then
                repeat for each line theControl in the keys of sAERotateGroup[theGroup]["controls"]
-
+                  
                   put sAERotateGroup[theGroup]["Angle"] + sAERotateGroup[theGroup]["controls"][theControl]["Angle"] into tEndAngle
                   put sAERotateGroup[theGroup]["controls"][theControl]["Angle"] into tStartAngle
-
+                  
                   switch tMethod
                      case "in"
                         put aeEaseIn(tStartAngle, tEndAngle, tDuration, the milliseconds - tStartTime, 3) into tNewAngle
@@ -3559,18 +3555,18 @@ command aeGeneral
                         put aeEaseIn(tStartAngle, tEndAngle, tDuration, the milliseconds - tStartTime, 1) into tNewAngle
                         break
                   end switch
-
+                  
                   /*
                   put item 1 of tParameters into centerX
                   put item 2 of tParameters into centerY
                   put item 3 of tParameters into isAngle
                   put item 4 of tParameters into isRadius
                   */
-
+                  
                   set the loc of theControl to pointOnCircle(sAERotateGroup[theGroup]["center"], tNewAngle, sAERotateGroup[theGroup]["controls"][theControl]["Distance"])
                end repeat
-
-             else
+               
+            else
                repeat for each line theControl in the keys of sAERotateGroup[theGroup]["controls"]
                   put sAERotateGroup[theGroup]["Angle"] + sAERotateGroup[theGroup]["controls"][theControl]["Angle"] into tEndAngle
                   set the loc of theControl to pointOnCircle(sAERotateGroup[theGroup]["center"], tEndAngle, sAERotateGroup[theGroup]["controls"][theControl]["Distance"])
@@ -3578,11 +3574,11 @@ command aeGeneral
                delete variable sAERotateGroup[theGroup]
             end if
          end if
-       else
+      else
          delete variable sAERotateGroup[theGroup]
       end if
    end repeat
-
+   
    unlock screen
    put the milliseconds - tElapsed into tElapsed
    if the keys of tAeEasing is not empty OR the keys of tAEEasingCircular is not empty OR the keys of sAEMorphing is not empty OR the keys of sAEMorphGradientRamp is not empty OR the keys of sAERotateGroup is not empty then
@@ -3590,7 +3586,7 @@ command aeGeneral
          if "aeGeneral" is not in the pendingmessages then
             send "aeGeneral" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeGeneral" is not in the pendingmessages then
             send "aeGeneral" to me in 5 millisecs
          end if
@@ -3598,16 +3594,6 @@ command aeGeneral
    end if
    --   wait 0 milliseconds with messages
 end aeGeneral
-
-//TODO: Buscar donde se generan estos mensages y usar disparsh para eliminar estas lineas
-on aeMoveDone
-   -- trapped to avoid scripterrors
-end aeMoveDone
-
-on aeMorphDone
-   -- trapped to avoid scripterrors
-end aeMorphDone
-
 
 on aeEnterFrame
    --
@@ -3720,10 +3706,6 @@ on aeMorphGradientRamp pControl, pPointList1, pPointList2, pDuration, pEffect
       put "pending" into sAEMorphGradientRamp[the long id of pControl]["startTime"]
    end if
 end aeMorphGradientRamp
-
-on aeMorphGradientDone
-   --
-end aeMorphGradientDone
 
 function aeMorphPointlists pList1, pList2, pDuration, pCurrentTime, pEffect
    local tResultList, tCounter
@@ -3995,18 +3977,14 @@ on _aeCrossfade pControl1, pControl2, pDuration, pStart, pTarget
    set the blendlevel of tControl2 to tValue
    if tElapsed < pDuration then
       send "_aeCrossfade" && pControl1, pControl2, pDuration, pStart, pTarget to me in 25 millisecs
-    else
+   else
       set the visible of tControl2 to false
       set the blendlevel of tControl2 to 0
       put pTarget into tTarget
       replace "§$aeQuote$§" with quote in tTarget
-      send "aeCrossfadeDone" to tTarget
+      dispatch "aeCrossfadeDone" to tTarget
    end if
 end _aeCrossfade
-
-on aeCrossfadeDone
-   -- trapped to avoid errors
-end aeCrossfadeDone
 
 on aeFadeIn pControl, pDuration
    local tTarget
@@ -4030,16 +4008,12 @@ on _aeFadeIn pControl, pDuration, pStart, pTarget
    set the blendlevel of tControl to 100 - tValue
    if tElapsed < pDuration then
       send "_aeFadeIn" && pControl, pDuration, pStart, pTarget to me in 25 millisecs
-    else
+   else
       put pTarget into tTarget
       replace "§$aeQuote$§" with quote in tTarget
-      send "aeFadeInDone" to tTarget
+      dispatch "aeFadeInDone" to tTarget
    end if
 end _aeFadeIn
-
-on aeFadeInDone
-   -- trapped to avoid errors
-end aeFadeInDone
 
 on aeFadeOut pControl, pDuration
    local tTarget
@@ -4063,18 +4037,15 @@ on _aeFadeOut pControl, pDuration, pStart, pTarget
    set the blendlevel of tControl to tValue
    if tElapsed < pDuration then
       send "_aeFadeOut" && pControl, pDuration, pStart, pTarget to me in 25 millisecs
-    else
+   else
       put pTarget into tTarget
       replace "§$aeQuote$§" with quote in tTarget
-      send "aeFadeOutDone" to tTarget
+      dispatch "aeFadeOutDone" to tTarget
       hide tControl
       set the blendlevel of tControl to 0
    end if
 end _aeFadeOut
 
-on aeFadeOutDone
-   -- trapped to avoid errors
-end aeFadeOutDone
 
 local sAELockRectChanging, tAeChangeRect
 local sAELockScrolls, tAeScrolling
@@ -4203,12 +4174,12 @@ command aeChangingRect
       end switch
       if the milliseconds - tStartTime < tDuration then
          set the rect of pControl to tLeft, tTop, tRight, tBottom
-       else
+      else
          if tDestLeft, tDestTop, tDestRight, tDestBottom is a rectangle then
             set the rect of pControl to tDestLeft, tDestTop, tDestRight, tDestBottom
          end if
          delete variable tAeChangeRect[pControl]
-         send "aeChangeRectDone" to pControl
+         dispatch "aeChangeRectDone" to pControl
       end if
       send "aeExitFrame" && "aeChangeRect" to pControl
    end repeat
@@ -4220,7 +4191,7 @@ command aeChangingRect
          if "aeChangingRect" is not in the pendingmessages then
             send "aeChangingRect" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingRect" is not in the pendingmessages then
             send "aeChangingRect" to me in 5 millisecs
          end if
@@ -4229,11 +4200,6 @@ command aeChangingRect
    --   wait 0 milliseconds with messages
    --put "changingrect" && the millisecs
 end aeChangingRect
-
-on aeChangeRectDone
-   --
-end aeChangeRectDone
-
 
 local sAELockHeightChanging, tAeChangeHeight
 
@@ -4331,12 +4297,12 @@ command aeChangingHeight
       end switch
       if the milliseconds - tStartTime < tDuration then
          set the height of pControl to tHeight
-       else
+      else
          if tHeight is a number then
             set the height of pControl to tHeight
          end if
          delete variable tAeChangeHeight[pControl]
-         send "aeChangeHeightDone" to pControl
+         dispatch "aeChangeHeightDone" to pControl
       end if
       send "aeExitFrame" && "aeChangeHeight" to pControl
    end repeat
@@ -4347,17 +4313,13 @@ command aeChangingHeight
          if "aeChangingHeight" is not in the pendingmessages then
             send "aeChangingHeight" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingHeight" is not in the pendingmessages then
             send "aeChangingHeight" to me in 5 millisecs
          end if
       end if
    end if
 end aeChangingHeight
-
-on aeChangeHeightDone
-   --
-end aeChangeHeightDone
 
 local sAELockWidthChanging, tAeChangeWidth
 
@@ -4455,12 +4417,12 @@ command aeChangingWidth
       end switch
       if the milliseconds - tStartTime < tDuration then
          set the width of pControl to tWidth
-       else
+      else
          if tWidth is a number then
             set the width of pControl to tWidth
          end if
          delete variable tAeChangeWidth[pControl]
-         send "aeChangeWidthDone" to pControl
+         dispatch "aeChangeWidthDone" to pControl
       end if
       send "aeExitFrame" && "aeChangeWidth" to pControl
    end repeat
@@ -4471,17 +4433,13 @@ command aeChangingWidth
          if "aeChangingWidth" is not in the pendingmessages then
             send "aeChangingWidth" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingWidth" is not in the pendingmessages then
             send "aeChangingWidth" to me in 5 millisecs
          end if
       end if
    end if
 end aeChangingWidth
-
-on aeChangeWidthDone
-   --
-end aeChangeWidthDone
 
 local sAELockHScrollChanging, tAeChangeHScroll
 
@@ -4579,12 +4537,12 @@ command aeChangingHScroll
       put round(tHScroll) into tHScroll
       if the milliseconds - tStartTime < tDuration then
          set the hscroll of pControl to tHScroll
-       else
+      else
          if tHScroll is a number then
             set the hscroll of pControl to tHScroll
          end if
          delete variable tAeChangeHScroll[pControl]
-         send "aeChangeHScrollDone" to pControl
+         dispatch "aeChangeHScrollDone" to pControl
       end if
       send "aeExitFrame" && "aeChangeHScroll" to pControl
    end repeat
@@ -4595,17 +4553,13 @@ command aeChangingHScroll
          if "aeChangingHScroll" is not in the pendingmessages then
             send "aeChangingHScroll" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingHScroll" is not in the pendingmessages then
             send "aeChangingHScroll" to me in 5 millisecs
          end if
       end if
    end if
 end aeChangingHScroll
-
-on aeChangeHScrollDone
-
-end aeChangeHScrollDone
 
 local sAELockVScrollChanging, tAeChangeVScroll
 
@@ -4702,12 +4656,12 @@ command aeChangingVScroll
       put round(tVscroll) into tVscroll
       if the milliseconds - tStartTime < tDuration then
          set the vscroll of pControl to tVScroll
-       else
+      else
          if tVScroll is a number then
             set the vscroll of pControl to tVScroll
          end if
          delete variable tAeChangeVScroll[pControl]
-         send "aeChangeVScrollDone" to pControl
+         dispatch "aeChangeVScrollDone" to pControl
       end if
       send "aeExitFrame" && "aeChangeVScroll" to pControl
    end repeat
@@ -4718,17 +4672,13 @@ command aeChangingVScroll
          if "aeChangingVScroll" is not in the pendingmessages then
             send "aeChangingVScroll" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingVScroll" is not in the pendingmessages then
             send "aeChangingVScroll" to me in 5 millisecs
          end if
       end if
    end if
 end aeChangingVScroll
-
-on aeChangeVScrollDone
-
-end aeChangeVScrollDone
 
 local sAELockBackColorChanging, tAeChangeBackColor
 
@@ -4805,7 +4755,7 @@ end aeUnlockBackColors
 local sTimeTakenToChangeBackColors
 
 command aeChangingBackColor
-
+   
    lock screen
    local tTimeLost, tFramesLost, tElapsed
    local tBackColor, tDuration, tMethod, tStartBackColor, tDestBackColor, tStartTime
@@ -4870,12 +4820,12 @@ command aeChangingBackColor
       end repeat
       if the milliseconds - tStartTime < tDuration then
          set the backcolor of pControl to tBackColor
-       else
+      else
          if tBackColor is a color then
             set the backcolor of pControl to tBackColor
          end if
          delete variable tAeChangeBackColor[pControl]
-         send "aeChangeBackColorDone" to pControl
+         dispatch "aeChangeBackColorDone" to pControl
       end if
       send "aeExitFrame" && "aeChangeBackColor" to pControl
    end repeat
@@ -4886,17 +4836,13 @@ command aeChangingBackColor
          if "aeChangingBackColor" is not in the pendingmessages then
             send "aeChangingBackColor" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingBackColor" is not in the pendingmessages then
             send "aeChangingBackColor" to me in 5 millisecs
          end if
       end if
    end if
 end aeChangingBackColor
-
-on aeChangeBackColorDone
-
-end aeChangeBackColorDone
 
 local sAELockforeColorChanging, tAeChangeforeColor
 
@@ -4965,7 +4911,7 @@ end aeUnlockforeColors
 local sTimeTakenToChangeforeColors
 
 command aeChangingforeColor
-
+   
    lock screen
    local tTimeLost, tFramesLost, tElapsed
    local tforeColor, tDuration, tMethod, tStartforeColor, tDestforeColor, tStartTime
@@ -5030,12 +4976,12 @@ command aeChangingforeColor
       end repeat
       if the milliseconds - tStartTime < tDuration then
          set the forecolor of pControl to tforeColor
-       else
+      else
          if tforeColor is a color then
             set the forecolor of pControl to tforeColor
          end if
          delete variable tAeChangeforeColor[pControl]
-         send "aeChangeforeColorDone" to pControl
+         dispatch "aeChangeforeColorDone" to pControl
       end if
       send "aeExitFrame" && "aeChangeForeColor" to pControl
    end repeat
@@ -5046,17 +4992,13 @@ command aeChangingforeColor
          if "aeChangingforeColor" is not in the pendingmessages then
             send "aeChangingforeColor" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingforeColor" is not in the pendingmessages then
             send "aeChangingforeColor" to me in 5 millisecs
          end if
       end if
    end if
 end aeChangingforeColor
-
-on aeChangeforeColorDone
-
-end aeChangeforeColorDone
 
 local sAELockThumbPositionChanging, tAeChangeThumbPosition
 
@@ -5154,12 +5096,12 @@ command aeChangingThumbPosition
       put round(tThumbPosition) into tThumbPosition
       if the milliseconds - tStartTime < tDuration then
          set the thumbposition of pControl to tThumbPosition
-       else
+      else
          if tThumbPosition is a number then
             set the thumbposition of pControl to tThumbPosition
          end if
          delete variable tAeChangeThumbPosition[pControl]
-         send "aeChangeThumbPositionDone" to pControl
+         dispatch "aeChangeThumbPositionDone" to pControl
       end if
       send "aeExitFrame" && "aeChangeThumbPosition" to pControl
    end repeat
@@ -5170,7 +5112,7 @@ command aeChangingThumbPosition
          if "aeChangingThumbPosition" is not in the pendingmessages then
             send "aeChangingThumbPosition" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingThumbPosition" is not in the pendingmessages then
             send "aeChangingThumbPosition" to me in 5 millisecs
          end if
@@ -5178,9 +5120,6 @@ command aeChangingThumbPosition
    end if
 end aeChangingThumbPosition
 
-on aeChangeThumbPositionDone
-   --
-end aeChangeThumbPositionDone
 
 --------
 
@@ -5342,12 +5281,12 @@ command aeChangingBackColorOfChunk
       put tChunk & " of " & item 1 of pControl into assembleChunk
       if the milliseconds - tStartTime < tDuration then
          do "set the BackColor of" && assembleChunk && "to" && tBackColorOfChunk
-       else
+      else
          if tBackColorOfChunk is a color then
             do "set the BackColor of" && assembleChunk && "to" && tBackColorOfChunk
          end if
          delete variable tAeChangeBackColorOfChunk[pControl]
-         send "aeChangeBackColorOfChunkDone" to theControl
+         dispatch"aeChangeBackColorOfChunkDone" to theControl
       end if
       send "aeExitFrame" && "aeChangeBackColorOfChunk" to theControl
    end repeat
@@ -5358,17 +5297,13 @@ command aeChangingBackColorOfChunk
          if "aeChangingBackColorOfChunk" is not in the pendingmessages then
             send "aeChangingBackColorOfChunk" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingBackColorOfChunk" is not in the pendingmessages then
             send "aeChangingBackColorOfChunk" to me in 5 millisecs
          end if
       end if
    end if
 end aeChangingBackColorOfChunk
-
-on aeChangeBackColorOfChunkDone
-   --
-end aeChangeBackColorOfChunkDone
 
 ------
 local sAELockforecolorOfChunkChanging, tAeChangeforecolorOfChunk
@@ -5520,7 +5455,7 @@ command aeChangingforecolorOfChunk
             put aeEaseIn(item 3 of tStartforecolorOfChunk, item 3 of tDestforecolorOfChunk, tDuration, the milliseconds - tStartTime, 1) into item 3 of tforecolorOfChunk
             break
       end switch
-
+      
       repeat with i = 1 to 3
          put round(item i of tforecolorOfChunk) into item i of tforecolorOfChunk
          if item i of tforecolorOfChunk > 255 then put 255 into item i of tforecolorOfChunk
@@ -5530,12 +5465,12 @@ command aeChangingforecolorOfChunk
       put tChunk & " of " & item 1 of pControl into assembleChunk
       if the milliseconds - tStartTime < tDuration then
          do "set the forecolor of" && assembleChunk && "to" && tforecolorOfChunk
-       else
+      else
          if tforecolorOfChunk is a color then
             do "set the forecolor of" && assembleChunk && "to" && tforecolorOfChunk
          end if
          delete variable tAeChangeforecolorOfChunk[pControl]
-         send "aeChangeforecolorOfChunkDone" to theControl
+         dispatch "aeChangeforecolorOfChunkDone" to theControl
       end if
       send "aeExitFrame" && "aeChangeForeColorOfChunk" to theControl
    end repeat
@@ -5546,17 +5481,13 @@ command aeChangingforecolorOfChunk
          if "aeChangingforecolorOfChunk" is not in the pendingmessages then
             send "aeChangingforecolorOfChunk" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-       else
+      else
          if "aeChangingforecolorOfChunk" is not in the pendingmessages then
             send "aeChangingforecolorOfChunk" to me in 5 millisecs
          end if
       end if
    end if
 end aeChangingforecolorOfChunk
-
-on aeChangeforecolorOfChunkDone
-   --
-end aeChangeforecolorOfChunkDone
 
 -- stop stuff
 
@@ -5762,7 +5693,7 @@ command aeChangingScroll
          set the hscroll of pControl to round(tDestX)
          set the vscroll of pControl to round(tDestY)
          delete variable tAEScrolling[pControl]
-         send "aeChangeScrollDone" to pControl
+         dispatch "aeChangeScrollDone" to pControl
       end if
       send "aeExitFrame" && "aeScrollTo" to pControl
    end repeat
@@ -5781,10 +5712,6 @@ command aeChangingScroll
       end if
    end if
 end aeChangingScroll
-
-on aeChangeScrollDone
-   --
-end aeChangeScrollDone
 
 local aeCollisionListener, aelistenForCollisions
 
@@ -5853,9 +5780,6 @@ on aeListenForCollisions
    end try
 end aeListenForCollisions
 
-on aeCollision pObjects
-   --
-end aeCollision
 
 function aeCollidingObjects
    local tObjects, tReturn
