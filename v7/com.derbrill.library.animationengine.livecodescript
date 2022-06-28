@@ -1372,7 +1372,7 @@ end polyCollide
 
 --end added in 1.5
 
-private function superformula m, n1, n2, n3, phi, a, b
+private function superFormula m, n1, n2, n3, phi, a, b
    local i, r, t1, t2
    local tParameters, x, y
 
@@ -1403,10 +1403,10 @@ private function superformula m, n1, n2, n3, phi, a, b
    end if
 
    return round(x), round(y)
-end superformula
+end superFormula
 
-//Message
 //FIXME: Convierte esto a un comando que use el mecaniso de aeMoveTo
+//TODO: moveCircular pLongId, centerX, centerY, startAngle, duracion un # o inf para siempre, tipo mov
 on moveCircular
    local tLoc, tLongId, tAnimationEngineArray, tMoveCircularArray
 
@@ -1479,61 +1479,61 @@ on moveElliptical
    local cX, cY, isAngle, isRadiusX
    local isRadiusY
 
-      --The handler creates a customPropertySet "moveElliptical" for the target
-      --It sets the following custom properties of the target
-      --cX is the X coordinate of the ellipse center
-      --cY is the Y coordinate of the ellipse center
-      --isAngle is the elipse center angle
-      --radiusX is the radius in x-direction
-      --radiusY is the radius in y-direction
+   --The handler creates a customPropertySet "moveElliptical" for the target
+   --It sets the following custom properties of the target
+   --cX is the X coordinate of the ellipse center
+   --cY is the Y coordinate of the ellipse center
+   --isAngle is the elipse center angle
+   --radiusX is the radius in x-direction
+   --radiusY is the radius in y-direction
 
-      --if the custom properties of the target are not set yet,
-      --we need to initialize them first
+   --if the custom properties of the target are not set yet,
+   --we need to initialize them first
 
-      --default speed is 1
-      if the moveElliptical["step"] of the target is empty then
-         set the moveElliptical["step"] of the target to 1
-      end if
+   --default speed is 1
+   if the moveElliptical["step"] of the target is empty then
+      set the moveElliptical["step"] of the target to 1
+   end if
 
-      --default x-location is item 1 of the location of the target
-      if the moveElliptical["centerX"] of the target is empty then
-         set the moveElliptical["centerX"] of the target to item 1 of the loc of the target
-      end if
+   --default x-location is item 1 of the location of the target
+   if the moveElliptical["centerX"] of the target is empty then
+      set the moveElliptical["centerX"] of the target to item 1 of the loc of the target
+   end if
 
-      --default y-location is item 2 of the location of the target
-      if the moveElliptical["centerY"] of the target is empty then
-         set the moveElliptical["centerY"] of the target to item 2 of the loc of the target
-      end if
+   --default y-location is item 2 of the location of the target
+   if the moveElliptical["centerY"] of the target is empty then
+      set the moveElliptical["centerY"] of the target to item 2 of the loc of the target
+   end if
 
-      --default center angle is 360 degrees
-      if the moveElliptical["isAngle"] of the target is empty then
-         set the moveElliptical["isAngle"] of the target to 360
-      end if
+   --default center angle is 360 degrees
+   if the moveElliptical["isAngle"] of the target is empty then
+      set the moveElliptical["isAngle"] of the target to 360
+   end if
 
-      --default radiusX is 80 pixel
-      if the moveElliptical["radiusX"] of the target is empty then
-         set the moveElliptical["radiusX"] of the target to 80
-      end if
+   --default radiusX is 80 pixel
+   if the moveElliptical["radiusX"] of the target is empty then
+      set the moveElliptical["radiusX"] of the target to 80
+   end if
 
-      --default radiusY is 50 pixel
-      if the moveElliptical["radiusY"] of the target is empty then
-         set the moveElliptical["radiusY"] of the target to 50
-      end if
+   --default radiusY is 50 pixel
+   if the moveElliptical["radiusY"] of the target is empty then
+      set the moveElliptical["radiusY"] of the target to 50
+   end if
 
-      --calculate the next angle
-      set the moveElliptical["isAngle"] of the target to the moveElliptical["isAngle"] of the target + the moveElliptical["step"] of the target
-      if the moveElliptical["isAngle"] of the target >= 360 then
-         set the moveElliptical["isAngle"] of the target to 0
-      end if
+   --calculate the next angle
+   set the moveElliptical["isAngle"] of the target to the moveElliptical["isAngle"] of the target + the moveElliptical["step"] of the target
+   if the moveElliptical["isAngle"] of the target >= 360 then
+      set the moveElliptical["isAngle"] of the target to 0
+   end if
 
-      --now calculate the new location.
-      put the moveElliptical["centerX"] of the target into cX
-      put the moveElliptical["centerY"] of the target into cY
-      put the moveElliptical["isAngle"] of the target into isAngle
-      put the moveElliptical["radiusX"] of the target into isRadiusX
-      put the moveElliptical["radiusY"] of the target into isRadiusY
+   --now calculate the new location.
+   put the moveElliptical["centerX"] of the target into cX
+   put the moveElliptical["centerY"] of the target into cY
+   put the moveElliptical["isAngle"] of the target into isAngle
+   put the moveElliptical["radiusX"] of the target into isRadiusX
+   put the moveElliptical["radiusY"] of the target into isRadiusY
 
-      set the loc of the target to pointOnEllipse((cx, cy, isAngle, isRadiusX, isRadiusY))
+   set the loc of the target to pointOnEllipse((cx, cy, isAngle, isRadiusX, isRadiusY))
 end moveElliptical
 #xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
@@ -1732,7 +1732,7 @@ on numbersOnly theKey
 end numbersOnly
 
 
-setprop superShape tParameters
+setProp superShape tParameters
    local a, b, i, loops
    local m, n1, n2, n3
    local oldloc, phi, theCallBack, thePoints
@@ -1756,7 +1756,7 @@ setprop superShape tParameters
          repeat with i = 1 to loops
             put i * ((pi * 2) / loops) into phi
             put phi * 180 / pi into phi
-            put superformula(m, n1, n2, n3, phi, a, b) & cr after thePoints
+            put superFormula(m, n1, n2, n3, phi, a, b) & cr after thePoints
             put loops - i into theCallBack
             send "superShapeCallBack theCallBack" to the target
          end repeat
@@ -1778,7 +1778,7 @@ on superShapeCallBack
 
 end superShapeCallBack
 
-setprop superPath tParameters
+setProp superPath tParameters
    local a, b, i, loops
    local m, n1, n2, n3
    local oldloc, phi, thePoints
@@ -1802,8 +1802,8 @@ setprop superPath tParameters
          repeat with i = 1 to loops
             put i * ((pi * 2) / loops) into phi
             --put phi*180/pi into phi
-            if the last line of thePoints <> superformula(m, n1, n2, n3, phi, a, b) then
-               put superformula(m, n1, n2, n3, phi, a, b) & cr after thePoints
+            if the last line of thePoints <> superFormula(m, n1, n2, n3, phi, a, b) then
+               put superFormula(m, n1, n2, n3, phi, a, b) & cr after thePoints
             end if
          end repeat
          put line 1 of thePoints & cr after thePoints
@@ -1826,7 +1826,7 @@ setprop superPath tParameters
 end superPath
 
 
-setprop spiral tParameters
+setProp spiral tParameters
    local accuracy, cx, cY, i
    local isWinding, myAngle, myRadius, pointList
    local Step, windings
@@ -1903,7 +1903,7 @@ end spiral
 /*
 -- Weg mit dem Mist. Was hat das überhaupt in einer animationsLib zu suchen???
 
-getprop cell[which]
+getProp cell[which]
    local testMe,tRowNum,tColNum
    put the long id of the target into testMe
    try
@@ -1920,7 +1920,7 @@ getprop cell[which]
    end try
 end cell
 
-setprop cell[which] newValue
+setProp cell[which] newValue
    local testMe,tRowNum,tColNum
 
    put the long id of the target into testMe
@@ -1944,7 +1944,7 @@ setprop cell[which] newValue
 end cell
 */
 
-setprop constrainLinear
+setProp constrainLinear
    local which
    try
       if param(1) <> "" then
@@ -1980,7 +1980,7 @@ setprop constrainLinear
    end try
 end constrainLinear
 
-setprop constrainCircular
+setProp constrainCircular
    local i, which
    try
       if param(1) <> "" then
@@ -2016,7 +2016,7 @@ setprop constrainCircular
    end try
 end constrainCircular
 
-setprop constrainRectangular
+setProp constrainRectangular
    local i, which
    try
       if param(1) <> "" then
@@ -2050,7 +2050,7 @@ setprop constrainRectangular
    end try
 end constrainRectangular
 
-setprop constrainElliptical
+setProp constrainElliptical
    local i, which
    try
       if param(1) <> "" then
@@ -2085,7 +2085,7 @@ setprop constrainElliptical
    end try
 end constrainElliptical
 
-setprop aspectScale tParameters
+setProp aspectScale tParameters
    try
       get aspectResize(item 1 to 4 of tParameters) --> PASA EL LONG ID
       set the width of the target to item 1 of it
@@ -2104,7 +2104,7 @@ setprop aspectScale tParameters
    end try
 end aspectScale
 
-setprop movePolyGonal[whichkey] tParameters
+setProp movePolyGonal[whichkey] tParameters
    local myVal, counter, reversePoints
    try
       put the number of lines of tParameters into myVal
@@ -2125,11 +2125,7 @@ setprop movePolyGonal[whichkey] tParameters
    end try
 end movePolyGonal
 
-
-
-
-
-
+--TODO: Buscar donde se generan estos mensajes y usar dispatsh para eliminar estas lineas.
 -- 2.0 Update
 on constrainRectangularInit
 end constrainRectangularInit
@@ -3037,8 +3033,6 @@ function ae3dConvertToScreen
    end try
 end ae3dConvertToScreen
 
-
-
 function rotate3DPoint
    local cX, cY, cZ, i
    local newX, newY, newZ, pFocalLength
@@ -3264,8 +3258,6 @@ private command aeResetFrameRate
    put 25 into sAERealFrameRate
 end aeResetFrameRate
 
-
-
 on aeChangeAngleCircular
    local tControl, tX, tY, tRadius, tNewAngle, tDuration, tMethod, tParameters, tCurrentAngle, tDirection
    if sAEFrameRate is empty then aeResetFrameRate
@@ -3290,8 +3282,8 @@ on aeChangeAngleCircular
    if tY is not an integer then return "error:" && tX & "," & tY && "is not a valid point"
    if tRadius is not a number then return "error:" && tRadius && "is not a number (radius)"
    if tNewAngle is not a number then return "error:" && tNewAngle && "is not a number (newAngle)"
-   if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tDuration && "is not a valid easing method. Must be in,out or inOut"
+   if tDuration is not a number then return "error:" && tDuration && "is not a valid duration"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tDuration && "is not a valid easing method. Must be in,out or inOut"
    put findAngleX(tX, tY, item 1 of the the loc of tControl, item 2 of the loc of tControl) into tCurrentAngle
    switch tDirection
       case "clockwise"
@@ -3334,7 +3326,7 @@ on aeMoveTo
    if tX is not an integer then return "error:" && tX & "," & tY && "is not a valid point"
    if tY is not an integer then return "error:" && tX & "," & tY && "is not a valid point"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tDuration && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tDuration && "is not a valid easing method. Must be in,out or inOut"
    if not sAELockMoves then
       put tX, tY, tDuration, tMethod, item 1 of the the loc of tControl, item 2 of the loc of tControl, the milliseconds into tAeEasing[the long id of tControl]
       if "aeGeneral" is not in the pendingmessages then
@@ -3607,6 +3599,7 @@ command aeGeneral
    --   wait 0 milliseconds with messages
 end aeGeneral
 
+//TODO: Buscar donde se generan estos mensages y usar disparsh para eliminar estas lineas
 on aeMoveDone
    -- trapped to avoid scripterrors
 end aeMoveDone
@@ -3617,11 +3610,11 @@ end aeMorphDone
 
 
 on aeEnterFrame
-
+   --
 end aeEnterFrame
 
 on aeExitFrame
-
+   --
 end aeExitFrame
 
 on aeStopMoving tControl
@@ -3692,7 +3685,7 @@ on aeMorphGraphic pControl, pPointList1, pPointList2, pDuration, pEffect
    if word 1 of the long name of pControl is not "graphic" then return "error: morphing only works for graphics"
    if the number of lines of pPointList1 <> the number of lines of pPointList2 then return "error: pointlists must have equal number of lines"
    if pDuration is not a number then return "error:" && pDuration && "is not a valid duration"
-   if pEffect is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && pEffect && "is not a valid easing method. Must be in,out or inOut"
+   if pEffect is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && pEffect && "is not a valid easing method. Must be in,out or inOut"
    put pPointList1 into sAEMorphing[the long id of pControl]["p1"]
    put pPointList2 into sAEMorphing[the long id of pControl]["p2"]
    put pDuration into sAEMorphing[the long id of pControl]["duration"]
@@ -3713,7 +3706,7 @@ on aeMorphGradientRamp pControl, pPointList1, pPointList2, pDuration, pEffect
    if word 1 of the long name of pControl is not "graphic" then return "error: morphing only works for graphics"
    if the number of lines of pPointList1 <> the number of lines of pPointList2 then return "error: pointlists must have equal number of lines"
    if pDuration is not a number then return "error:" && pDuration && "is not a valid duration"
-   if pEffect is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && pEffect && "is not a valid easing method. Must be in,out or inOut"
+   if pEffect is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && pEffect && "is not a valid easing method. Must be in,out or inOut"
    put pPointList1 into sAEMorphGradientRamp[the long id of pControl]["p1"]
    put pPointList2 into sAEMorphGradientRamp[the long id of pControl]["p2"]
    put pDuration into sAEMorphGradientRamp[the long id of pControl]["duration"]
@@ -3729,7 +3722,7 @@ on aeMorphGradientRamp pControl, pPointList1, pPointList2, pDuration, pEffect
 end aeMorphGradientRamp
 
 on aeMorphGradientDone
-
+   --
 end aeMorphGradientDone
 
 function aeMorphPointlists pList1, pList2, pDuration, pCurrentTime, pEffect
@@ -4112,7 +4105,7 @@ on aeChangeRect
    if tRight is not an integer then return "error:" && tLeft & "," & tTop & "," & tRight & ";" & tBottom && "is not a valid rectangle"
    if tBottom is not an integer then return "error:" && tLeft & "," & tTop & "," & tRight & ";" & tBottom && "is not a valid rectangle"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    if not sAELockRectChanging then
       put tLeft, tTop, tRight, tBottom, tDuration, tMethod, item 1 of the rect of tControl, item 2 of the rect of tControl, item 3 of the rect of tControl, item 4 of the rect of tControl, the milliseconds into tAeChangeRect[the long id of tControl]
       if "aeChangingRect" is not in the pendingmessages then
@@ -4238,7 +4231,7 @@ command aeChangingRect
 end aeChangingRect
 
 on aeChangeRectDone
-
+   --
 end aeChangeRectDone
 
 
@@ -4262,7 +4255,7 @@ on aeChangeHeight
    if word 1 of the long name of tControl is "card" then return "error: can not resize a card"
    if tHeight is not an integer then return "error:" && tHeight && "is not a valid height"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    aeStopChangingRect tControl
 
    if not sAELockHeightChanging then
@@ -4363,7 +4356,7 @@ command aeChangingHeight
 end aeChangingHeight
 
 on aeChangeHeightDone
-
+   --
 end aeChangeHeightDone
 
 local sAELockWidthChanging, tAeChangeWidth
@@ -4386,7 +4379,7 @@ on aeChangeWidth
    if word 1 of the long name of tControl is "card" then return "error: can not resize a card"
    if tWidth is not an integer then return "error:" && tWidth && "is not a valid Width"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    aeStopChangingRect tControl
 
    if not sAELockWidthChanging then
@@ -4487,7 +4480,7 @@ command aeChangingWidth
 end aeChangingWidth
 
 on aeChangeWidthDone
-
+   --
 end aeChangeWidthDone
 
 local sAELockHScrollChanging, tAeChangeHScroll
@@ -4511,7 +4504,7 @@ on aeChangeHScroll
    if word 1 of the long name of tControl is not among the items of "group,field" then return "error: can not scroll a" && tType
    if tHScroll is not an integer then return "error:" && tHScroll && "is not a valid HScroll"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    if not sAELockHScrollChanging then
       put tHScroll, tDuration, tMethod, the hscroll of tControl, the milliseconds into tAeChangeHScroll[the long id of tControl]
       if "aeChangingHScroll" is not in the pendingmessages then
@@ -4634,7 +4627,7 @@ on aeChangeVScroll
    if word 1 of the long name of tControl is "card" then return "error: can not resize a card"
    if tVScroll is not an integer then return "error:" && tVScroll && "is not a valid VScroll"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    if not sAELockVScrollChanging then
       put tVScroll, tDuration, tMethod, the vscroll of tControl, the milliseconds into tAeChangeVScroll[the long id of tControl]
       if "aeChangingVScroll" is not in the pendingmessages then
@@ -4778,7 +4771,7 @@ on aeChangeBackColor
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if tBackColor is not a color then return "error:" && tBackColor && "is not a valid color"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    set the backcolor of grc "testColor" of me to the effective backcolor of tControl
    set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
    put the backcolor of grc "testColor" of me into tCurrentBackColor
@@ -4940,7 +4933,7 @@ on aeChangeforeColor
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if tforeColor is not a color then return "error:" && tforeColor && "is not a valid color"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    set the backcolor of grc "testColor" of me to the effective forecolor of tControl
    set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
    put the backcolor of grc "testColor" of me into tCurrentforeColor
@@ -5086,7 +5079,7 @@ on aeChangeThumbPosition
    if word 1 of the long name of tControl is not among the items of "scrollbar" then return "error: can not set the thumbPosition of a" && tType
    if tThumbPosition is not an integer then return "error:" && tThumbPosition && "is not a valid ThumbPosition"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    if not sAELockThumbPositionChanging then
       put tThumbPosition, tDuration, tMethod, the thumbposition of tControl, the milliseconds into tAeChangeThumbPosition[the long id of tControl]
       if "aeChangingThumbPosition" is not in the pendingmessages then
@@ -5186,7 +5179,7 @@ command aeChangingThumbPosition
 end aeChangingThumbPosition
 
 on aeChangeThumbPositionDone
-
+   --
 end aeChangeThumbPositionDone
 
 --------
@@ -5248,7 +5241,7 @@ on aeChangeBackColorOfChunk
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if tBackColorOfChunk is not a color then return "error:" && tBackColorOfChunk && "is not a valid color"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    set the backcolor of grc "testColor" of me to the effective backcolor of tTest2
    set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
    put the backcolor of grc "testColor" of me into tCurrentBackColorOfChunk
@@ -5374,7 +5367,7 @@ command aeChangingBackColorOfChunk
 end aeChangingBackColorOfChunk
 
 on aeChangeBackColorOfChunkDone
-
+   --
 end aeChangeBackColorOfChunkDone
 
 ------
@@ -5435,7 +5428,7 @@ on aeChangeforecolorOfChunk
    if there is no tControl then return "error:" && tControl && "is not a valid control or group or stack"
    if tforecolorOfChunk is not a color then return "error:" && tforecolorOfChunk && "is not a valid color"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tMethod && "is not a valid easing method. Must be in,out or inOut"
    set the backcolor of grc "testColor" of me to the effective forecolor of tTest2
    set the backpixel of grc "testColor" of me to the effective backpixel of grc "testColor" of me
    put the backcolor of grc "testColor" of me into tCurrentforecolorOfChunk
@@ -5562,7 +5555,7 @@ command aeChangingforecolorOfChunk
 end aeChangingforecolorOfChunk
 
 on aeChangeforecolorOfChunkDone
-
+   --
 end aeChangeforecolorOfChunkDone
 
 -- stop stuff
@@ -5681,7 +5674,7 @@ on aeScrollTo
    if tX is not an integer then return "error:" && tX & "," & tY && "is not a valid scroll"
    if tY is not an integer then return "error:" && tX & "," & tY && "is not a valid scroll"
    if tduration is not a number then return "error:" && tDuration && "is not a valid duration"
-   if tMethod is not among the items of "in,out,inout,bounce,overshoot," then return "error:" && tDuration && "is not a valid easing method. Must be in, out, inOut, bounce or overshoot"
+   if tMethod is not among the items of ",in,out,inout,bounce,overshoot" then return "error:" && tDuration && "is not a valid easing method. Must be in, out, inOut, bounce or overshoot"
    if not sAELockScrolls then
       put tX, tY, tDuration, tMethod, the hscroll of tControl, the vscroll of tControl, the milliseconds into tAeScrolling[the long id of tControl]
       if "aeChangingScroll" is not in the pendingmessages then
@@ -5790,12 +5783,12 @@ command aeChangingScroll
 end aeChangingScroll
 
 on aeChangeScrollDone
-
+   --
 end aeChangeScrollDone
 
 local aeCollisionListener, aelistenForCollisions
 
-setprop aeListenForCollisionsWith pObjectList
+setProp aeListenForCollisionsWith pObjectList
    local tInvalidControls, tObjects
    repeat for each line theLine in pObjectList
       if there is no theLine then
@@ -5861,7 +5854,7 @@ on aeListenForCollisions
 end aeListenForCollisions
 
 on aeCollision pObjects
-
+   --
 end aeCollision
 
 function aeCollidingObjects
