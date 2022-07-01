@@ -1405,7 +1405,7 @@ private function superFormula m, n1, n2, n3, phi, a, b
    return round(x), round(y)
 end superFormula
 
-//FIXME: Convierte esto a un comando que use el mecaniso de aeMoveTo
+//FIXME: Convert this to a command that uses the aeMoveTo mechanism
 //TODO: moveCircular pLongId, centerX, centerY, startAngle, duracion un # o inf para siempre, tipo mov
 on moveCircular
    local tLoc, tLongId, tAnimationEngineArray, tMoveCircularArray
@@ -1702,7 +1702,7 @@ end movePolygonalReversePath
 
 setProp superShape pValue
    local tOldloc, phi, tCallBack, tPoints, tLoops, tLongId
-   //TODO: Investigar y poner un nombre mas comunicativo a estas variables
+   //TODO: Investigate and put a more communicative name to these variables
    local m, n1, n2, n3, a, b, i
 
    put the long id of the target into tLongId
@@ -1741,7 +1741,6 @@ setProp superShape pValue
       return "Supershape only works for graphics"
    end if
 end superShape
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 
 setProp superPath tParameters
@@ -1790,6 +1789,7 @@ setProp superPath tParameters
       return "error: " & theError
    end try
 end superPath
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 
 setProp spiral tParameters
@@ -2091,7 +2091,7 @@ setProp movePolyGonal[whichkey] tParameters
    end try
 end movePolyGonal
 
---TODO: Buscar donde se generan estos mensajes y usar dispatsh para eliminar estas lineas.
+//TODO: Find where these messages are generated and use dispatch to remove these lines.
 -- 2.0 Update
 on constrainRectangularInit
 end constrainRectangularInit
