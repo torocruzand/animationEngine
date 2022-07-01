@@ -1604,174 +1604,144 @@ end moveLinearReversePath
 
 
 on movePolygonal
-   local newCurr, oldDistance
+   local tLongId, tAnimationEngineArray, tMovePolygonalArray, tNewCurrent, tOldDistance
 
-      if the movePolygonal["currentpoints"] of the target is empty then
-         set the movePolygonal["currentpoints"] of the target to 0, 0 & cr & 100, 100 & cr & 100, 0
-      end if
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["movePolygonal"] into tMovePolygonalArray
 
 
-      if the movePolygonal["current"] of the target is empty then
-         set the movePolygonal["current"] of the target to 2
-      end if
+   # CurrentPoints
+   if tMovePolygonalArray["currentPoints"] is empty
+   then put 0, 0 & cr & 100, 100 & cr & 100, 0 into tMovePolygonalArray["currentPoints"]
 
-      if the movePolygonal["current"] of the target < 2 then
-         set the movePolygonal["current"] of the target to 2
-      end if
+   # Current
+   if tMovePolygonalArray["current"] is not an integer or tMovePolygonalArray["current"] < 2 then put 2 into tMovePolygonalArray["current"]
 
-      if the movePolygonal["current"] of the target > the number of lines of the movePolygonal["currentPoints"] of the target then
-         put the movePolygonal["current"] of the target mod the number of lines of the movePolygonal["currentPoints"] of the target into newCurr
-         if newCurr < 2 then put 2 into newCurr
-         if newCurr > the number of lines of the movePolyGonal["currentPoints"] of the target then put the number of lines of the movePolygonal["currentPoints"] of the target into newcurr
-         set the movePolygonal["current"] of the target to newCurr
-      end if
+   if tMovePolygonalArray["current"] > the number of lines of tMovePolygonalArray["currentPoints"] then
+      put tMovePolygonalArray["current"] mod the number of lines of tMovePolygonalArray["currentPoints"] into tNewCurrent
+      if tNewCurrent < 2 then put 2 into tNewCurrent
+      if tNewCurrent > the number of lines of tMovePolygonalArray["currentPoints"] then put the number of lines of tMovePolygonalArray["currentPoints"] into tNewCurrent
+      put tNewCurrent into tMovePolygonalArray["current"]
+   end if
+   # distance
+   if tMovePolygonalArray["distance"] is empty then
+      put 0 into tMovePolygonalArray["distance"]
+   end if
+   # step
+   if tMovePolygonalArray["step"] is empty then
+      put 1 into tMovePolygonalArray["step"]
+   end if
 
-      if the movePolygonal["distance"] of the target is empty then
-         set the movePolygonal["distance"] of the target to 0
-      end if
+   if tMovePolygonalArray["step"] < 0 then
+      put tMovePolygonalArray["step"] * - 1 into tMovePolygonalArray["step"]
+   end if
 
-      if the movePolygonal["step"] of the target is empty then
-         set the movePolygonal["step"] of the target to 1
-      end if
+   put line (tMovePolygonalArray["current"] - 1) of tMovePolygonalArray["currentPoints"] into tMovePolygonalArray["startPoint"]
+   put line (tMovePolygonalArray["current"]) of tMovePolygonalArray["currentPoints"] into tMovePolygonalArray["endPoint"]
+   put tMovePolygonalArray["distance"] + tMovePolygonalArray["step"] into tMovePolygonalArray["distance"]
 
-      if the movePolygonal["step"] of the target < 0 then
-         set the movePolygonal["step"] of the target to the movePolygonal["step"] of the target * - 1
-      end if
-      set the movePolygonal["startPoint"] of the target to line (the movepolygonal["current"] of the target - 1) of the movePolygonal["currentPoints"] of the target
-      set the movePolygonal["endPoint"] of the target to line (the movepolygonal["current"] of the target) of the movePolygonal["currentpoints"] of the target
-      set the movePolygonal["distance"] of the target to the movePolygonal["distance"] of the target + the movePolygonal["step"] of the target
-      if the movePolygonal["distance"] of the target < distance(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target) then
-         set the loc of the target to (pointOnLine(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target, the movePolygonal["distance"] of the target))
-       else
-         put the movepolygonal["distance"] of the target into oldDistance
-         repeat
-            --set the loc of the target to (the movePolygonal[ "endPoint"] of the target)
-            put oldDistance - distance(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target) into oldDistance
-            if oldDistance > 0 then
-               --put oldDistance*-1 into olddistance
-               set the movePolygonal["distance"] of the target to olddistance
-               if the movePolyGonal["current"] of the target < the number of lines of the movePolygonal["currentPoints"] of the target then
-                  set the movepolygonal["current"] of the target to the movePolygonal["current"] of the target + 1
-                else
-                  set the movePolygonal["moveDone"] of the target to true
-                  dispatch "movePolygonalMoveDone" to the target
-                  set the movePolygonal["current"] of the target to 2
-                  exit movepolygonal
-               end if
-               set the movePolygonal["startPoint"] of the target to line (the movepolygonal["current"] of the target - 1) of the movePolygonal["currentPoints"] of the target
-               set the movePolygonal["endPoint"] of the target to line (the movepolygonal["current"] of the target) of the movePolygonal["currentpoints"] of the target
+   _setAnimationEngine tLongId, "movePolygonal", tMovePolygonalArray
+
+   if tMovePolygonalArray["distance"] < distance(tMovePolygonalArray["startPoint"], tMovePolygonalArray["endPoint"]) then
+      set the loc of tLongId to (pointOnLine(tMovePolygonalArray["startPoint"], tMovePolygonalArray["endPoint"], tMovePolygonalArray["distance"]))
+    else
+      put tMovePolygonalArray["distance"] into tOldDistance
+      repeat
+         --set the loc of the target to (tMovePolygonalArray[ "endPoint"] of the target)
+         put tOldDistance - distance(tMovePolygonalArray["startPoint"], tMovePolygonalArray["endPoint"]) into tOldDistance
+
+         if tOldDistance > 0 then
+            --put oldDistance*-1 into olddistance
+            put tOldDistance into tMovePolygonalArray["distance"]
+
+            if tMovePolygonalArray["current"] < the number of lines of tMovePolygonalArray["currentPoints"] then
+               put tMovePolygonalArray["current"] + 1 into tMovePolygonalArray["current"]
+
              else
-               set the movePolygonal["startPoint"] of the target to line (the movepolygonal["current"] of the target - 1) of the movePolygonal["currentpoints"] of the target
-               set the movePolygonal["endPoint"] of the target to line (the movepolygonal["current"] of the target) of the movePolygonal["currentpoints"] of the target
-               set the movepolyGonal["distance"] of the target to oldDistance + distance(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target)
-               set the loc of the target to pointOnLine(the movePolygonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target, the movePolygonal["distance"] of the target)
-               exit repeat
+               put true into tMovePolygonalArray["moveDone"]
+               dispatch "movePolygonalMoveDone" to tLongId
+               put 2 into tMovePolygonalArray["current"]
+               _setAnimationEngine tLongId, "movePolygonal", tMovePolygonalArray
+               exit movepolygonal
             end if
-         end repeat
-      end if
+
+            put line (tMovePolygonalArray["current"] - 1) of tMovePolygonalArray["currentPoints"] into tMovePolygonalArray["startPoint"]
+            put line (tMovePolygonalArray["current"]) of tMovePolygonalArray["currentPoints"] into tMovePolygonalArray["endPoint"]
+            _setAnimationEngine tLongId, "movePolygonal", tMovePolygonalArray
+
+          else
+            put line (tMovePolygonalArray["current"] - 1) of tMovePolygonalArray["currentPoints"] into tMovePolygonalArray["startPoint"]
+            put line (tMovePolygonalArray["current"]) of tMovePolygonalArray["currentPoints"] into tMovePolygonalArray["endPoint"]
+            put tOldDistance + distance(tMovePolygonalArray["startPoint"], tMovePolygonalArray["endPoint"]) into tMovePolygonalArray["distance"]
+            set the loc of tLongId to pointOnLine(tMovePolygonalArray["startPoint"], tMovePolygonalArray["endPoint"], tMovePolygonalArray["distance"])
+            _setAnimationEngine tLongId, "movePolygonal", tMovePolygonalArray
+            exit repeat
+         end if
+      end repeat
+   end if
 end movePolygonal
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 
 on movePolygonalReversePath
-   local newDist, testme, thepoints
-   try
-      put the movePolygonal["current"] of the target into testme
-      put the movePolygonal["currentpoints"] of the target into thepoints
-      set the movePolyGonal["currentpoints"] of the target to the movePolyGonal["reversedPoints"] of the target
-      set the movepolygonal["reversedPoints"] of the target to thepoints
-      set the movePolygonal["current"] of the target to (the number of lines of thePoints - testme) + 2
-      put the movePolyGonal["distance"] of the target into newDist
-      set the movePolyGonal["distance"] of the target to distance(the movePolyGonal["startPoint"] of the target, the movePolygonal["endPoint"] of the target) - newdist
-   catch theerror
-      return "error: " & theError
-   end try
+   local tLongId, tAnimationEngineArray, tMovePolygonalArray, tNewDist, tTestMe, tPoints
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["movePolygonal"] into tMovePolygonalArray
+
+   put tMovePolygonalArray["current"] into tTestMe
+   put tMovePolygonalArray["currentpoints"] into tPoints
+   put tMovePolygonalArray["reversedPoints"] into tMovePolygonalArray["currentpoints"]
+   put tPoints into tMovePolygonalArray["reversedPoints"]
+   put (the number of lines of tPoints - tTestMe) + 2 into tMovePolygonalArray["current"]
+   put tMovePolygonalArray["distance"] into tNewDist
+   put distance(tMovePolygonalArray["startPoint"], tMovePolygonalArray["endPoint"]) - tNewdist into tMovePolygonalArray["distance"]
 end movePolygonalReversePath
 
-on numbersOnly theKey
-   local wasSelected
-   put the selectedchunk
-   try
-      if word 1 of the long id of the target is "field" then
-         switch
-            case theKey is in "0123456789"
-               if word 2 of the selectedChunk > word 4 of the selectedchunk then
-                  put theKey before char(word 2 of the selectedchunk) of the target
-                else
-                  put theKey into the selectedchunk
-               end if
-               break
-            case theKey = "."
-               if "." is not in the text of the target then
-                  if word 2 of the selectedChunk > word 4 of the selectedchunk then
-                     put "." before char(word 2 of the selectedChunk) of the target
-                   else
-                     put "." into the selectedchunk
-                  end if
-               end if
-               break
-            case theKey = "-"
-               if "-" is not in the the text of the target then
-                  put the selectedchunk of the target into wasSelected
-                  put "-" before the target
-                  select after char(word 2 of wasSelected) of the target
-                else
-                  put the selectedchunk of the target into wasSelected
-                  delete the first char of the target
-                  select before char(word 4 of wasSelected) of the target
-               end if
-               break
-         end switch
-       else
-         return "The target must be a field!"
+
+setProp superShape pValue
+   local tOldloc, phi, tCallBack, tPoints, tLoops, tLongId
+   //TODO: Investigar y poner un nombre mas comunicativo a estas variables
+   local m, n1, n2, n3, a, b, i
+
+   put the long id of the target into tLongId
+
+   if first word of tLongId = "graphic" then
+      set the style of tLongId to "curve"
+
+      put empty into tPoints
+      put item 1 of pValue into m
+      put item 2 of pValue into n1
+      put item 3 of pValue into n2
+      put item 4 of pValue into n3
+      put item 5 of pValue into a
+      put item 6 of pValue into b
+      put item 7 of pValue into tLoops
+
+      if m, n1, n2, n3 is not a rectangle or a, b is not a point or tLoops is a number then
+         return "Error: syntax is set the supershape of graphic " & quote & "yourGraphic" & quote & " to m,n1,n2,n3,xScale,yScale,loops"
+         exit superShape
       end if
-   catch theerror
-      return "error: " & theError
-   end try
-end numbersOnly
 
+      repeat with i = 1 to tLoops
+         put i * ((pi * 2) / tLoops) into phi
+         put phi * 180 / pi into phi
+         put superFormula(m, n1, n2, n3, phi, a, b) & cr after tPoints
+         put tLoops - i into tCallBack
+         dispatch "superShapeCallBack" to tLongId with tCallBack
+      end repeat
 
-setProp superShape tParameters
-   local a, b, i, loops
-   local m, n1, n2, n3
-   local oldloc, phi, theCallBack, thePoints
-   try
-      if word 1 of the long id of the target = "graphic" then
-         set the style of the long id of the target to "curve"
-
-         if the number of items of tParameters < 7 then
-            return "Error: syntax is set the supershape of grc " & quote & "yourGraphic" & quote & " to m,n1,n2,n3,xScale,yScale,loops"
-            exit superShape
-         end if
-
-         put empty into thePoints
-         put item 1 of tParameters into m
-         put item 2 of tParameters into n1
-         put item 3 of tParameters into n2
-         put item 4 of tParameters into n3
-         put item 5 of tParameters into a
-         put item 6 of tParameters into b
-         put item 7 of tParameters into loops
-         repeat with i = 1 to loops
-            put i * ((pi * 2) / loops) into phi
-            put phi * 180 / pi into phi
-            put superFormula(m, n1, n2, n3, phi, a, b) & cr after thePoints
-            put loops - i into theCallBack
-            dispatch "superShapeCallBack" to the target with theCallBack
-         end repeat
-         delete the last line of thepoints
-         put the loc of the target into oldloc
-         set the points of the target to thepoints
-         set the loc of the target to oldloc
-         pass supershape
-       else
-         return "Supershape only works for graphics"
-         exit supershape
-      end if
-   catch theerror
-      return "error: " & theError
-   end try
+      delete the last line of tPoints
+      put the loc of tLongId into tOldloc
+      set the points of tLongId to tPoints
+      set the loc of tLongId to tOldloc
+      pass supershape
+    else
+      return "Supershape only works for graphics"
+   end if
 end superShape
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 
 setProp superPath tParameters
@@ -3408,7 +3378,7 @@ command aeGeneral
          end switch
          if the milliseconds - tStartTime < tDuration then
             set the loc of pControl to tX, tY
-         else
+          else
             if tDestx, tDestY is a point then
                set the loc of pControl to tDestX, tDestY
             end if
@@ -3416,11 +3386,11 @@ command aeGeneral
             dispatch "aeMoveDone" to pControl
          end if
          send "aeExitFrame" && "aeMoveTo" to pControl
-      else
+       else
          delete variable tAeEasing[pControl]
       end if
    end repeat
-   
+
    local tCenterX, tCenterY, tRadius, tStartAngle, tEndAngle, tNewAngle
    -- tX,tY,tDuration,tMethod,findAngleX(tX,tY,item 1 of the the loc of tControl,item 2 of the loc of tControl), "pending"
    put the keys of tAEEasingCircular into tControls
@@ -3460,7 +3430,7 @@ command aeGeneral
          end switch
          if the milliseconds - tStartTime < tDuration then
             set the loc of pControl to pointOnCircle(tCenterX, tCenterY, tNewAngle, tRadius)
-         else
+          else
             if tDestx, tDestY is a point then
                set the loc of pControl to pointOnCircle(tCenterX, tCenterY, tEndAngle, tRadius)
             end if
@@ -3468,11 +3438,11 @@ command aeGeneral
             dispatch "aeMoveDone" to pControl
          end if
          send "aeExitFrame" && "aeChangeAngleCircular" to pControl
-      else
+       else
          delete variable tAeEasingCircular[pControl]
       end if
    end repeat
-   
+
    -- morphing
    put the keys of sAEMorphing into tControls
    repeat for each line pControl in tControls
@@ -3483,21 +3453,21 @@ command aeGeneral
                --aeMorphPointlists pList1,pList2,pDuration,pCurrentTime,pEffect
                --put the millisecs & cr & aeMorphPointlists(sAEMorphing[pControl][ "p1"],sAEMorphing[pControl]["p2"],sAEMorphing[pControl]["duration"],the milliSecs -sAEMorphing[pControl]["StartTime"] , sAEMorphing[pControl]["Effect"]  )
                set the points of pControl to aeMorphPointlists(sAEMorphing[pControl]["p1"], sAEMorphing[pControl]["p2"], sAEMorphing[pControl]["duration"], the milliSecs - sAEMorphing[pControl]["StartTime"], sAEMorphing[pControl]["Effect"])
-            else
+             else
                set the points of pControl to sAEMorphing[pControl]["p2"]
                delete variable sAEMorphing[pControl]
                dispatch "aeMorphDone" to pControl
             end if
          end if
          send "aeExitFrame" && "aeMorphGraphic" to pControl
-      else
+       else
          delete variable sAEMorphing[pControl]
       end if
    end repeat
-   
+
    --  sAEMorphGradientRamp
    put the keys of sAEMorphGradientRamp into tControls
-   
+
    repeat for each line pControl in tControls
       if there is a pControl then
          send "aeEnterFrame" && "aeMorphGradient" to pControl
@@ -3505,22 +3475,22 @@ command aeGeneral
             if the millisecs - sAEMorphGradientRamp[pControl]["StartTime"] < sAEMorphGradientRamp[pControl]["duration"] then
                --aeMorphPointlists pList1,pList2,pDuration,pCurrentTime,pEffect
                set the fillGradient["ramp"] of pControl to aeMorphGradient(sAEMorphGradientRamp[pControl]["p1"], sAEMorphGradientRamp[pControl]["p2"], sAEMorphGradientRamp[pControl]["duration"], the milliSecs - sAEMorphGradientRamp[pControl]["StartTime"], sAEMorphGradientRamp[pControl]["Effect"])
-            else
+             else
                set the fillGradient["ramp"] of pControl to sAEMorphGradientRamp[pControl]["p2"]
                delete variable sAEMorphGradientRamp[pControl]
                dispatch "aeMorphGradientDone" to pControl
             end if
          end if
          send "aeExitFrame" && "aeMorphGradient" to pControl
-      else
+       else
          delete variable sAEMorphGradientRamp[pControl]
       end if
    end repeat
-   
+
    -- rotate group
-   
+
    put the keys of sAERotateGroup into tControls
-   
+
    repeat for each line theGroup in tControls
       if there is a theGroup then
          send "aeEnterFrame" && "aeRotateGroup" to theGroup
@@ -3528,13 +3498,13 @@ command aeGeneral
             put sAERotateGroup[theGroup]["duration"] into tDuration
             put sAERotateGroup[theGroup]["StartTime"] into tStartTime
             put sAERotateGroup[theGroup]["Effect"] into tMethod
-            
+
             if the millisecs - sAERotateGroup[theGroup]["StartTime"] < tDuration then
                repeat for each line theControl in the keys of sAERotateGroup[theGroup]["controls"]
-                  
+
                   put sAERotateGroup[theGroup]["Angle"] + sAERotateGroup[theGroup]["controls"][theControl]["Angle"] into tEndAngle
                   put sAERotateGroup[theGroup]["controls"][theControl]["Angle"] into tStartAngle
-                  
+
                   switch tMethod
                      case "in"
                         put aeEaseIn(tStartAngle, tEndAngle, tDuration, the milliseconds - tStartTime, 3) into tNewAngle
@@ -3555,18 +3525,18 @@ command aeGeneral
                         put aeEaseIn(tStartAngle, tEndAngle, tDuration, the milliseconds - tStartTime, 1) into tNewAngle
                         break
                   end switch
-                  
+
                   /*
                   put item 1 of tParameters into centerX
                   put item 2 of tParameters into centerY
                   put item 3 of tParameters into isAngle
                   put item 4 of tParameters into isRadius
                   */
-                  
+
                   set the loc of theControl to pointOnCircle(sAERotateGroup[theGroup]["center"], tNewAngle, sAERotateGroup[theGroup]["controls"][theControl]["Distance"])
                end repeat
-               
-            else
+
+             else
                repeat for each line theControl in the keys of sAERotateGroup[theGroup]["controls"]
                   put sAERotateGroup[theGroup]["Angle"] + sAERotateGroup[theGroup]["controls"][theControl]["Angle"] into tEndAngle
                   set the loc of theControl to pointOnCircle(sAERotateGroup[theGroup]["center"], tEndAngle, sAERotateGroup[theGroup]["controls"][theControl]["Distance"])
@@ -3574,11 +3544,11 @@ command aeGeneral
                delete variable sAERotateGroup[theGroup]
             end if
          end if
-      else
+       else
          delete variable sAERotateGroup[theGroup]
       end if
    end repeat
-   
+
    unlock screen
    put the milliseconds - tElapsed into tElapsed
    if the keys of tAeEasing is not empty OR the keys of tAEEasingCircular is not empty OR the keys of sAEMorphing is not empty OR the keys of sAEMorphGradientRamp is not empty OR the keys of sAERotateGroup is not empty then
@@ -3586,7 +3556,7 @@ command aeGeneral
          if "aeGeneral" is not in the pendingmessages then
             send "aeGeneral" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeGeneral" is not in the pendingmessages then
             send "aeGeneral" to me in 5 millisecs
          end if
@@ -3977,7 +3947,7 @@ on _aeCrossfade pControl1, pControl2, pDuration, pStart, pTarget
    set the blendlevel of tControl2 to tValue
    if tElapsed < pDuration then
       send "_aeCrossfade" && pControl1, pControl2, pDuration, pStart, pTarget to me in 25 millisecs
-   else
+    else
       set the visible of tControl2 to false
       set the blendlevel of tControl2 to 0
       put pTarget into tTarget
@@ -4008,7 +3978,7 @@ on _aeFadeIn pControl, pDuration, pStart, pTarget
    set the blendlevel of tControl to 100 - tValue
    if tElapsed < pDuration then
       send "_aeFadeIn" && pControl, pDuration, pStart, pTarget to me in 25 millisecs
-   else
+    else
       put pTarget into tTarget
       replace "§$aeQuote$§" with quote in tTarget
       dispatch "aeFadeInDone" to tTarget
@@ -4037,7 +4007,7 @@ on _aeFadeOut pControl, pDuration, pStart, pTarget
    set the blendlevel of tControl to tValue
    if tElapsed < pDuration then
       send "_aeFadeOut" && pControl, pDuration, pStart, pTarget to me in 25 millisecs
-   else
+    else
       put pTarget into tTarget
       replace "§$aeQuote$§" with quote in tTarget
       dispatch "aeFadeOutDone" to tTarget
@@ -4174,7 +4144,7 @@ command aeChangingRect
       end switch
       if the milliseconds - tStartTime < tDuration then
          set the rect of pControl to tLeft, tTop, tRight, tBottom
-      else
+       else
          if tDestLeft, tDestTop, tDestRight, tDestBottom is a rectangle then
             set the rect of pControl to tDestLeft, tDestTop, tDestRight, tDestBottom
          end if
@@ -4191,7 +4161,7 @@ command aeChangingRect
          if "aeChangingRect" is not in the pendingmessages then
             send "aeChangingRect" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingRect" is not in the pendingmessages then
             send "aeChangingRect" to me in 5 millisecs
          end if
@@ -4297,7 +4267,7 @@ command aeChangingHeight
       end switch
       if the milliseconds - tStartTime < tDuration then
          set the height of pControl to tHeight
-      else
+       else
          if tHeight is a number then
             set the height of pControl to tHeight
          end if
@@ -4313,7 +4283,7 @@ command aeChangingHeight
          if "aeChangingHeight" is not in the pendingmessages then
             send "aeChangingHeight" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingHeight" is not in the pendingmessages then
             send "aeChangingHeight" to me in 5 millisecs
          end if
@@ -4417,7 +4387,7 @@ command aeChangingWidth
       end switch
       if the milliseconds - tStartTime < tDuration then
          set the width of pControl to tWidth
-      else
+       else
          if tWidth is a number then
             set the width of pControl to tWidth
          end if
@@ -4433,7 +4403,7 @@ command aeChangingWidth
          if "aeChangingWidth" is not in the pendingmessages then
             send "aeChangingWidth" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingWidth" is not in the pendingmessages then
             send "aeChangingWidth" to me in 5 millisecs
          end if
@@ -4537,7 +4507,7 @@ command aeChangingHScroll
       put round(tHScroll) into tHScroll
       if the milliseconds - tStartTime < tDuration then
          set the hscroll of pControl to tHScroll
-      else
+       else
          if tHScroll is a number then
             set the hscroll of pControl to tHScroll
          end if
@@ -4553,7 +4523,7 @@ command aeChangingHScroll
          if "aeChangingHScroll" is not in the pendingmessages then
             send "aeChangingHScroll" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingHScroll" is not in the pendingmessages then
             send "aeChangingHScroll" to me in 5 millisecs
          end if
@@ -4656,7 +4626,7 @@ command aeChangingVScroll
       put round(tVscroll) into tVscroll
       if the milliseconds - tStartTime < tDuration then
          set the vscroll of pControl to tVScroll
-      else
+       else
          if tVScroll is a number then
             set the vscroll of pControl to tVScroll
          end if
@@ -4672,7 +4642,7 @@ command aeChangingVScroll
          if "aeChangingVScroll" is not in the pendingmessages then
             send "aeChangingVScroll" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingVScroll" is not in the pendingmessages then
             send "aeChangingVScroll" to me in 5 millisecs
          end if
@@ -4755,7 +4725,7 @@ end aeUnlockBackColors
 local sTimeTakenToChangeBackColors
 
 command aeChangingBackColor
-   
+
    lock screen
    local tTimeLost, tFramesLost, tElapsed
    local tBackColor, tDuration, tMethod, tStartBackColor, tDestBackColor, tStartTime
@@ -4820,7 +4790,7 @@ command aeChangingBackColor
       end repeat
       if the milliseconds - tStartTime < tDuration then
          set the backcolor of pControl to tBackColor
-      else
+       else
          if tBackColor is a color then
             set the backcolor of pControl to tBackColor
          end if
@@ -4836,7 +4806,7 @@ command aeChangingBackColor
          if "aeChangingBackColor" is not in the pendingmessages then
             send "aeChangingBackColor" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingBackColor" is not in the pendingmessages then
             send "aeChangingBackColor" to me in 5 millisecs
          end if
@@ -4911,7 +4881,7 @@ end aeUnlockforeColors
 local sTimeTakenToChangeforeColors
 
 command aeChangingforeColor
-   
+
    lock screen
    local tTimeLost, tFramesLost, tElapsed
    local tforeColor, tDuration, tMethod, tStartforeColor, tDestforeColor, tStartTime
@@ -4976,7 +4946,7 @@ command aeChangingforeColor
       end repeat
       if the milliseconds - tStartTime < tDuration then
          set the forecolor of pControl to tforeColor
-      else
+       else
          if tforeColor is a color then
             set the forecolor of pControl to tforeColor
          end if
@@ -4992,7 +4962,7 @@ command aeChangingforeColor
          if "aeChangingforeColor" is not in the pendingmessages then
             send "aeChangingforeColor" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingforeColor" is not in the pendingmessages then
             send "aeChangingforeColor" to me in 5 millisecs
          end if
@@ -5096,7 +5066,7 @@ command aeChangingThumbPosition
       put round(tThumbPosition) into tThumbPosition
       if the milliseconds - tStartTime < tDuration then
          set the thumbposition of pControl to tThumbPosition
-      else
+       else
          if tThumbPosition is a number then
             set the thumbposition of pControl to tThumbPosition
          end if
@@ -5112,7 +5082,7 @@ command aeChangingThumbPosition
          if "aeChangingThumbPosition" is not in the pendingmessages then
             send "aeChangingThumbPosition" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingThumbPosition" is not in the pendingmessages then
             send "aeChangingThumbPosition" to me in 5 millisecs
          end if
@@ -5281,12 +5251,12 @@ command aeChangingBackColorOfChunk
       put tChunk & " of " & item 1 of pControl into assembleChunk
       if the milliseconds - tStartTime < tDuration then
          do "set the BackColor of" && assembleChunk && "to" && tBackColorOfChunk
-      else
+       else
          if tBackColorOfChunk is a color then
             do "set the BackColor of" && assembleChunk && "to" && tBackColorOfChunk
          end if
          delete variable tAeChangeBackColorOfChunk[pControl]
-         dispatch"aeChangeBackColorOfChunkDone" to theControl
+         dispatch "aeChangeBackColorOfChunkDone" to theControl
       end if
       send "aeExitFrame" && "aeChangeBackColorOfChunk" to theControl
    end repeat
@@ -5297,7 +5267,7 @@ command aeChangingBackColorOfChunk
          if "aeChangingBackColorOfChunk" is not in the pendingmessages then
             send "aeChangingBackColorOfChunk" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingBackColorOfChunk" is not in the pendingmessages then
             send "aeChangingBackColorOfChunk" to me in 5 millisecs
          end if
@@ -5455,7 +5425,7 @@ command aeChangingforecolorOfChunk
             put aeEaseIn(item 3 of tStartforecolorOfChunk, item 3 of tDestforecolorOfChunk, tDuration, the milliseconds - tStartTime, 1) into item 3 of tforecolorOfChunk
             break
       end switch
-      
+
       repeat with i = 1 to 3
          put round(item i of tforecolorOfChunk) into item i of tforecolorOfChunk
          if item i of tforecolorOfChunk > 255 then put 255 into item i of tforecolorOfChunk
@@ -5465,7 +5435,7 @@ command aeChangingforecolorOfChunk
       put tChunk & " of " & item 1 of pControl into assembleChunk
       if the milliseconds - tStartTime < tDuration then
          do "set the forecolor of" && assembleChunk && "to" && tforecolorOfChunk
-      else
+       else
          if tforecolorOfChunk is a color then
             do "set the forecolor of" && assembleChunk && "to" && tforecolorOfChunk
          end if
@@ -5481,7 +5451,7 @@ command aeChangingforecolorOfChunk
          if "aeChangingforecolorOfChunk" is not in the pendingmessages then
             send "aeChangingforecolorOfChunk" to me in (1000 / sAEFRameRate) - tElapsed millisecs
          end if
-      else
+       else
          if "aeChangingforecolorOfChunk" is not in the pendingmessages then
             send "aeChangingforecolorOfChunk" to me in 5 millisecs
          end if
@@ -5873,7 +5843,7 @@ function ae3dConvertListToScreen pointList, pOriginX, pOriginY, pFocalLength
    end try
 end ae3dConvertListToScreen
 
-
+####################### Added in version 7 ######################################
 # This command is to create and update the value of the properties of the objects
 # in the custom property set used by this library.
 # The parameters are:
