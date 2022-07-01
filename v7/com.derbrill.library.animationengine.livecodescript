@@ -575,7 +575,7 @@ get circleLineSegmentCollide(line 1 of the points of grc "line",line 2 of the po
 
 Description:
 This function returns true if there is a collision between a line segment (specified by startPoint x1,y1 and the endPoint x2,y2 and
-a circle (specified by the circles centerpoint x3,y3 and it's radius). Else it returns false.
+a circle (specified by the circles centerPoint x3,y3 and it's radius). Else it returns false.
 
 Parameters:
 Point1: First point
@@ -1719,16 +1719,15 @@ setProp superShape pValue
       put item 6 of pValue into b
       put item 7 of pValue into tLoops
 
-      if m, n1, n2, n3 is not a rectangle or a, b is not a point or tLoops is a number then
-         return "Error: syntax is set the supershape of graphic " & quote & "yourGraphic" & quote & " to m,n1,n2,n3,xScale,yScale,loops"
-         exit superShape
-      end if
+      if m, n1, n2, n3 is not a rectangle or a, b is not a point or tLoops is a number
+      then return "Error: syntax is set the supershape of graphic " & quote & "yourGraphic" & quote & " to m,n1,n2,n3,xScale,yScale,loops"
 
       repeat with i = 1 to tLoops
          put i * ((pi * 2) / tLoops) into phi
          put phi * 180 / pi into phi
          put superFormula(m, n1, n2, n3, phi, a, b) & cr after tPoints
          put tLoops - i into tCallBack
+
          dispatch "superShapeCallBack" to tLongId with tCallBack
       end repeat
 
@@ -1743,128 +1742,117 @@ setProp superShape pValue
 end superShape
 
 
-setProp superPath tParameters
-   local a, b, i, loops
-   local m, n1, n2, n3
-   local oldloc, phi, thePoints
-   try
-      if word 1 of the long id of the target = "graphic" then
-         set the style of the long id of the target to "curve"
+setProp superPath pValue
+   local tOldLoc, tPhi, tPoints, tLoops, tLongId
+   //TODO: Investigate and put a more communicative name to these variables
+   local a, b, i, m, n1, n2, n3
 
-         if the number of items of tParameters < 3 then
-            return "Error: syntax is set the supershape of grc " & quote & "yourGraphic" & quote & " to m,xScale,yScale"
-            exit superPath
-         end if
+   put the long id of target into tLongId
 
-         put empty into thePoints
-         put item 1 of tParameters into m
-         put 1 into n1
-         put 1 into n2
-         put 1 into n3
-         put item 2 of tParameters into a
-         put item 3 of tParameters into b
-         put 1400 into loops
-         repeat with i = 1 to loops
-            put i * ((pi * 2) / loops) into phi
-            --put phi*180/pi into phi
-            if the last line of thePoints <> superFormula(m, n1, n2, n3, phi, a, b) then
-               put superFormula(m, n1, n2, n3, phi, a, b) & cr after thePoints
-            end if
-         end repeat
-         put line 1 of thePoints & cr after thePoints
-         delete the last char of thepoints
+   if word 1 of tLongId = "graphic" then
+      set the style of tLongId to "curve"
 
-         --repeat with i=the number of lines of thePoints down to 2
-         --if line i of thepoints=line i-1 of thepoints then delete line i of thepoints
-         --end repeat
-         put the loc of the target into oldloc
-         set the points of the target to thepoints
-         set the loc of the target to oldloc
-         pass superPath
-       else
-         return "Supershape only works for graphics"
-         exit superPath
+      put empty into tPoints
+      put 1 into n1
+      put 1 into n2
+      put 1 into n3
+      put item 1 of pValue into m
+      put item 2 of pValue into a
+      put item 3 of pValue into b
+      put 1400 into tLoops
+
+      if m, a is not a point or b is not a number then
+         return "Error: syntax is set the supershape of grc " & quote & "yourGraphic" & quote & " to m,xScale,yScale"
       end if
-   catch theerror
-      return "error: " & theError
-   end try
+
+      repeat with i = 1 to tLoops
+         put i * ((pi * 2) / tLoops) into tPhi
+         --put tPhi*180/pi into tPhi
+         if the last line of tPoints <> superFormula(m, n1, n2, n3, tPhi, a, b) then
+            put superFormula(m, n1, n2, n3, tPhi, a, b) & cr after tPoints
+         end if
+      end repeat
+
+      put line 1 of tPoints & cr after tPoints
+      delete the last char of tPoints
+
+      --repeat with i=the number of lines of tPoints down to 2
+      --if line i of tPoints=line i-1 of tPoints then delete line i of tPoints
+      --end repeat
+      put the loc of tLongId into tOldLoc
+      set the points of tLongId to tPoints
+      set the loc of tLongId to tOldLoc
+      pass superPath
+    else
+      return "Supershape only works for graphics"
+   end if
 end superPath
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 
-setProp spiral tParameters
-   local accuracy, cx, cY, i
-   local isWinding, myAngle, myRadius, pointList
-   local Step, windings
-   try
-      if word 1 of the long id of the target = "graphic" then
-         set the style of the long id of the target to "curve"
+setProp spiral pValue
+   local tAccuracy, tCenterX, tCenterY, i
+   local tWinding, tAngle, tRadius, tPointList
+   local tStep, tWindings
 
-         if the number of items of tParameters < 4 then
-            return "Error: syntax is set the spiral of grc " & quote & "yourGraphic" & quote & " to cx,cy,step,windings,[high/low/draft]"
-            exit spiral
-         end if
+   if word 1 of the long id of the target = "graphic" then
+      set the style of the long id of the target to "curve"
 
-         repeat with i = 1 to 4
-            if item i of tParameters is not a number then
-               return "Error: syntax is set the spiral of grc " & quote & "yourGraphic" & quote & " to cx,cy,step,windings"
-               exit spiral
-            end if
-         end repeat
+      put item 1 of pValue into tCenterX
+      put item 2 of pValue into tCenterY
+      put item 3 of pValue into tStep
+      put item 4 of pValue into tWindings
+      put item 5 of pValue into tAccuracy
 
-         if item 5 of tParameters is a number then
-            put item 5 of tParameters into accuracy
-            if item 5 of tParameters < 1 then
-               put 1 into accuracy
-            end if
-            if item 5 of tParameters > 36 then
-               put 36 into accuracy
-            end if
-          else
-            switch item 5 of tParameters
-               case "high"
-                  put 2 into accuracy
-                  break
-               case "low"
-                  put 4 into accuracy
-                  break
-               case "draft"
-                  put 36 into accuracy
-                  break
-               default
-                  put 4 into accuracy
-                  break
-            end switch
-         end if
-
-         put item 1 of tParameters into cx
-         put item 2 of tParameters into cY
-         put item 3 of tParameters into Step
-         put item 4 of tParameters into windings
-
-         put 0 into isWinding
-         put 0 into myAngle
-         put 0 into myRadius
-
-         repeat until isWinding >= windings
-            add accuracy to myAngle
-            add accuracy / 360 to isWinding
-            add step * accuracy to myRadius
-            if myAngle >= 360 then
-               put myAngle - 360 into myAngle
-            end if
-            put pointOnCircle(cx, cy, myAngle, myRadius) & cr after pointList
-         end repeat
-         set the points of the target to pointList
-         pass spiral
-       else
-         return "Error: Target must be a graphic!"
-         exit spiral
+      if tCenterX, tCenterY, tStep, tWindings is not a rectangle then
+         return "Error: syntax is set the spiral of grc " & quote & "yourGraphic" & quote & " to centerX, centerY, step, windings, [high|low|draft]"
       end if
-   catch theerror
-      return "error: " & theError
-   end try
+
+      if tAccuracy is a number then
+         if tAccuracy < 1 then
+            put 1 into tAccuracy
+          else if tAccuracy > 36 then
+            put 36 into tAccuracy
+         end if
+       else
+         switch tAccuracy
+            case "high"
+               put 2 into tAccuracy
+               break
+            case "low"
+               put 4 into tAccuracy
+               break
+            case "draft"
+               put 36 into tAccuracy
+               break
+            default
+               put 4 into tAccuracy
+               break
+         end switch
+      end if
+
+      put 0 into tWinding
+      put 0 into tAngle
+      put 0 into tRadius
+
+      repeat until tWinding >= tWindings
+         add tAccuracy to tAngle
+         add tAccuracy / 360 to tWinding
+         add tStep * tAccuracy to tRadius
+
+         if tAngle >= 360 then
+            put tAngle - 360 into tAngle
+         end if
+
+         put pointOnCircle(tCenterX, tCenterY, tAngle, tRadius) & cr after tPointList
+      end repeat
+
+      set the points of the target to tPointList
+      pass spiral
+    else
+      return "Error: Target must be a graphic!"
+   end if
 end spiral
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 /*
 -- Weg mit dem Mist. Was hat das überhaupt in einer animationsLib zu suchen???
