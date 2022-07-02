@@ -1980,30 +1980,30 @@ setProp movePolyGonal[whichKey] pValue
    end if
    pass movePolygonal
 end movePolyGonal
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 -- circular easing
 on moveCircularEaseIn pNewValue, pDuration, pExponent
-   try
-      if pNewValue is not a number or pDuration is not a number then
-         return "error: Parameter is not a number"
-         exit moveCircularEaseIn
-      end if
-      if pExponent is not a number and pExponent is not empty then
-         return "error: Parameter is not a number"
-         exit moveCircularEaseIn
-      end if
-      if pExponent is empty then put 2 into pExponent
-      set the moveCircular["easeStart"] of the target to the moveCircular["step"] of the target
-      set the moveCircular["easeEnd"] of the target to pNewValue
-      set the moveCircular["easeDuration"] of the target to pDuration
-      set the moveCircular["easeExponent"] of the target to pExponent
-      set the moveCircular["easeStartTime"] of the target to the milliseconds
-      send "moveCircularChangeStepIn" to the target
-   catch theError
-      return theError
-   end try
+   local tLongId, tAnimationEngineArray, tMoveCircularlArray
+
+   if (pNewValue is not a number or pDuration is not a number) or \
+         (pExponent is not a number and pExponent is not empty) then
+      return "error: Parameter is not a number"
+   end if
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId) into tAnimationEngineArray
+   put tAnimationEngineArray["moveCircular"] into tMoveCircularlArray
+   if pExponent is empty then put 2 into pExponent
+
+   _setAnimationEngine tLongId, "easeStart", tMoveCircularlArray["step"]
+   _setAnimationEngine tLongId, "easeEnd", pNewValue
+   _setAnimationEngine tLongId, "easeDuration", pDuration
+   _setAnimationEngine tLongId, "easeExponent", pExponent
+   _setAnimationEngine tLongId, "easeStartTime", the milliseconds
+
+   dispatch "moveCircularChangeStepIn" to tLongId
 end moveCircularEaseIn
+
 
 on moveCircularChangeStepIn
    local tDuration, tElapsed, tEnd, tExponent
