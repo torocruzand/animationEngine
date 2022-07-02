@@ -1852,270 +1852,135 @@ setProp spiral pValue
       return "Error: Target must be a graphic!"
    end if
 end spiral
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
-/*
--- Weg mit dem Mist. Was hat das überhaupt in einer animationsLib zu suchen???
 
-getProp cell[which]
-   local testMe,tRowNum,tColNum
-   put the long id of the target into testMe
-   try
-      if "field" is not in the long id of the target then
-         return "Error: Target must be a field!"
-         exit cell
-      end if
-      put item 1 of which into tRownum
-      put item 2 of which into tColnum
-      set the itemdel to tab
-      do "return item tColnum of line tRownum of "&testMe
-   catch theerror
-      return "error: "&theError
-   end try
-end cell
+setProp constrainLinear pValue
+   local tLongId, tParam1, tParam2, tParam3, tParam4
 
-setProp cell[which] newValue
-   local testMe,tRowNum,tColNum
+   put the long id of target into tLongId
+   put item 1 of pValue into tParam1
+   put item 2 of pValue into tParam2
+   put item 3 of pValue into tParam3
+   put item 4 of pValue into tParam4
 
-   put the long id of the target into testMe
-   try
-      if "field" is not in the long id of the target then
-         return "Error: Target must be a field!"
-         exit cell
-      end if
-      put item 1 of which into tRownum
-      put item 2 of which into tColnum
-      set the itemdel to tab
-      -- optionaly check here that newValue does not contain the itemdel:
-      if the itemdel is in newValue then
-         return "Error : new value should be only 1 item!"
-         exit cell
-      end if
-      do "put "&newValue&" into item "&tColnum&" of line "&tRownum&" of "&testMe
-   catch theerror
-      return "error: "&theError
-   end try
-end cell
-*/
+   if tParam1, tParam2, tParam3, tParam4 is not a rectangle
+   then return "Error : constrainLinear needs 4 parameters and all parameters must be numbers."
 
-setProp constrainLinear
-   local which
-   try
-      if param(1) <> "" then
-         repeat with i = 1 to paramcount()
-            if i < paramcount() then
-               put param(i) & "," after which
-             else
-               put param(i) after which
-            end if
-         end repeat
+   _setAnimationEngine tLongId, "constrainRectangular", empty
+   _setAnimationEngine tLongId, "constrainElliptical", empty
+   _setAnimationEngine tLongId, "constrainCircular", empty
 
-         set the itemdel to ","
-         if the number of items of which <> 4 then
-            return "Error: constrainLinear needs 4 parameters."
-            exit constrainLinear
-         end if
-         repeat with i = 1 to 4
-            if item i of which is not a number then
-               return "error: All parameters must be numbers"
-               exit constrainLinear
-            end if
-         end repeat
-      end if
-      lock messages
-      set the constrainRectangular of the target to empty
-      set the constrainElliptical of the target to empty
-      set the constrainCircular of the target to empty
-
-      unlock messages
-      pass constrainLinear
-   catch theerror
-      return "error: " & theError
-   end try
+   pass constrainLinear
 end constrainLinear
 
-setProp constrainCircular
-   local i, which
-   try
-      if param(1) <> "" then
-         repeat with i = 1 to paramcount()
-            if i < paramcount() then
-               put param(i) & "," after which
-             else
-               put param(i) after which
-            end if
-         end repeat
 
-         set the itemdel to ","
-         if the number of items of which <> 3 then
-            return "Error: constrainCircular needs 3 parameters."
-            exit constrainCircular
-         end if
-         repeat with i = 1 to 3
-            if item i of which is not a number then
-               return "error: All parameters must be numbers"
-               exit constrainCircular
-            end if
-         end repeat
-      end if
-      lock messages
-      set the constrainRectangular of the target to empty
-      set the constrainElliptical of the target to empty
-      set the constrainLinear of the target to empty
+setProp constrainCircular pValue
+   local tLongId, tParam1, tParam2, tParam3
 
-      unlock messages
-      pass constrainCircular
-   catch theerror
-      return "error: " & theError
-   end try
+   put the long id of target into tLongId
+   put item 1 of pValue into tParam1
+   put item 2 of pValue into tParam2
+   put item 3 of pValue into tParam3
+
+   if tParam1, tParam2 is not a point or tParam3 is not a number
+   then return "Error : constrainCircular needs 3 parameters and all parameters must be numbers."
+
+   _setAnimationEngine tLongId, "constrainRectangular", empty
+   _setAnimationEngine tLongId, "constrainElliptical", empty
+   _setAnimationEngine tLongId, "constrainLinear", empty
+
+   pass constrainCircular
 end constrainCircular
 
-setProp constrainRectangular
-   local i, which
-   try
-      if param(1) <> "" then
-         repeat with i = 1 to paramcount()
-            if i < paramcount() then
-               put param(i) & "," after which
-             else
-               put param(i) after which
-            end if
-         end repeat
-         set the itemdel to ","
-         if the number of items of which <> 4 then
-            return "Error: constrainRectangular needs 4 parameters."
-            exit constrainRectangular
-         end if
-         repeat with i = 1 to 4
-            if item i of which is not a number then
-               return "Error: All parameters must be numbers"
-               exit constrainRectangular
-            end if
-         end repeat
-      end if
-      lock messages
-      set the constrainCircular of the target to empty
-      set the constrainElliptical of the target to empty
-      set the constrainLinear of the target to empty
-      unlock messages
-      pass constrainRectangular
-   catch theerror
-      return "error: " & theError
-   end try
+
+setProp constrainRectangular pValue
+   local tLongId, tParam1, tParam2, tParam3, tParam4
+
+   put the long id of target into tLongId
+   put item 1 of pValue into tParam1
+   put item 2 of pValue into tParam2
+   put item 3 of pValue into tParam3
+   put item 4 of pValue into tParam4
+
+   if tParam1, tParam2, tParam3, tParam4 is not a rectangle
+   then return "Error : constrainRectangular needs 4 parameters and all parameters must be numbers."
+
+   _setAnimationEngine tLongId, "constrainCircular", empty
+   _setAnimationEngine tLongId, "constrainElliptical", empty
+   _setAnimationEngine tLongId, "constrainLinear", empty
+
+   pass constrainRectangular
 end constrainRectangular
 
-setProp constrainElliptical
-   local i, which
-   try
-      if param(1) <> "" then
-         repeat with i = 1 to paramcount()
-            if i < paramcount() then
-               put param(i) & "," after which
-             else
-               put param(i) after which
-            end if
-         end repeat
 
-         set the itemdel to ","
-         if the number of items of which <> 4 then
-            return "Error: constrainElliptical needs 4 parameters."
-            exit constrainElliptical
-         end if
-         repeat with i = 1 to 4
-            if item i of which is not a number then
-               return "Error: All parameters must be numbers"
-               exit constrainElliptical
-            end if
-         end repeat
-      end if
-      lock messages
-      set the constrainCircular of the target to empty
-      set the constrainRectangular of the target to empty
-      set the constrainLinear of the target to empty
-      unlock messages
-      pass constrainElliptical
-   catch theerror
-      return "error: " & theError
-   end try
+setProp constrainElliptical pValue
+   local tLongId, tParam1, tParam2, tParam3, tParam4
+
+   put the long id of target into tLongId
+   put item 1 of pValue into tParam1
+   put item 2 of pValue into tParam2
+   put item 3 of pValue into tParam3
+   put item 4 of pValue into tParam4
+
+   if tParam1, tParam2, tParam3, tParam4 is not a rectangle
+   then return "Error : constrainElliptical needs 4 parameters and all parameters must be numbers."
+
+   _setAnimationEngine tLongId, "constrainCircular", empty
+   _setAnimationEngine tLongId, "constrainRectangular", empty
+   _setAnimationEngine tLongId, "constrainLinear", empty
+
+   pass constrainElliptical
 end constrainElliptical
 
-setProp aspectScale tParameters
-   try
-      get aspectResize(item 1 to 4 of tParameters) --> PASA EL LONG ID
-      set the width of the target to item 1 of it
-      set the height of the target to item 2 of it
-      set the lockloc of the target to false
-      set the loc of the target to item 1 of tParameters + (item 3 of tParameters - item 1 of tParameters) / 2, item 2 of tParameters + (item 4 of tParameters - item 2 of tParameters) / 2
-      if item 5 of tParameters = "true" then
-         set the lockloc of the target to true
-      end if
-      if item 5 of tParameters = "false" then
-         set the lockloc of the target to false
-      end if
-      pass aspectScale
-   catch theerror
-      return "error: " & theError
-   end try
+
+setProp aspectScale pValue
+   local tLongId, tParam1, tParam2, tParam3, tParam4, tParam5, tAspectResize
+
+   put the long id of target into tLongId
+   put item 1 of pValue into tParam1
+   put item 2 of pValue into tParam2
+   put item 3 of pValue into tParam3
+   put item 4 of pValue into tParam4
+   put item 5 of pValue into tParam5
+   put aspectResize(pValue,(tParam1, tParam2, tParam3, tParam4)) into tAspectResize
+
+   set the width of tLongId to item 1 of tAspectResize
+   set the height of tLongId to item 2 of tAspectResize
+   set the lockloc of tLongId to false
+   set the loc of tLongId to tParam1 + (tParam3 - tParam1) / 2, tParam2 + (tParam4 - tParam2) / 2
+
+   if tParam5 = "true" then
+      set the lockloc of tLongId to true
+    else if tParam5 = "false" then
+      set the lockloc of tLongId to false
+   end if
+   pass aspectScale
 end aspectScale
 
-setProp movePolyGonal[whichkey] tParameters
-   local myVal, counter, reversePoints
-   try
-      put the number of lines of tParameters into myVal
-      if whichKey = "pointlist" then
-         put - 1 into counter
-         repeat for each line theLine in tParameters
-            add 1 to counter
-            put line (myVal - counter) of tParameters & cr after reversePoints
-         end repeat
-         delete the last char of reversePoints
-         set the movePolygonal["reversedPoints"] of the target to reversePoints
-         set the movePolygonal["currentpoints"] of the target to tParameters
-         --beep
-      end if
-      pass movePolygonal
-   catch theerror
-      return "error: " & theError
-   end try
+
+setProp movePolyGonal[whichKey] pValue
+   local tVal, tLongId, tCounter, tReversePoints
+
+   put the number of lines of pValue into tVal
+
+   if whichKey = "pointlist" then
+      put the long id of target into tLongId
+      put - 1 into tCounter
+
+      repeat for each line tLine in pValue
+         add 1 to tCounter
+         put line (tVal - tCounter) of pValue & cr after tReversePoints
+      end repeat
+
+      delete the last char of tReversePoints
+
+      _setAnimationEngine tLongId, "reversedPoints", tReversePoints
+      _setAnimationEngine tLongId, "currentpoints", pValue
+      --beep
+   end if
+   pass movePolygonal
 end movePolyGonal
-
-//TODO: Find where these messages are generated and use dispatch to remove these lines.
--- 2.0 Update
-on constrainRectangularInit
-end constrainRectangularInit
-
-on constrainRectangularExit
-end constrainRectangularExit
-
-on constrainRectangularCallBack
-end constrainRectangularCallBack
-
-on constrainEllipticalInit
-end constrainEllipticalInit
-
-on constrainEllipticalExit
-end constrainEllipticalExit
-
-on constrainEllipticalCallBack
-end constrainEllipticalCallBack
-
-on constrainCircularInit
-end constrainCircularInit
-
-on constrainCircularExit
-end constrainCircularExit
-
-on constrainCircularCallBack
-end constrainCircularCallBack
-
-on constrainLinearInit
-end constrainLinearInit
-
-on constrainLinearExit
-end constrainLinearExit
-
-on constrainLinearCallBack
-end constrainLinearCallBack
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 -- circular easing
 on moveCircularEaseIn pNewValue, pDuration, pExponent
