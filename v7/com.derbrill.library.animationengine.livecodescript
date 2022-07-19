@@ -2114,105 +2114,110 @@ on moveEllipticalEaseIn pNewValue, pDuration, pExponent
 
    dispatch "moveEllipticalChangeStepIn" to tLongId
 end moveEllipticalEaseIn
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
+
 
 on moveEllipticalChangeStepIn
-   local tDuration, tElapsed, tEnd, tExponent
-   local tMillisecs, tNewStep, tStart
-   try
-      put the moveElliptical["easeStart"] of the target into tStart
-      put the moveElliptical["easeEnd"] of the target into tEnd
-      put the moveElliptical["easeDuration"] of the target into tDuration
-      put the moveElliptical["easeExponent"] of the target into tExponent
-      put the moveElliptical["easeStartTime"] of the target into tMillisecs
-      put the milliseconds - tMillisecs into tElapsed
-      put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tNewStep
-      set the moveElliptical["step"] of the target to tNewStep
-      if tNewStep <> tEnd then send "moveEllipticalChangeStepIn" to the target in 20 milliseconds
-   catch theError
-      return theError
-   end try
+   local tLongId, tMoveEllipticalArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveElliptical") into tMoveEllipticalArray
+
+   put tMoveEllipticalArray["easeStart"] into tStart
+   put tMoveEllipticalArray["easeEnd"] into tEnd
+   put tMoveEllipticalArray["easeDuration"] into tDuration
+   put tMoveEllipticalArray["easeExponent"] into tExponent
+   put tMoveEllipticalArray["easeStartTime"] into tMillisecs
+   put the milliseconds - tMillisecs into tElapsed
+   put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveEllipticalArray["step"]
+
+   _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
+
+   if tMoveEllipticalArray["step"] <> tEnd then send "moveEllipticalChangeStepIn" to tLongId in 20 milliseconds
 end moveEllipticalChangeStepIn
 
+
 on moveEllipticalEaseOut pNewValue, pDuration, pExponent
-   try
-      if pNewValue is not a number or pDuration is not a number then
-         return "error: Parameter is not a number"
-         exit moveEllipticalEaseOut
-      end if
-      if pExponent is not a number and pExponent is not empty then
-         return "error: Parameter is not a number"
-         exit moveEllipticalEaseOut
-      end if
-      if pExponent is empty then put 2 into pExponent
-      set the moveElliptical["easeStart"] of the target to the moveElliptical["step"] of the target
-      set the moveElliptical["easeEnd"] of the target to pNewValue
-      set the moveElliptical["easeDuration"] of the target to pDuration
-      set the moveElliptical["easeExponent"] of the target to pExponent
-      set the moveElliptical["easeStartTime"] of the target to the milliseconds
-      send "moveEllipticalChangeStepOut" to the target
-   catch theError
-      return theError
-   end try
+   local tLongId, tMoveEllipticalArray
+
+   if pExponent is empty then put 2 into pExponent
+   if pNewValue is not a number or pDuration is not a number or pExponent is not a number
+   then return "error: Parameter is not a number"
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveElliptical") into tMoveEllipticalArray
+
+   put tMoveEllipticalArray["step"] into tMoveEllipticalArray["easeStart"]
+   put pNewValue into tMoveEllipticalArray["easeEnd"]
+   put pDuration into tMoveEllipticalArray["easeDuration"]
+   put pExponent into tMoveEllipticalArray["easeExponent"]
+   put the milliseconds into tMoveEllipticalArray["easeStartTime"]
+
+   dispatch "moveEllipticalChangeStepOut" to tLongId
 end moveEllipticalEaseOut
 
+
 on moveEllipticalChangeStepOut
-   local tDuration, tElapsed, tEnd, tExponent
-   local tMillisecs, tNewStep, tStart
-   try
-      put the moveElliptical["easeStart"] of the target into tStart
-      put the moveElliptical["easeEnd"] of the target into tEnd
-      put the moveElliptical["easeDuration"] of the target into tDuration
-      put the moveElliptical["easeExponent"] of the target into tExponent
-      put the moveElliptical["easeStartTime"] of the target into tMillisecs
-      put the milliseconds - tMillisecs into tElapsed
-      put aeEaseOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tNewStep
-      set the moveElliptical["step"] of the target to tNewStep
-      if tNewStep <> tEnd then send "moveEllipticalChangeStepOut" to the target in 20 milliseconds
-   catch theError
-      return theError
-   end try
+   local tLongId, tMoveEllipticalArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveElliptical") into tMoveEllipticalArray
+
+   put tMoveEllipticalArray["easeStart"] into tStart
+   put tMoveEllipticalArray["easeEnd"] into tEnd
+   put tMoveEllipticalArray["easeDuration"] into tDuration
+   put tMoveEllipticalArray["easeExponent"] into tExponent
+   put tMoveEllipticalArray["easeStartTime"] into tMillisecs
+   put the milliseconds - tMillisecs into tElapsed
+
+   put aeEaseOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveEllipticalArray["step"]
+   _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
+
+   if tMoveEllipticalArray["step"] <> tEnd then send "moveEllipticalChangeStepOut" to tLongId in 20 milliseconds
 end moveEllipticalChangeStepOut
 
+
 on moveEllipticalEaseInOut pNewValue, pDuration, pExponent
-   try
-      if pNewValue is not a number or pDuration is not a number then
-         return "error: Parameter is not a number"
-         exit moveEllipticalEaseInOut
-      end if
-      if pExponent is not a number and pExponent is not empty then
-         return "error: Parameter is not a number"
-         exit moveEllipticalEaseInOut
-      end if
-      if pExponent is empty then put 2 into pExponent
-      set the moveElliptical["easeStart"] of the target to the moveElliptical["step"] of the target
-      set the moveElliptical["easeEnd"] of the target to pNewValue
-      set the moveElliptical["easeDuration"] of the target to pDuration
-      set the moveElliptical["easeExponent"] of the target to pExponent
-      set the moveElliptical["easeStartTime"] of the target to the milliseconds
-      send "moveEllipticalChangeStepInOut" to the target
-   catch theError
-      return theError
-   end try
+   local tLongId, tMoveEllipticalArray
+
+   if pExponent is empty then put 2 into pExponent
+   if pNewValue is not a number or pDuration is not a number or pExponent is not a number
+   then return "error: Parameter is not a number"
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveElliptical") into tMoveEllipticalArray
+
+   put tMoveEllipticalArray["step"] into tMoveEllipticalArray["easeStart"]
+   put pNewValue into tMoveEllipticalArray["easeEnd"]
+   put pDuration into tMoveEllipticalArray["easeDuration"]
+   put pExponent into tMoveEllipticalArray["easeExponent"]
+   put the milliseconds into tMoveEllipticalArray["easeStartTime"]
+
+   _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
+
+   send "moveEllipticalChangeStepInOut" to tLongId
 end moveEllipticalEaseInOut
 
+
 on moveEllipticalChangeStepInOut
-   local tDuration, tElapsed, tEnd, tExponent
-   local tMillisecs, tNewStep, tStart
-   try
-      put the moveElliptical["easeStart"] of the target into tStart
-      put the moveElliptical["easeEnd"] of the target into tEnd
-      put the moveElliptical["easeDuration"] of the target into tDuration
-      put the moveElliptical["easeExponent"] of the target into tExponent
-      put the moveElliptical["easeStartTime"] of the target into tMillisecs
-      put the milliseconds - tMillisecs into tElapsed
-      put aeEaseInOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tNewStep
-      set the moveElliptical["step"] of the target to tNewStep
-      if tNewStep <> tEnd then send "moveEllipticalChangeStepInOut" to the target in 20 milliseconds
-   catch theError
-      return theError
-   end try
+   local tLongId, tMoveEllipticalArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveElliptical") into tMoveEllipticalArray
+
+   put tMoveEllipticalArray["easeStart"] into tStart
+   put tMoveEllipticalArray["easeEnd"] into tEnd
+   put tMoveEllipticalArray["easeDuration"] into tDuration
+   put tMoveEllipticalArray["easeExponent"] into tExponent
+   put tMoveEllipticalArray["easeStartTime"] into tMillisecs
+   put the milliseconds - tMillisecs into tElapsed
+   put aeEaseInOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveEllipticalArray["step"]
+
+   _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
+
+   if tMoveEllipticalArray["step"] <> tEnd then send "moveEllipticalChangeStepInOut" to the target in 20 milliseconds
+
 end moveEllipticalChangeStepInOut
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 -- linear easing
 on moveLinearEaseIn pNewValue, pDuration, pExponent
