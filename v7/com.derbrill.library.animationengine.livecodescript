@@ -68,7 +68,7 @@ constant kCreationDate = "©2005 by derbrill IT service"
 local sAELockMorph, sAEMorphing
 local sAELockMorphGradientRamp, sAEMorphGradientRamp
 local sAELockRotateGroup, sAERotateGroup
-
+local sTemp = ""
 --> constrain handlers
 /**
 summary TODO: PON UN MENSAGES DE LOS QUE GENERA LA LIBRERIA AK POR QUE SI NO SE RECONOCE COMO EXTENCION
@@ -458,21 +458,20 @@ end aspectRatio
 
 -- Reserved for internal use
 private function aspectResize pLongId, pLeft, pTop, pRight, pBottom
-   local tLeft, tTop, tRight, tBottom, tRectRatio, tParameters, tRectangle, tAspectResizeArray
+   local tLeft, tTop, tRight, tBottom, tRectRatio, tRectangle, tAspectResizeArray
 
-   --assemble one string from parameters
-   put pLongId, pLeft, pTop, pRight, pBottom into tParameters
+   _parameterFormat pLongId, pLeft, pTop, pRight, pBottom, sTemp, sTemp, sTemp
 
    --check syntax
    switch
-      case there is a first item of tParameters and item 2 to 5 of tParameters is a rectangle
-         put the long id of (first item of tParameters) into pLongId
-         put item 2 to 5 of tParameters into tRectangle
+      case there is a pLongId and pLeft, pTop, pRight, pBottom is a rectangle
+         put the long id of pLongId into pLongId
+         put pLeft, pTop, pRight, pBottom into tRectangle
          break
 
-      case item 1 to 4 of tParameters is a rectangle
+      case pLongId, pLeft, pTop, pRight is a rectangle
          put the long id of target into pLongId
-         put item 1 to 4 of tParameters into tRectangle
+         put pLongId, pLeft, pTop, pRight into tRectangle
          break
 
       default
@@ -480,11 +479,10 @@ private function aspectResize pLongId, pLeft, pTop, pRight, pBottom
    end switch
 
    --split rectangle into 4 single values
-   split tRectangle by comma
-   put tRectangle[1] into tLeft
-   put tRectangle[2] into tTop
-   put tRectangle[3] into tRight
-   put tRectangle[4] into tBottom
+   put item 1 of tRectangle into tLeft
+   put item 2 of tRectangle into tTop
+   put item 3 of tRectangle into tRight
+   put item 4 of tRectangle into tBottom
 
    put _getAnimationEngine(pLongId, "aspectResize") into tAspectResizeArray
 
@@ -518,8 +516,8 @@ end aspectResize
 /**
 This function returns true if there is a circular collision of the 2 objects. Else it returns false.
 
-Syntax: circleCollide(x1, y1, x2, y2, threshold)
-Syntax: circleCollide(point1, point2, threshold)
+Syntax: circleCollide(pX1, pY1, pX2, pY2, pThreshold)
+Syntax: circleCollide(pPoint1, pPoint2, pThreshold)
 
 Example:
 get circleCollide(100,150,200,140,80)
@@ -532,39 +530,31 @@ This function returns true if there is a circular collision of the 2 objects. El
 radii.
 
 Parameters:
-point1: the loc 1 of control 1
+pPoint1: the loc 1 of control 1
 
-point2: the loc 2 of control 2
+pPoint2: the loc 2 of control 2
 
-threshold: the sum of both circles radii.
+pThreshold: the sum of both circles radii.
 
 Returns:
-true or false
+boolean
 **/
 function circleCollide pX1, pY1, pX2, pY2, pThreshold
-   local tParameters
-
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2, pThreshold into tParameters
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
-   put item 5 of tParameters into pThreshold
+   _parameterFormat pX1, pY1, pX2, pY2, pThreshold, sTemp, sTemp, sTemp
 
    --check syntax
    if pX1, pY1, pX2, pY2 is not a rectangle or pThreshold is not a number
    then return "Error: Syntax is circleCollide(x1,y1,x2,y2,threshold) or circleCollide(point1, point2, threshold)."
 
-
    return distance(pX1, pY1, pX2, pY2) < pThreshold
 end circleCollide
+
 
 /**
 get circle line segment collision
 
-Syntax: circleLineSegmentCollide(x1,y1,x2,y2,x3,y3,radius)
-Syntax: circleLineSegmentCollide(point1, point2, point3, radius)
+Syntax: circleLineSegmentCollide(pX1, pY1, pX2, pY2, pX3, pY3, pRadius)
+Syntax: circleLineSegmentCollide(pPoint1, pPoint2, pPoint3, pRadius)
 
 Example:
 get circleLineSegmentCollide(100,200,200,250,80,80,40)
@@ -586,27 +576,17 @@ Point3: Third point
 Radio: The radio
 
 Returns:
-true or false
+boolean
 **/
 function circleLineSegmentCollide pX1, pY1, pX2, pY2, pX3, pY3, pRadius
-   local tIntersectionPointX, tIntersectionPointY, tTemp, tU, tParameters
+   local tIntersectionPointX, tIntersectionPointY, tTemp, tU
 
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2, pX3, pY3, pRadius into tParameters
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
-   put item 5 of tParameters into pX3
-   put item 6 of tParameters into pY3
-   put item 7 of tParameters into pRadius
+   _parameterFormat pX1, pY1, pX2, pY2, pX3, pY3, pRadius, sTemp
 
    --check syntax
    if pX1, pY1, pX2, pY2 is not a rectangle or pX3, pY3 is not a point or pRadius is not a number then
       return "Error: Syntax is circleLineSegmentCollide(x1,y1,x2,y2,x3,y3,radius) or circleLineSegmentCollide(point1, point2, point3, radius)."
    end if
-
-
 
    put (pX2 - pX1) ^ 2 + (pY2 - pY1) ^ 2 into tTemp
    if tTemp = 0 then return "Error description : numeric : divide by zero."
@@ -647,16 +627,9 @@ returns
 
 **/
 function closestPointOnLine pX1, pY1, pX2, pY2, pX3, pY3
-   local tClosestPointX, tClosestPointY, tTemp, tU, tParameters
+   local tClosestPointX, tClosestPointY, tTemp, tU
 
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2, pX3, pY3 into tParameters
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
-   put item 5 of tParameters into pX3
-   put item 6 of tParameters into pY3
+   _parameterFormat pX1, pY1, pX2, pY2, pX3, pY3, sTemp, sTemp
 
    if (pX1, pY1, pX2, pY2) is not a rectangle or (pX3, pY3) is not a point then
       return "Error: Syntax is closestPointOnLine(x1, y1, x2, y2, x3, y3) or closestPointOnLine(point1, point2, point3)."
@@ -678,70 +651,42 @@ end closestPointOnLine
 --> basic geometry
 
 function getSlope pX1, pY1, pX2, pY2
-   local tTemp, tParameters
+   local tTemp
 
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2 into tParameters
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
+   _parameterFormat pX1, pY1, pX2, pY2, sTemp, sTemp, sTemp, sTemp
 
-   if pX1, pY1, pX2, pY2 is not a rectangle then
-      return "Error: Syntax is getSlope(x1, y1, x2, y2) or getSlope(point1, point2)."
-   end if
-
-
+   if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is getSlope(x1, y1, x2, y2) or getSlope(point1, point2)."
    put pX2 - pX1 into tTemp
-
-   if tTemp <> 0 then
-      return (pY2 - pY1) / tTemp
-   end if
-
+   if tTemp <> 0 then return (pY2 - pY1) / tTemp
    return "y"
 end getSlope
 
 
 function distance pX1, pY1, pX2, pY2
-   local tParameters
-
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2 into tParameters
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
+   _parameterFormat pX1, pY1, pX2, pY2, sTemp, sTemp, sTemp, sTemp
 
    if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is distance(x1, y1, x2, y2) or distance(point1, point2)."
-
    return floor(sqrt((pX1 - pX2) ^ 2 + (pY1 - pY2) ^ 2))
 end distance
 
 
 function findAngle pX1, pY1, pX2, pY2
-   local tParameters, tAngle
+   local tAngle
 
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2 into tParameters
-   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findAngle(x1, y1, x2, y2) or findAngle(point1, point2)."
+   _parameterFormat pX1, pY1, pX2, pY2, sTemp, sTemp, sTemp, sTemp
+   if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is findAngle(x1, y1, x2, y2) or findAngle(point1, point2)."
 
-   put findPreciseAngle(tParameters) into tAngle
+   put findPreciseAngle(pX1, pY1, pX2, pY2) into tAngle
    if tAngle is a number then return floor(tAngle)
 end findAngle
 
 
 function findPreciseAngle pX1, pY1, pX2, pY2
-   local tParameters, tAdjacentLeg, tAlpha
+   local tAdjacentLeg, tAlpha
 
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2 into tParameters
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
+   _parameterFormat pX1, pY1, pX2, pY2, sTemp, sTemp, sTemp, sTemp
 
    if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is findPreciseAngle(x1, y1, x2, y2) or findPreciseAngle(point1, point2)."
-
    put abs(pY1 - pY2) into tAdjacentLeg
 
    if tAdjacentLeg <> 0 then
@@ -771,103 +716,72 @@ end findPreciseAngle
 
 
 function findPreciseAngleX pX1, pY1, pX2, pY2
-   local tParameters, tFoundAngle
+   local tFoundAngle
 
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2 into tParameters
-   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findPreciseAngleX(x1, y1, x2, y2) or findPreciseAngleX(point1, point2)."
+   _parameterFormat pX1, pY1, pX2, pY2, sTemp, sTemp, sTemp, sTemp
 
-   put findPreciseAngle(tParameters) - 90 into tFoundAngle
+   if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is findPreciseAngleX(x1, y1, x2, y2) or findPreciseAngleX(point1, point2)."
+   put findPreciseAngle(pX1, pY1, pX2, pY2) - 90 into tFoundAngle
    if tFoundAngle < 0 then put 360 + tFoundAngle into tFoundAngle
+
    return tFoundAngle
 end findPreciseAngleX
 
 
 function findAngleX pX1, pY1, pX2, pY2
-   local tParameters, tFoundAngle
+   local tFoundAngle
 
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2 into tParameters
-   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findAngleX(x1, y1, x2, y2) or findAngleX(point1, point2)."
+   _parameterFormat pX1, pY1, pX2, pY2, sTemp, sTemp, sTemp, sTemp
 
-   put findAngle(tParameters) - 90 into tFoundAngle
+   if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is findAngleX(x1, y1, x2, y2) or findAngleX(point1, point2)."
+   put findAngle(pX1, pY1, pX2, pY2) - 90 into tFoundAngle
    if tFoundAngle < 0 then put 360 + tFoundAngle into tFoundAngle
+
    return tFoundAngle
 end findAngleX
 
 
 function findAngleY pX1, pY1, pX2, pY2
-   local tParameters
+   _parameterFormat pX1, pY1, pX2, pY2, sTemp, sTemp, sTemp, sTemp
 
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2 into tParameters
-   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findAngleY(x1, y1, x2, y2) or findAngleY(point1, point2)."
-   return findAngle(tParameters)
+   if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is findAngleY(x1, y1, x2, y2) or findAngleY(point1, point2)."
+   return findAngle(pX1, pY1, pX2, pY2)
 end findAngleY
 
 
-function findAngle2 pX1, pY1, pX2, pY2
-   local tParameters, tFoundAngle
+function findAngle2 pX1, pY1, pX2, pY2, pStartAngle
+   local tFoundAngle
 
-   --assemble one string from parameters
-   put pX1, pY1, pX2, pY2 into tParameters
-   if item 1 to 4 of tParameters is not a rectangle then return "Error: Syntax is findAngleY(x1, y1, x2, y2) or findAngleY(point1, point2)."
-   -- fix in 2.0
-   --put findAngle(tParameters)-90+item 5 of tParameters into foundAngle
-   put findAngle(tParameters) - 90 - item 5 of tParameters into tFoundAngle
-   -- end fix
+   _parameterFormat pX1, pY1, pX2, pY2, pStartAngle, sTemp, sTemp, sTemp
+
+   if pX1, pY1, pX2, pY2 is not a rectangle or pStartAngle is not a number then return "Error: Syntax is findAngleY(x1, y1, x2, y2, pStartAngle) or findAngleY(point1, point2, pStartAngle)."
+   put findAngle(pX1, pY1, pX2, pY2) - 90 - pStartAngle into tFoundAngle
    if tFoundAngle < 0 then return 360 + tFoundAngle
    if tFoundAngle > 360 then return tFoundAngle mod 360
+
    return tFoundAngle
 end findAngle2
+
 
 # new in this version 7
 function rectanglesIntersect pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2
    -- https://stackoverflow.com/questions/2752349/fast-rectangle-to-rectangle-intersection
-   local tParameters
 
-   --assemble one string from parameters
-   put pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2 into tParameters
-
-   --rectangle 1
-   put item 1 of tParameters into pLeft1
-   put item 2 of tParameters into pTop1
-   put item 3 of tParameters into pRight1
-   put item 4 of tParameters into pBottom1
-   --rectangle 2
-   put item 5 of tParameters into pLeft2
-   put item 6 of tParameters into pTop2
-   put item 7 of tParameters into pRight2
-   put item 8 of tParameters into pBottom2
+   _parameterFormat pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2
 
    if (pLeft1, pTop1, pRight1, pBottom1) is not a rectangle or (pLeft2, pTop2, pRight2, pBottom2) is not a rectangle
    then return "Error: Syntax is rectanglesIntersect(left1, top1, right1, bottom1, left2, top2, right2, bottom2) or rectanglesIntersect(rectangle1, rectangle2)."
-
-
    return not(pLeft2 > pRight1 or pRight2 < pLeft1 or pTop2 > pBottom1 or pBottom2 < pTop1)
 end rectanglesIntersect
 
 
 // Function to find intersection rectangle of given two rectangles.
 function intersectRect pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2
-   local tParameters, tLeft, tTop, tRight, tBottom
+   local tLeft, tTop, tRight, tBottom
 
    -- https://www.geeksforgeeks.org/intersecting-rectangle-when-bottom-left-and-top-right-corners-of-two-rectangles-are-given/
 
-   -- assemble one string from parameters
-   put pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2 into tParameters
-
-   -- rectangle 1
-   put item 1 of tParameters into pLeft1
-   put item 2 of tParameters into pTop1
-   put item 3 of tParameters into pRight1
-   put item 4 of tParameters into pBottom1
-
-   -- rectangle 2
-   put item 5 of tParameters into pLeft2
-   put item 6 of tParameters into pTop2
-   put item 7 of tParameters into pRight2
-   put item 8 of tParameters into pBottom2
+   _parameterFormat pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2
 
    if (pLeft1, pTop1, pRight1, pBottom1) is not a rectangle or (pLeft2, pTop2, pRight2, pBottom2) is not a rectangle
    then return "Error: Syntax is intersectRect(left1, top1, right1, bottom1, left2, top2, right2, bottom2) or intersectRect(rectangle1, rectangle2)."
@@ -891,29 +805,14 @@ end intersectRect
 
 
 function maskComparePoints pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2
-   local tParameters, tInterceptRectangle
-   local s1, e1, t1, b1, s2, e2, t2, b2
+   local tInterceptRectangle, s1, e1, t1, b1, s2, e2, t2, b2
 
-   -- assemble one string from parameters
-   put pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2 into tParameters
-
-   -- rectangle 1
-   put item 1 of tParameters into pLeft1
-   put item 2 of tParameters into pTop1
-   put item 3 of tParameters into pRight1
-   put item 4 of tParameters into pBottom1
-
-   -- rectangle 2
-   put item 5 of tParameters into pLeft2
-   put item 6 of tParameters into pTop2
-   put item 7 of tParameters into pRight2
-   put item 8 of tParameters into pBottom2
+   _parameterFormat pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2
 
    if (pLeft1, pTop1, pRight1, pBottom1) is not a rectangle or (pLeft2, pTop2, pRight2, pBottom2) is not a rectangle
    then return "Error: Syntax is maskComparePoints(left1, top1, right1, bottom1, left2, top2, right2, bottom2) or maskComparePoints(rectangle1, rectangle2)."
 
-   put intersectRect(tParameters) into tInterceptRectangle
-
+   put intersectRect(pLeft1, pTop1, pRight1, pBottom1, pLeft2, pTop2, pRight2, pBottom2) into tInterceptRectangle
    if tInterceptRectangle is "No intersection" then return empty
 
    put abs(pLeft1 - item 1 of tInterceptRectangle) + 1 into s1
@@ -1032,11 +931,7 @@ end imageCollide
 function pointOnCircle pCenterX, pCenterY, pAngle, pRadius
    local tParameters, tNewX, tNewY
 
-   put pCenterX, pCenterY, pAngle, pRadius into tParameters
-   put item 1 of tParameters into pCenterX
-   put item 2 of tParameters into pCenterY
-   put item 3 of tParameters into pAngle
-   put item 4 of tParameters into pRadius
+   _parameterFormat pCenterX, pCenterY, pAngle, pRadius, sTemp, sTemp, sTemp, sTemp
 
    if tParameters is not a rectangle
    then return "Error: Syntax is pointOnCircle(CenterX, CenterY, Angle, Radius)."
@@ -1048,14 +943,9 @@ end pointOnCircle
 
 
 function pointOnEllipse pCenterX, pCenterY, pAngle, pRadiusx, pRadiusY
-   local tParameters, tEllipseNewX, tEllipseNewY
+   local tEllipseNewX, tEllipseNewY
 
-   put pCenterX, pCenterY, pAngle, pRadiusX, pRadiusY into tParameters
-   put item 1 of tParameters into pCenterX
-   put item 2 of tParameters into pCenterY
-   put item 3 of tParameters into pAngle
-   put item 4 of tParameters into pRadiusX
-   put item 5 of tParameters into pRadiusY
+   _parameterFormat pCenterX, pCenterY, pAngle, pRadiusX, pRadiusY, sTemp, sTemp, sTemp
 
    if (pCenterX, pCenterY, pAngle, pRadiusX) is not a rectangle or pRadiusY is not a number
    then return "Error: Syntax is pointOnEllipse(CenterX, CenterY, Angle, RadiusX, RadiusY)."
@@ -1068,14 +958,9 @@ end pointOnEllipse
 
 
 function pointOnLine pX1, pY1, pX2, pY2, pDistance
-   local tParameters, tMyAngle, tNewX, tNewY
+   local tMyAngle, tNewX, tNewY
 
-   put pX1, pY1, pX2, pY2, pDistance into tParameters
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
-   put item 5 of tParameters into pDistance
+   _parameterFormat pX1, pY1, pX2, pY2, pDistance, sTemp, sTemp, sTemp
 
    if (pX1, pY1, pX2, pY2) is not a rectangle or pDistance is not a number
    then return "Error: Syntax is pointOnLine(x1, y1, x2, y2, distance) or pointOnLine(point1, point2, distance)."
@@ -1083,25 +968,19 @@ function pointOnLine pX1, pY1, pX2, pY2, pDistance
    put findAngle(pX1, pY1, pX2, pY2) - 90 into tMyAngle
    put round(pX1 + cos(tMyAngle * pi / 180) * pDistance) into tNewX
    put round(pY1 + sin(tMyAngle * pi / 180) * pdistance) into tNewY
+
    return tNewX, tNewY
 end pointOnLine
 
 --Added in AE 1.5
 
 function whereIsThePoint pX1, pY1, pX2, pY2, pX3, pY3
-   local tParameters, tWhere
+   local tWhere
 
-   put pX1, pY1, pX2, pY2, pX3, pY3 into tParameters
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
-   put item 5 of tParameters into pX3
-   put item 6 of tParameters into pY3
+   _parameterFormat pX1, pY1, pX2, pY2, pX3, pY3, sTemp, sTemp
 
    if (pX1, pY1, pX2, pY2) is not a rectangle or (pX3, pY3) is not a point
    then return "Error: Syntax is whereIsThePoint(x1, y1, x2, y2, x3, y3) or whereIsThePoint(point1, point2, point3)."
-
    put (pX2 - pX1) * (pY3 - pY1) - (pX3 - pX1) * (pY2 - pY1) into tWhere
 
    switch
@@ -1152,22 +1031,10 @@ end pointInPoly
 
 -- https://stackoverflow.com/questions/54865655/we-have-2-lines-how-can-we-get-point-where-that-2-lines-intersect-with-javascri
 function lineSegmentIntersectionPoint pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4
-   local tParameters, tXS = "", tXRange1, tXRange2, tYRange1, tYRange2
+   local tXS = "", tXRange1, tXRange2, tYRange1, tYRange2
    local tZ1, tZ2, tZ3, tZ4, tDistance, tTempA, tTempB, tXCoor, tYCoor
 
-   put pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4 into tParameters
-
-   -- To be able to use the points property of graphics
-   if cr is in tParameters then replace cr with comma in tParameters
-
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
-   put item 5 of tParameters into pX3
-   put item 6 of tParameters into pY3
-   put item 7 of tParameters into pX4
-   put item 8 of tParameters into pY4
+   _parameterFormat pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4
 
    if (pX1, pY1, pX2, pY2) is not a rectangle or (pX3, pY3, pX4, pY4) is not a rectangle
    then return "Error: Syntax is lineSegmentIntersectionPoint(x1, y1, x2, y2, x3, y3, x4, y4) or lineSegmentIntersectionPoint(point1, point2, point3, point4)."
@@ -1201,22 +1068,9 @@ end lineSegmentIntersectionPoint
 
 
 function lineIntersectionPoint pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4
-   local i, m1, m2, t1
-   local t2, tParameters, xs = "", ys
+   local i, m1, m2, t1, t2, xs = "", ys
 
-   put pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4 into tParameters
-
-   -- To be able to use the points property of graphics
-   if cr is in tParameters then replace cr with comma in tParameters
-
-   put item 1 of tParameters into pX1
-   put item 2 of tParameters into pY1
-   put item 3 of tParameters into pX2
-   put item 4 of tParameters into pY2
-   put item 5 of tParameters into pX3
-   put item 6 of tParameters into pY3
-   put item 7 of tParameters into pX4
-   put item 8 of tParameters into pY4
+   _parameterFormat pX1, pY1, pX2, pY2, pX3, pY3, pX4, pY4
 
    if (pX1, pY1, pX2, pY2) is not a rectangle or (pX3, pY3, pX4, pY4) is not a rectangle
    then return "Error: Syntax is lineIntersectionPoint(x1, y1, x2, y2, x3, y3, x4, y4) or lineIntersectionPoint(point1, point2, point3, point4)."
@@ -1932,6 +1786,7 @@ setProp aspectScale pValue
    put item 3 of pValue into tParam3
    put item 4 of pValue into tParam4
    put item 5 of pValue into tParam5
+
    put aspectResize(pValue,(tParam1, tParam2, tParam3, tParam4)) into tAspectResize
 
    set the width of tLongId to item 1 of tAspectResize
@@ -1952,7 +1807,6 @@ setProp movePolyGonal[whichKey] pValue
    local tVal, tLongId, tCounter, tReversePoints
 
    put the number of lines of pValue into tVal
-
    if whichKey = "pointlist" then
       put the long id of target into tLongId
       put - 1 into tCounter
@@ -2103,7 +1957,6 @@ on moveEllipticalEaseIn pNewValue, pDuration, pExponent
    if pNewValue is not a number or pDuration is not a number or pExponent is not a number
    then return "error: Parameter is not a number"
 
-
    put tMoveEllipticalArray["step"] into tMoveEllipticalArray["easeStart"]
    put pNewValue into tMoveEllipticalArray["easeEnd"]
    put pDuration into tMoveEllipticalArray["easeDuration"]
@@ -2194,7 +2047,7 @@ on moveEllipticalEaseInOut pNewValue, pDuration, pExponent
 
    _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
 
-   send "moveEllipticalChangeStepInOut" to tLongId
+   dispatch "moveEllipticalChangeStepInOut" to tLongId
 end moveEllipticalEaseInOut
 
 
@@ -2217,133 +2070,135 @@ on moveEllipticalChangeStepInOut
    if tMoveEllipticalArray["step"] <> tEnd then send "moveEllipticalChangeStepInOut" to the target in 20 milliseconds
 
 end moveEllipticalChangeStepInOut
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 -- linear easing
-on moveLinearEaseIn pNewValue, pDuration, pExponent
-   try
-      if pNewValue is not a number or pDuration is not a number then
-         return "error: Parameter is not a number"
-         exit moveLinearEaseIn
-      end if
-      if pExponent is not a number and pExponent is not empty then
-         return "error: Parameter is not a number"
-         exit moveLinearEaseIn
-      end if
-      if pExponent is empty then put 2 into pExponent
-      set the moveLinear["easeStart"] of the target to the moveLinear["step"] of the target
-      set the moveLinear["easeEnd"] of the target to pNewValue
-      set the moveLinear["easeDuration"] of the target to pDuration
-      set the moveLinear["easeExponent"] of the target to pExponent
-      set the moveLinear["easeStartTime"] of the target to the milliseconds
-      send "moveLinearChangeStepIn" to the target
-   catch theError
-      return theError
-   end try
+command moveLinearEaseIn pNewValue, pDuration, pExponent
+   local tLongId, tMoveLinearlArray
 
+   if pExponent is empty then put 2 into pExponent
+   if pNewValue is not a number or pDuration is not a number or pExponent is not a number then
+      return "error: Parameter is not a number"
+   end if
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+
+   put tMoveLinearlArray["step"] into tMoveLinearlArray["easeStart"]
+   put pNewValue into tMoveLinearlArray["easeEnd"]
+   put pDuration into tMoveLinearlArray["easeDuration"]
+   put pExponent into tMoveLinearlArray["easeExponent"]
+   put the milliseconds into tMoveLinearlArray["easeStartTime"]
+
+   dispatch "moveLinearChangeStepIn" to tLongId
 end moveLinearEaseIn
 
-on moveLinearChangeStepIn
-   local tDuration, tElapsed, tEnd, tExponent
-   local tMillisecs, tNewStep, tStart
-   try
-      put the moveLinear["easeStart"] of the target into tStart
-      put the moveLinear["easeEnd"] of the target into tEnd
-      put the moveLinear["easeDuration"] of the target into tDuration
-      put the moveLinear["easeExponent"] of the target into tExponent
-      put the moveLinear["easeStartTime"] of the target into tMillisecs
-      put the milliseconds - tMillisecs into tElapsed
-      put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tNewStep
-      set the moveLinear["step"] of the target to tNewStep
-      if tNewStep <> tEnd then send "moveLinearChangeStepIn" to the target in 20 milliseconds
-   catch theError
-      return theError
-   end try
 
+on moveLinearChangeStepIn
+   local tLongId, tMoveLinearlArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+
+   put tStart into tMoveLinearlArray["easeStart"]
+   put tEnd into tMoveLinearlArray["easeEnd"]
+   put tDuration into tMoveLinearlArray["easeDuration"]
+   put tExponent into tMoveLinearlArray["easeExponent"]
+   put tMillisecs into tMoveLinearlArray["easeStartTime"]
+   put the milliseconds - tMillisecs into tElapsed
+   put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveLinearlArray["step"]
+
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
+
+   if tMoveLinearlArray["step"] <> tEnd then send "moveLinearChangeStepIn" to tLongId in 20 milliseconds
 end moveLinearChangeStepIn
 
-on moveLinearEaseOut pNewValue, pDuration, pExponent
-   try
-      if pNewValue is not a number or pDuration is not a number then
-         return "error: Parameter is not a number"
-         exit moveLinearEaseOut
-      end if
-      if pExponent is not a number and pExponent is not empty then
-         return "error: Parameter is not a number"
-         exit moveLinearEaseOut
-      end if
-      if pExponent is empty then put 2 into pExponent
-      set the moveLinear["easeStart"] of the target to the moveLinear["step"] of the target
-      set the moveLinear["easeEnd"] of the target to pNewValue
-      set the moveLinear["easeDuration"] of the target to pDuration
-      set the moveLinear["easeExponent"] of the target to pExponent
-      set the moveLinear["easeStartTime"] of the target to the milliseconds
-      send "moveLinearChangeStepOut" to the target
-   catch theError
-      return theError
-   end try
 
+on moveLinearEaseOut pNewValue, pDuration, pExponent
+   local tLongId, tMoveLinearlArray
+
+   _parameterFormat pNewValue, pDuration, pExponent, sTemp, sTemp, sTemp, sTemp, sTemp
+
+   if pNewValue is not a number or pDuration is not a number or (pExponent is not a number and pExponent is not empty) then
+      return "error: Parameter is not a number"
+   end if
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+
+   if pExponent is empty then put 2 into pExponent
+
+   put the moveLinear["step"] of tLongId into tMoveLinearlArray["easeStart"]
+   put pNewValue into tMoveLinearlArray["easeEnd"]
+   put pDuration into tMoveLinearlArray["easeDuration"]
+   put pExponent into tMoveLinearlArray["easeExponent"]
+   put the milliseconds into tMoveLinearlArray["easeStartTime"]
+
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
+
+   dispatch "moveLinearChangeStepOut" to tLongId
 end moveLinearEaseOut
 
-on moveLinearChangeStepOut
-   local tDuration, tElapsed, tEnd, tExponent
-   local tMillisecs, tNewStep, tStart
-   try
-      put the moveLinear["easeStart"] of the target into tStart
-      put the moveLinear["easeEnd"] of the target into tEnd
-      put the moveLinear["easeDuration"] of the target into tDuration
-      put the moveLinear["easeExponent"] of the target into tExponent
-      put the moveLinear["easeStartTime"] of the target into tMillisecs
-      put the milliseconds - tMillisecs into tElapsed
-      put aeEaseOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tNewStep
-      set the moveLinear["step"] of the target to tNewStep
-      if tNewStep <> tEnd then send "moveLinearChangeStepOut" to the target in 20 milliseconds
-   catch theError
-      return theError
-   end try
 
+on moveLinearChangeStepOut
+   local tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
+   local tLongId, tMoveLinearlArray
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+
+   put tStart into tMoveLinearlArray["easeStart"]
+   put tEnd into tMoveLinearlArray["easeEnd"]
+   put tDuration into tMoveLinearlArray["easeDuration"]
+   put tExponent into tMoveLinearlArray["easeExponent"]
+   put tMillisecs into tMoveLinearlArray["easeStartTime"]
+   put the milliseconds - tMillisecs into tElapsed
+   put aeEaseOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveLinearlArray["step"]
+
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
+
+   if tMoveLinearlArray["step"] <> tEnd then send "moveLinearChangeStepOut" to tLongId in 20 milliseconds
 end moveLinearChangeStepOut
 
-on moveLinearEaseInOut pNewValue, pDuration, pExponent
-   try
-      if pNewValue is not a number or pDuration is not a number then
-         return "error: Parameter is not a number"
-         exit moveLinearEaseInOut
-      end if
-      if pExponent is not a number and pExponent is not empty then
-         return "error: Parameter is not a number"
-         exit moveLinearEaseInOut
-      end if
-      if pExponent is empty then put 2 into pExponent
-      set the moveLinear["easeStart"] of the target to the moveLinear["step"] of the target
-      set the moveLinear["easeEnd"] of the target to pNewValue
-      set the moveLinear["easeDuration"] of the target to pDuration
-      set the moveLinear["easeExponent"] of the target to pExponent
-      set the moveLinear["easeStartTime"] of the target to the milliseconds
-      send "moveLinearChangeStepInOut" to the target
-   catch theError
-      return theError
-   end try
 
+on moveLinearEaseInOut pNewValue, pDuration, pExponent
+   local tLongId, tMoveLinearlArray
+
+   _parameterFormat pNewValue, pDuration, pExponent, sTemp, sTemp, sTemp, sTemp, sTemp
+
+   if pNewValue is not a number or pDuration is not a number or (pExponent is not a number and pExponent is not empty) then
+      return "error: Parameter is not a number"
+   end if
+
+   if pExponent is empty then put 2 into pExponent
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+
+   put tMoveLinearlArray["step"] into tMoveLinearlArray["easeStart"]
+   put pNewValue into tMoveLinearlArray["easeEnd"]
+   put pDuration into tMoveLinearlArray["easeDuration"]
+   put pExponent into tMoveLinearlArray["easeExponent"]
+   put the milliseconds into tMoveLinearlArray["easeStartTime"]
+
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
+
+   dispatch "moveLinearChangeStepInOut" to tLongId
 end moveLinearEaseInOut
 
+
 on moveLinearChangeStepInOut
-   local tDuration, tElapsed, tEnd, tExponent
-   local tMillisecs, tNewStep, tStart
-   try
-      put the moveLinear["easeStart"] of the target into tStart
-      put the moveLinear["easeEnd"] of the target into tEnd
-      put the moveLinear["easeDuration"] of the target into tDuration
-      put the moveLinear["easeExponent"] of the target into tExponent
-      put the moveLinear["easeStartTime"] of the target into tMillisecs
-      put the milliseconds - tMillisecs into tElapsed
-      put aeEaseInOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tNewStep
-      set the moveLinear["step"] of the target to tNewStep
-      if tNewStep <> tEnd then send "moveLinearChangeStepInOut" to the target in 20 milliseconds
-   catch theError
-      return theError
-   end try
+   local tLongId, tMoveLinearlArray, tElapsed
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+
+   put the milliseconds - tMoveLinearlArray["easeStartTime"] into tElapsed
+   put aeEaseInOut(tMoveLinearlArray["easeStart"], tMoveLinearlArray["easeEnd"], tMoveLinearlArray["easeDuration"], tElapsed, tMoveLinearlArray["easeExponent"]) into tMoveLinearlArray["step"]
+
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
+   if tMoveLinearlArray["step"] <> tMoveLinearlArray["easeEnd"] then send "moveLinearChangeStepInOut" to tLongId in 20 milliseconds
 end moveLinearChangeStepInOut
+
 
 -- Polygonal easing
 on movePolygonalEaseIn pNewValue, pDuration, pExponent
@@ -2368,6 +2223,7 @@ on movePolygonalEaseIn pNewValue, pDuration, pExponent
    end try
 
 end movePolygonalEaseIn
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 on movePolygonalChangeStepIn
    local tDuration, tElapsed, tEnd, tExponent
@@ -2529,7 +2385,7 @@ function isoToScreenX
    local i, pOriginX, pX, pY
    local pZ, tParameters, tXCartesian
    try
-      --assemble one string from parameters
+
       repeat with i = 1 to paramcount()
          if i < paramcount() then
             put param(i) & "," after tParameters
@@ -2568,7 +2424,7 @@ function isoToScreenY
    local i, pOriginY, pX, pY
    local pZ, tParameters, tYCartesian
    try
-      --assemble one string from parameters
+
       repeat with i = 1 to paramcount()
          if i < paramcount() then
             put param(i) & "," after tParameters
@@ -2606,7 +2462,7 @@ function isoToScreen
    local i, pOriginX, pOriginY, pX
    local pY, pZ, tParameters
    try
-      --assemble one string from parameters
+
       repeat with i = 1 to paramcount()
          if i < paramcount() then
             put param(i) & "," after tParameters
@@ -2643,7 +2499,7 @@ on drawIsoLine
    local pX2, pY1, pY2, pZ1
    local pZ2, tParameters, tPointList
    try
-      --assemble one string from parameters
+
       repeat with i = 1 to paramcount()
          if i < paramcount() then
             put param(i) & "," after tParameters
@@ -2688,7 +2544,7 @@ on drawIsoBox
    local pointlist, pOriginX, pOriginY, pX
    local pY, pZ, tParameters
    try
-      --assemble one string from parameters
+
       repeat with i = 1 to paramcount()
          if i < paramcount() then
             put param(i) & "," after tParameters
@@ -2748,7 +2604,7 @@ function rotateIsoPoint
    local sZ, tParameters, xY, xZ
    local yX, yZ, zX, zY
    try
-      --assemble one string from parameters
+
       repeat with i = 1 to paramcount()
          if i < paramcount() then
             put param(i) & "," after tParameters
@@ -2810,7 +2666,7 @@ function ae3dConvertToScreen
    local pX, pY, pZ, tParameters
    local tScalefactor, tXCartesian, tYCartesian
    try
-      --assemble one string from parameters
+
       repeat with i = 1 to paramcount()
          if i < paramcount() then
             put param(i) & "," after tParameters
@@ -2856,7 +2712,7 @@ function rotate3DPoint
    local xZ, yX, yZ, zX
    local zY
    try
-      --assemble one string from parameters
+
       repeat with i = 1 to paramcount()
          if i < paramcount() then
             put param(i) & "," after tParameters
@@ -5714,3 +5570,18 @@ private function _getAnimationEngine pLongID, pProp
    if pProp is not empty then return it [pProp]
    return it
 end _getAnimationEngine
+
+
+private command _parameterFormat @pParam1, @pParam2, @pParam3, @pParam4, @pParam5, @pParam6, @pParam7, @pParam8
+   local tParameters
+
+   put pParam1, pParam2, pParam3, pParam4, pParam5, pParam6, pParam7, pParam8 into tParameters
+   put item 1 of tParameters into pParam1
+   put item 2 of tParameters into pParam2
+   put item 3 of tParameters into pParam3
+   put item 4 of tParameters into pParam4
+   put item 5 of tParameters into pParam5
+   put item 6 of tParameters into pParam6
+   put item 7 of tParameters into pParam7
+   put item 8 of tParameters into pParam8
+end _parameterFormat
