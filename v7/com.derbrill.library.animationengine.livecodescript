@@ -69,24 +69,92 @@ local sAELockMorph, sAEMorphing
 local sAELockMorphGradientRamp, sAEMorphGradientRamp
 local sAELockRotateGroup, sAERotateGroup
 local sTemp = ""
---> constrain handlers
+local sTimeTaken
+
 /**
-summary TODO: PON UN MENSAGES DE LOS QUE GENERA LA LIBRERIA AK POR QUE SI NO SE RECONOCE COMO EXTENCION
+This function returns the width-to-height ratio of the specified width and height.
+
+Syntax: aspectRatio(pWidth, pHeight)
 
 Example:
-example
+get aspectRatio(the width of grc 1, the height of grc 1)
 
 Description:
-description
+This function returns the width-to-height ratio of the specified width and height.
 
 Parameters:
-parameters
+pWidth: A positive integer.
+
+pHeight: A positive integer.
 
 Returns:
-returns
+the aspect ratio.
 
-Tags: tags
 **/
+function aspectRatio pWidth, pHeight
+   if pWidth is an integer and pHeight is an integer and pHeight <> 0 then return pWidth / pHeight
+   return "Error: Both parameters must be numbers!"
+end aspectRatio
+
+
+# Reserved for internal use
+private function _aspectResize pLongId, pLeft, pTop, pRight, pBottom
+   local tLeft, tTop, tRight, tBottom, tRectRatio, tRectangle, tAspectResizeArray
+   
+   _parameterFormat pLongId, pLeft, pTop, pRight, pBottom, sTemp, sTemp, sTemp
+   
+   switch
+      case there is a pLongId and pLeft, pTop, pRight, pBottom is a rectangle
+         put the long id of pLongId into pLongId
+         put pLeft, pTop, pRight, pBottom into tRectangle
+         break
+         
+      case pLongId, pLeft, pTop, pRight is a rectangle
+         put the long id of target into pLongId
+         put pLongId, pLeft, pTop, pRight into tRectangle
+         break
+         
+      default
+         return "Error: Syntax is aspectResize(the rectangle) or aspectResize(the long id of contol, the rectangle)."
+   end switch
+   
+   # split rectangle into 4 single values
+   put item 1 of tRectangle into tLeft
+   put item 2 of tRectangle into tTop
+   put item 3 of tRectangle into tRight
+   put item 4 of tRectangle into tBottom
+   
+   put _getAnimationEngine(pLongId, "aspectResize") into tAspectResizeArray
+   
+   # if it isn't already set
+   # set the custom property holding the width-to-height ratio
+   # to avoid rounding errors later
+   if tAspectResizeArray["ratio"] is empty then
+      put aspectRatio(the width of pLongId, the height of pLongId) into tAspectResizeArray["ratio"]
+      _setAnimationEngine pLongId, "aspectResize", tAspectResizeArray["ratio"]
+   end if
+   
+   # get width-to-height ratio of the target and the rectangle
+   put aspectRatio(tRight - tLeft, tBottom - tTop) into tRectRatio
+   
+   # equal!
+   if tAspectResizeArray["ratio"] = tRectRatio then
+      return tRight - tLeft, tBottom - tTop
+   end if
+   
+   # not equal,target ratio is bigger/target is heigher
+   if tRectRatio < tAspectResizeArray["ratio"] then
+      if tAspectResizeArray["ratio"] <> 0 then return "Error description : numeric : divide by zero."
+      return (tRight - tLeft),(tRight - tLeft) / tAspectResizeArray["ratio"]
+   else
+      
+      # not equal, target ratio is smaller/target is broader
+      return (tBottom - tTop) * tAspectResizeArray["ratio"], tBottom - tTop
+   end if
+end _aspectResize
+
+
+--> constrain handlers
 function aeInfo
    return animationEngineInfo()
 end aeInfo
@@ -228,7 +296,7 @@ on mouseMove pX, pY
    pass mouseMove
 end mouseMove
 
-//TODO: Doc?
+
 on aeConstrainHandler pX, pY, pID
    local tAllowDragOnLine, tIsAngle, tRadiusX, tRadiusY, tTheAngle, tX1, tX2, tY1, tY2, tTX, tTY
    local tLongId, tAnimationEngineArray, tWidth = 0, tHeight = 0
@@ -372,7 +440,7 @@ on touchRelease
    if _getAnimationEngine(the long id of target, "AllowConstrainDrag") is not empty then dispatch "aeDragRelease"
 end touchRelease
 
-//TODO: Doc?
+
 on aeDragRelease
    local tLongId, tAnimationEngineArray, tUpdate = true
 
@@ -429,89 +497,6 @@ on touchEnd
    if _getAnimationEngine(the long id of target, "AllowConstrainDrag") is not empty then dispatch "aeDragRelease"
 end touchEnd
 
-
---> aspect ratio
-/**
-This function returns the width-to-height ratio of the specified width and height.
-
-Syntax: aspectRatio(pWidth, pHeight)
-
-Example:
-get aspectRatio(the width of grc 1, the height of grc 1)
-
-Description:
-This function returns the width-to-height ratio of the specified width and height.
-
-Parameters:
-pWidth: A positive integer.
-
-pHeight: A positive integer.
-
-Returns:
-the aspect ratio.
-
-**/
-function aspectRatio pWidth, pHeight
-   if pWidth is an integer and pHeight is an integer and pHeight <> 0 then return pWidth / pHeight
-   return "Error: Both parameters must be numbers!"
-end aspectRatio
-
--- Reserved for internal use
-private function aspectResize pLongId, pLeft, pTop, pRight, pBottom
-   local tLeft, tTop, tRight, tBottom, tRectRatio, tRectangle, tAspectResizeArray
-
-   _parameterFormat pLongId, pLeft, pTop, pRight, pBottom, sTemp, sTemp, sTemp
-
-   --check syntax
-   switch
-      case there is a pLongId and pLeft, pTop, pRight, pBottom is a rectangle
-         put the long id of pLongId into pLongId
-         put pLeft, pTop, pRight, pBottom into tRectangle
-         break
-
-      case pLongId, pLeft, pTop, pRight is a rectangle
-         put the long id of target into pLongId
-         put pLongId, pLeft, pTop, pRight into tRectangle
-         break
-
-      default
-         return "Error: Syntax is aspectResize(the rectangle) or aspectResize(the long id of contol, the rectangle)."
-   end switch
-
-   --split rectangle into 4 single values
-   put item 1 of tRectangle into tLeft
-   put item 2 of tRectangle into tTop
-   put item 3 of tRectangle into tRight
-   put item 4 of tRectangle into tBottom
-
-   put _getAnimationEngine(pLongId, "aspectResize") into tAspectResizeArray
-
-   --if it isn't already set
-   --set the custom property holding the width-to-height ratio
-   --to avoid rounding errors later
-   if tAspectResizeArray["ratio"] is empty then
-      put aspectRatio(the width of pLongId, the height of pLongId) into tAspectResizeArray["ratio"]
-      _setAnimationEngine pLongId, "aspectResize", tAspectResizeArray["ratio"]
-   end if
-
-   --get width-to-height ratio of the target and the rectangle
-   put aspectRatio(tRight - tLeft, tBottom - tTop) into tRectRatio
-
-   --equal!
-   if tAspectResizeArray["ratio"] = tRectRatio then
-      return tRight - tLeft, tBottom - tTop
-   end if
-
-   --not equal,target ratio is bigger/target is heigher
-   if tRectRatio < tAspectResizeArray["ratio"] then
-      if tAspectResizeArray["ratio"] <> 0 then return "Error description : numeric : divide by zero."
-      return (tRight - tLeft),(tRight - tLeft) / tAspectResizeArray["ratio"]
-    else
-      --not equal, target ratio is smaller/target is broader
-      return (tBottom - tTop) * tAspectResizeArray["ratio"], tBottom - tTop
-   end if
-end aspectResize
-
 --> collision detection
 /**
 This function returns true if there is a circular collision of the 2 objects. Else it returns false.
@@ -530,11 +515,11 @@ This function returns true if there is a circular collision of the 2 objects. El
 radii.
 
 Parameters:
-pPoint1: the loc 1 of control 1
+pPoint1: First point
 
-pPoint2: the loc 2 of control 2
+pPoint2: Second point
 
-pThreshold: the sum of both circles radii.
+pThreshold: The sum of both circles radii.
 
 Returns:
 boolean
@@ -567,13 +552,13 @@ This function returns true if there is a collision between a line segment (speci
 a circle (specified by the circles centerPoint x3,y3 and it's radius). Else it returns false.
 
 Parameters:
-Point1: First point
+pPoint1: First point
 
-Point2: Second point
+pPoint2: Second point
 
-Point3: Third point
+pPoint3: Third point
 
-Radio: The radio
+pRadius: The radio
 
 Returns:
 boolean
@@ -606,8 +591,8 @@ end circleLineSegmentCollide
 /**
 This function returns the closest point to x3, y3 that lays on the line specified by the points x1, y1 and x2, y2.
 
-Syntax: getSlope(x1, y1, x2, y2, x3, y3)
-Syntax: getSlope(point1, point2, point3)
+Syntax: closestPointOnLine(pX1, pY1, pX2, pY2, pX3, pY3)
+Syntax: closestPointOnLine(pPoint1, pPoint2, pPoint3)
 
 Example:
 get closestPointOnLine(10, 10, 200, 40, 20, 20)
@@ -620,10 +605,14 @@ This function returns the closest point to x3, y3 that lays on the line specifie
 this point doesn't necessarily lie on the linesegment specified by x1, y1 / x2, y2, but might lie on the extension of that line.
 
 Parameters:
-parameters
+pPoint1: First point
+
+pPoint2: Second point
+
+pPoint3: Third point
 
 Returns:
-returns
+point
 
 **/
 function closestPointOnLine pX1, pY1, pX2, pY2, pX3, pY3
@@ -648,8 +637,31 @@ function closestPointOnLine pX1, pY1, pX2, pY2, pX3, pY3
    return pX1, pY1
 end closestPointOnLine
 
---> basic geometry
 
+-- basic geometry
+/**
+This function returns the slope of a line defined by its start end endpoints. 
+
+Syntax: getSlope(pX1, pY1, pX2, pY2)
+Syntax: getSlope(pPoint1, pPoint2)
+
+Example:
+get getSlope(10,30,40,50)
+
+Example:
+get getSlope(line 1 of the points of grc 1,line 2 of the points of grc 1)
+
+Description:
+This function returns the slope of a line defined by its start end endpoints. 
+
+Parameters:
+pPoint1: First point
+
+pPoint2: Second point
+
+Returns:
+number
+**/
 function getSlope pX1, pY1, pX2, pY2
    local tTemp
 
@@ -662,14 +674,62 @@ function getSlope pX1, pY1, pX2, pY2
 end getSlope
 
 
+/**
+This function returns the distance between to given points in pixel.
+
+Syntax: distance(pX1, pY1, pX2, pY2)
+Syntax: distance(pPoint1, pPoint2)
+
+Example:
+get distance(100,100,200,200)
+
+Example:
+get distance(the loc of grc "myGraphic",the loc of img "myImage")
+
+Description:
+This function returns the distance between to given points in pixel.
+
+Parameters:
+pPoint1: First point
+
+pPoint2: Second point
+
+Returns:
+number
+
+**/
 function distance pX1, pY1, pX2, pY2
    _parameterFormat pX1, pY1, pX2, pY2, sTemp, sTemp, sTemp, sTemp
-
    if pX1, pY1, pX2, pY2 is not a rectangle then return "Error: Syntax is distance(x1, y1, x2, y2) or distance(point1, point2)."
    return floor(sqrt((pX1 - pX2) ^ 2 + (pY1 - pY2) ^ 2))
 end distance
 
 
+/**
+This function returns the center angle of a circle in degrees.
+
+Syntax: findAngle(pX1, pY1, pX2, pY2)
+Syntax: findAngle(pPoint1, pPoint2)
+
+Example:
+get findAngle(100,200,50,300)
+
+Example:
+get findAngle(the loc of grc "myGraphic,the loc of btn "myButton")
+
+Description:
+This function returns the center angle of a circle in degrees. x1,y1 are the coordinates of the center point of the circle. x2,y2 are 
+the coordinates of a point on the circular arc. Possible values are 0-360, where 0 degrees means x2,y2 being on top of x1,y1.
+
+Parameters:
+pPoint1: First point
+
+pPoint2: Second point
+
+Returns:
+number
+
+**/
 function findAngle pX1, pY1, pX2, pY2
    local tAngle
 
@@ -681,6 +741,32 @@ function findAngle pX1, pY1, pX2, pY2
 end findAngle
 
 
+/**
+This function returns the center angle of a circle in degrees.
+
+Syntax: findPreciseAngle(pX1, pY1, pX2, pY2)
+Syntax: findPreciseAngle(pPoint1, pPoint2)
+
+Example:
+get findPreciseAngle(100,200,50,300)
+
+Example:
+get findPreciseAngle(the loc of grc "myGraphic,the loc of btn "myButton")
+
+Description:
+This function returns the center angle of a circle in degrees. x1,y1 are the coordinates of the center point of the circle. x2,y2 are 
+the coordinates of a point on the circular arc. Possible values are 0-360, where 0 degrees means x2,y2 being on top of x1,y1. In 
+difference to the findAngle function values are not rounded.
+
+Parameters:
+pPoint1: First point
+
+pPoint2: Second point
+
+Returns:
+number
+
+**/
 function findPreciseAngle pX1, pY1, pX2, pY2
    local tAdjacentLeg, tAlpha
 
@@ -715,6 +801,33 @@ function findPreciseAngle pX1, pY1, pX2, pY2
 end findPreciseAngle
 
 
+/**
+This function returns the center angle of a circle in degrees.
+
+Syntax: findPreciseAngleX(pX1, pY1, pX2, pY2)
+Syntax: findPreciseAngleX(pPoint1, pPoint2)
+
+Example:
+get findPreciseAngleX(100,200,50,300)
+
+Example:
+get findPreciseAngleX(the loc of grc "myGraphic,the loc of btn "myButton")
+
+Description:
+This function returns the center angle of a circle in degrees. x1,y1 are the coordinates of the center point of the circle. x2,y2 are the coordinates 
+of a point on the circular arc. Possible values are 0-360, where 0 degrees means x2,y2 being right to x1,y1. In difference to 
+findAngleX() the returned value is not rounded.
+
+
+Parameters:
+pPoint1: First point
+
+pPoint2: Second point
+
+Returns:
+number
+
+**/
 function findPreciseAngleX pX1, pY1, pX2, pY2
    local tFoundAngle
 
@@ -728,6 +841,32 @@ function findPreciseAngleX pX1, pY1, pX2, pY2
 end findPreciseAngleX
 
 
+/**
+This function returns the center angle of a circle in degrees.
+
+Syntax: findAngleX(pX1, pY1, pX2, pY2)
+Syntax: findAngleX(pPoint1, pPoint2)
+
+Example:
+get findAngleX(100,200,50,300)
+
+Example:
+get findAngleX(the loc of grc "myGraphic,the loc of btn "myButton")
+
+Description:
+This function returns the center angle of a circle in degrees. x1,y1 are the coordinates of the center point of the circle. x2,y2 are the coordinates 
+of a point on the circular arc. Possible values are 0-360, where 0 degrees means x2,y2 being right to x1,y1.
+
+
+Parameters:
+pPoint1: First point
+
+pPoint2: Second point
+
+Returns:
+number
+
+**/
 function findAngleX pX1, pY1, pX2, pY2
    local tFoundAngle
 
@@ -740,7 +879,32 @@ function findAngleX pX1, pY1, pX2, pY2
    return tFoundAngle
 end findAngleX
 
+/**
+This function returns the center angle of a circle in degrees.
 
+Syntax: findAngleY(pX1, pY1, pX2, pY2)
+Syntax: findAngleY(pPoint1, pPoint2)
+
+Example:
+get findAngleY(100,200,50,300)
+
+Example:
+get findAngleY(the loc of grc "myGraphic,the loc of btn "myButton")
+
+Description:
+This function returns the center angle of a circle in degrees. x1,y1 are the coordinates of the center point of the circle. x2,y2 are the coordinates 
+of a point on the circular arc. Possible values are 0-360, where 0 degrees means x2,y2 being on top of x1,y1.
+
+
+Parameters:
+pPoint1: First point
+
+pPoint2: Second point
+
+Returns:
+number
+
+**/
 function findAngleY pX1, pY1, pX2, pY2
    _parameterFormat pX1, pY1, pX2, pY2, sTemp, sTemp, sTemp, sTemp
 
@@ -885,12 +1049,10 @@ function imageCollide pLongIdObject1, pLongIdObject2, pThreshold
    if first word of pLongIdObject1 is not "image" then return "Error: The object you reference in the first parameter is not an image."
    if first word of pLongIdObject2 is not "image" then return "Error: The object you reference in the second parameter is not an image."
    if pThreshold is empty then put 0 into pThreshold
-
    if not intersect (pLongIdObject1, pLongIdObject1, "bounds") then return false
 
    put splitAlpha(pLongIdObject1) into tData1
    put splitAlpha(pLongIdObject2) into tData2
-
    put maskComparePoints(the rect of pLongIdObject1, the rect of pLongIdObject2) into tMaskComparePoints
    if tMaskComparePoints then return false
 
@@ -914,9 +1076,7 @@ function imageCollide pLongIdObject1, pLongIdObject2, pThreshold
 
          put chartonum(char(tCounterChar + tOffset2) of line (tCounterLine + tOffset1) of tData1) into tFirst
          put chartonum(char(tCounterChar + tOffset4) of line (tCounterLine + tOffset3) of tData2) into tSecond
-         if tFirst + tSecond > 255 + pThreshold then
-            return true
-         end if
+         if tFirst + tSecond > 255 + pThreshold then return true
       end repeat
 
       if tCounterLine > tEndCounterLine then
@@ -929,13 +1089,13 @@ end imageCollide
 
 
 function pointOnCircle pCenterX, pCenterY, pAngle, pRadius
-   local tParameters, tNewX, tNewY
-
+   local tNewX, tNewY
+   
    _parameterFormat pCenterX, pCenterY, pAngle, pRadius, sTemp, sTemp, sTemp, sTemp
-
-   if tParameters is not a rectangle
+   
+   if pCenterX, pCenterY, pAngle, pRadius is not a rectangle
    then return "Error: Syntax is pointOnCircle(CenterX, CenterY, Angle, Radius)."
-
+   
    put pCenterX + cos(pAngle * pi / 180) * pRadius into tNewX
    put pCenterY + sin(pAngle * pi / 180) * pRadius into tNewY
    return floor(tNewX), floor(tNewY)
@@ -949,10 +1109,10 @@ function pointOnEllipse pCenterX, pCenterY, pAngle, pRadiusx, pRadiusY
 
    if (pCenterX, pCenterY, pAngle, pRadiusX) is not a rectangle or pRadiusY is not a number
    then return "Error: Syntax is pointOnEllipse(CenterX, CenterY, Angle, RadiusX, RadiusY)."
-   --put atan((isRadiusY^2/isRadiusx^2)*tan(isangle/180*pi))*180/pi into isAngle
 
    put pCenterX + cos(pAngle * pi / 180) * pRadiusX into tEllipseNewX
    put pCenterY + sin(pAngle * pi / 180) * pRadiusY into tEllipseNewY
+
    return tEllipseNewX, tEllipseNewY
 end pointOnEllipse
 
@@ -973,7 +1133,6 @@ function pointOnLine pX1, pY1, pX2, pY2, pDistance
 end pointOnLine
 
 --Added in AE 1.5
-
 function whereIsThePoint pX1, pY1, pX2, pY2, pX3, pY3
    local tWhere
 
@@ -1262,45 +1421,45 @@ end superFormula
 //TODO: moveCircular pLongId, centerX, centerY, startAngle, duracion un # o inf para siempre, tipo mov
 on moveCircular
    local tLoc, tLongId, tMoveCircularArray
-
+   
    put the long id of target into tLongId
    put _getAnimationEngine(tLongId, "moveCircular") into tMoveCircularArray
    put the loc of tLongId into tLoc
-
+   
    --The handler creates a customPropertySet "moveCircular" for the target
    --It sets the following custom properties of the target in that customPropertySet
    --centerX is the X coordinate of the circle
    --centerY is the Y coordinate of the circle
    --tAngle is the center angle of the circle
    --isRadius is the radius
-
+   
    --If the custom properties are not set yet,
    --we need to initialize them first
-
+   
    --default speed is 1
    if tMoveCircularArray["step"] is empty then put 1 into tMoveCircularArray["step"]
-
+   
    --default x-location is item 1 of the loc of the target
    if tMoveCircularArray["centerX"] is empty then put item 1 of tLoc into tMoveCircularArray["centerX"]
-
+   
    --default y location is item 2 of the loc of the target
    if tMoveCircularArray["centerY"] is empty then put item 2 of tLoc into tMoveCircularArray["centerY"]
-
+   
    --default angle is 360 degrees
    if tMoveCircularArray["angle"] is empty then put 360 into tMoveCircularArray["angle"]
-
+   
    --default radius is 50 pixel
    if tMoveCircularArray["radius"] is empty then put 50 into tMoveCircularArray["radius"]
-
+   
    --calculate the next angle
    put tMoveCircularArray["angle"] + tMoveCircularArray["step"] into tMoveCircularArray["angle"]
-
+   
    if tMoveCircularArray["angle"] >= 360 or tMoveCircularArray["angle"] < 0 then
       put tMoveCircularArray["angle"] mod 360 into tMoveCircularArray["angle"]
    end if
-
+   
    _setAnimationEngine tLongId, "moveCircular", tMoveCircularArray
-
+   
    --now calculate the new location.
    set the loc of tLongId to pointOnCircle((tMoveCircularArray["centerX"], tMoveCircularArray["centerY"], tMoveCircularArray["angle"], tMoveCircularArray["radius"]))
 end moveCircular
@@ -1402,51 +1561,51 @@ end moveEllipticalReversePath
 
 
 on moveLinear
-   local tLongId, tMoveLinearlArray
+   local tLongId, tMoveLinearArray
 
    put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearArray
 
-   if tMoveLinearlArray["startPoint"] is not a point then put 0, 0 into tMoveLinearlArray["startPoint"]
-   if tMoveLinearlArray["endPoint"] is not a point then put 100, 100 into tMoveLinearlArray["endPoint"]
-   if tMoveLinearlArray["distance"] is not a number then put 0 into tMoveLinearlArray["distance"]
-   if tMoveLinearlArray["step"] is not a number then put 1 into tMoveLinearlArray["step"]
-   if tMoveLinearlArray["step"] < 0 then put tMoveLinearlArray["step"] * - 1 into tMoveLinearlArray["step"]
+   if tMoveLinearArray["startPoint"] is not a point then put 0, 0 into tMoveLinearArray["startPoint"]
+   if tMoveLinearArray["endPoint"] is not a point then put 100, 100 into tMoveLinearArray["endPoint"]
+   if tMoveLinearArray["distance"] is not a number then put 0 into tMoveLinearArray["distance"]
+   if tMoveLinearArray["step"] is not a number then put 1 into tMoveLinearArray["step"]
+   if tMoveLinearArray["step"] < 0 then put tMoveLinearArray["step"] * - 1 into tMoveLinearArray["step"]
 
-   put tMoveLinearlArray["distance"] + tMoveLinearlArray["step"] into tMoveLinearlArray["distance"]
+   put tMoveLinearArray["distance"] + tMoveLinearArray["step"] into tMoveLinearArray["distance"]
 
-   if tMoveLinearlArray["distance"] < distance(tMoveLinearlArray["startPoint"], tMoveLinearlArray["endPoint"]) then
-      set the loc of tLongId to (pointOnLine(tMoveLinearlArray["startPoint"], tMoveLinearlArray["endPoint"], tMoveLinearlArray["distance"]))
+   if tMoveLinearArray["distance"] < distance(tMoveLinearArray["startPoint"], tMoveLinearArray["endPoint"]) then
+      set the loc of tLongId to (pointOnLine(tMoveLinearArray["startPoint"], tMoveLinearArray["endPoint"], tMoveLinearArray["distance"]))
 
     else
-      set the loc of tLongId to (pointOnLine(tMoveLinearlArray["startPoint"], tMoveLinearlArray["endPoint"], distance(tMoveLinearlArray["startPoint"], tMoveLinearlArray["endPoint"])))
+      set the loc of tLongId to (pointOnLine(tMoveLinearArray["startPoint"], tMoveLinearArray["endPoint"], distance(tMoveLinearArray["startPoint"], tMoveLinearArray["endPoint"])))
 
-      put 0 into tMoveLinearlArray["distance"]
-      put true into tMoveLinearlArray["moveDone"]
+      put 0 into tMoveLinearArray["distance"]
+      put true into tMoveLinearArray["moveDone"]
 
       dispatch "moveLinearMoveDone" to tLongId
 
-      if tMoveLinearlArray["pingPong"] is true then
+      if tMoveLinearArray["pingPong"] is true then
          moveLinearReversePath
-         put false into tMoveLinearlArray["moveDone"]
+         put false into tMoveLinearArray["moveDone"]
       end if
    end if
 
-   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearArray
 end moveLinear
 
 
 on moveLinearReversePath
-   local tLongId, tMoveLinearlArray, tSwapStartPointAndEndPoint
+   local tLongId, tMoveLinearArray, tSwapStartPointAndEndPoint
 
    put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "movelinear") into tMoveLinearlArray
+   put _getAnimationEngine(tLongId, "movelinear") into tMoveLinearArray
 
-   put tMoveLinearlArray["endPoint"] into tSwapStartPointAndEndPoint
-   put tMoveLinearlArray["startPoint"] into tMoveLinearlArray["endPoint"]
-   put tSwapStartPointAndEndPoint into tMoveLinearlArray["startPoint"]
+   put tMoveLinearArray["endPoint"] into tSwapStartPointAndEndPoint
+   put tMoveLinearArray["startPoint"] into tMoveLinearArray["endPoint"]
+   put tSwapStartPointAndEndPoint into tMoveLinearArray["startPoint"]
 
-   _setAnimationEngine tLongId, "movelinear", tMoveLinearlArray
+   _setAnimationEngine tLongId, "movelinear", tMoveLinearArray
 end moveLinearReversePath
 
 
@@ -1787,7 +1946,7 @@ setProp aspectScale pValue
    put item 4 of pValue into tParam4
    put item 5 of pValue into tParam5
 
-   put aspectResize(pValue,(tParam1, tParam2, tParam3, tParam4)) into tAspectResize
+   put _aspectResize(pValue,(tParam1, tParam2, tParam3, tParam4)) into tAspectResize
 
    set the width of tLongId to item 1 of tAspectResize
    set the height of tLongId to item 2 of tAspectResize
@@ -1825,35 +1984,39 @@ setProp movePolyGonal[whichKey] pValue
    pass movePolygonal
 end movePolyGonal
 
--- circular easing
-on moveCircularEaseIn pNewValue, pDuration, pExponent
-   local tLongId, tMoveCircularlArray
 
+-- circular easing
+on moveCircularEaseIn pLongId, pNewValue, pDuration, pExponent
+   local tMoveCircularlArray
+   
+   if there is not a pLongId then return "error"-- no existe el control pLongId //TODO: T
    if (pNewValue is not a number or pDuration is not a number) or \
          (pExponent is not a number and pExponent is not empty) then
       return "error: Parameter is not a number"
    end if
-
-   put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveCircular") into tMoveCircularlArray
+   
+   put _getAnimationEngine(pLongId, "moveCircular") into tMoveCircularlArray
    if pExponent is empty then put 2 into pExponent
-
-   _setAnimationEngine tLongId, "easeStart", tMoveCircularlArray["step"]
-   _setAnimationEngine tLongId, "easeEnd", pNewValue
-   _setAnimationEngine tLongId, "easeDuration", pDuration
-   _setAnimationEngine tLongId, "easeExponent", pExponent
-   _setAnimationEngine tLongId, "easeStartTime", the milliseconds
-
-   send "moveCircularChangeStepIn" to tLongId
+   put  tMoveCircularlArray["step"] into tMoveCircularlArray["easeStart"]
+   put  pNewValue into tMoveCircularlArray["easeEnd"]
+   put  pDuration into tMoveCircularlArray["easeDuration"]
+   put  pExponent into tMoveCircularlArray["easeExponent"]
+   put the milliseconds into tMoveCircularlArray["easeStartTime"]
+   
+   _setAnimationEngine pLongId, "moveCircular", tMoveCircularlArray
+   
+   _moveCircularChangeStepIn pLongId
 end moveCircularEaseIn
 
 
-on moveCircularChangeStepIn
-   local tLongId, tMoveCircularlArray
-   local tDuration, tElapsed, tEnd, tExponent, tMillisecs, tNewStep, tStart
+# Reserved for internal use
+on _moveCircularChangeStepIn pLongId
+   local tMoveCircularlArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
 
-   put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveCircular") into tMoveCircularlArray
+   if there is not a pLongId then _moveCircularChangeStepIn
+
+   put _getAnimationEngine(pLongId, "moveCircular") into tMoveCircularlArray
+   
    put tMoveCircularlArray["easeStart"] into tStart
    put tMoveCircularlArray["easeEnd"] into tEnd
    put tMoveCircularlArray["easeDuration"] into tDuration
@@ -1862,10 +2025,10 @@ on moveCircularChangeStepIn
    put the milliseconds - tMillisecs into tElapsed
    put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveCircularlArray["step"]
 
-   _setAnimationEngine tLongId, "moveCircular", tMoveCircularlArray
+   _setAnimationEngine pLongId, "moveCircular", tMoveCircularlArray
 
-   if tNewStep <> tEnd then send "moveCircularChangeStepIn" to tLongId in 20 milliseconds
-end moveCircularChangeStepIn
+   if tMoveCircularlArray["step"] is a number and tMoveCircularlArray["step"] <> tEnd then send "_moveCircularChangeStepIn pLongId" to me in 20 milliseconds
+end _moveCircularChangeStepIn
 
 
 on moveCircularEaseOut pNewValue, pDuration, pExponent
@@ -1886,15 +2049,17 @@ on moveCircularEaseOut pNewValue, pDuration, pExponent
    put the milliseconds into tMoveCircularlArray["easeStartTime"]
    _setAnimationEngine tLongId, "moveCircular", tMoveCircularlArray
 
-   dispatch "moveCircularChangeStepOut" to tLongId
+   _moveCircularChangeStepOut tLongId
 end moveCircularEaseOut
 
 
-on moveCircularChangeStepOut
-   local tLongId, tMoveCircularlArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tNewStep, tStart
+# Reserved for internal use
+on _moveCircularChangeStepOut pLongId
+   local tMoveCircularlArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
 
-   put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveCircular") into tMoveCircularlArray
+   if there is not a pLongId then exit _moveCircularChangeStepOut
+
+   put _getAnimationEngine(pLongId, "moveCircular") into tMoveCircularlArray
 
    put tStart into tMoveCircularlArray["easeStart"]
    put tEnd into tMoveCircularlArray["easeEnd"]
@@ -1902,12 +2067,11 @@ on moveCircularChangeStepOut
    put tExponent into tMoveCircularlArray["easeExponent"]
    put tMillisecs into tMoveCircularlArray["easeStartTime"]
    put the milliseconds - tMillisecs into tElapsed
-   put aeEaseOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tNewStep
-   put tNewStep into tMoveCircularlArray["step"]
-   _setAnimationEngine tLongId, "moveCircular", tMoveCircularlArray
+   put aeEaseOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveCircularlArray["step"]
+   _setAnimationEngine pLongId, "moveCircular", tMoveCircularlArray
 
-   if tNewStep <> tEnd then send "moveCircularChangeStepOut" to the target in 20 milliseconds
-end moveCircularChangeStepOut
+   if tMoveCircularlArray["step"] is a number and tMoveCircularlArray["step"] <> tEnd then send "_moveCircularChangeStepOut pLongId" to me in 20 milliseconds
+end _moveCircularChangeStepOut
 
 
 on moveCircularEaseInOut pNewValue, pDuration, pExponent
@@ -1928,22 +2092,24 @@ on moveCircularEaseInOut pNewValue, pDuration, pExponent
    put the milliseconds into tMoveCircularlArray["easeStartTime"]
    _setAnimationEngine tLongId, "moveCircular", tMoveCircularlArray
 
-   dispatch "moveCircularChangeStepInOut" to tLongId
+   _moveCircularChangeStepInOut tLongId
 end moveCircularEaseInOut
 
 
-on moveCircularChangeStepInOut
-   local tLongId, tMoveCircularlArray, tElapsed, tNewStep
+# Reserved for internal use
+on _moveCircularChangeStepInOut pLongId
+   local tMoveCircularlArray, tElapsed
 
-   put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveCircular") into tMoveCircularlArray
+   if there is not a pLongId then exit _moveCircularChangeStepInOut
+
+   put _getAnimationEngine(pLongId, "moveCircular") into tMoveCircularlArray
    put the milliseconds - tMoveCircularlArray["easeStartTime"] into tElapsed
-   put aeEaseInOut(tMoveCircularlArray["easeStart"], tMoveCircularlArray["easeEnd"], tMoveCircularlArray["easeDuration"], tElapsed, tMoveCircularlArray["easeExponent"]) into tNewStep
-   put tNewStep into tMoveCircularlArray["step"]
-   _setAnimationEngine tLongId, "moveCircular", tMoveCircularlArray
+   put aeEaseInOut(tMoveCircularlArray["easeStart"], tMoveCircularlArray["easeEnd"], tMoveCircularlArray["easeDuration"], tElapsed, tMoveCircularlArray["easeExponent"]) into tMoveCircularlArray["step"]
 
-   if tNewStep <> tMoveCircularlArray["easeEnd"] then send "moveCircularChangeStepInOut" to the target in 20 milliseconds
-end moveCircularChangeStepInOut
+   _setAnimationEngine pLongId, "moveCircular", tMoveCircularlArray
+
+   if tMoveCircularlArray["step"] is a number and tMoveCircularlArray["step"] <> tMoveCircularlArray["easeEnd"] then send "_moveCircularChangeStepInOut pLongId" to me in 20 milliseconds
+end _moveCircularChangeStepInOut
 
 
 -- elliptical easing
@@ -1965,15 +2131,17 @@ on moveEllipticalEaseIn pNewValue, pDuration, pExponent
 
    _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
 
-   dispatch "moveEllipticalChangeStepIn" to tLongId
+   _moveEllipticalChangeStepIn tLongId
 end moveEllipticalEaseIn
 
 
-on moveEllipticalChangeStepIn
-   local tLongId, tMoveEllipticalArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
+# Reserved for internal use
+on _moveEllipticalChangeStepIn pLongId
+   local tMoveEllipticalArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
 
-   put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveElliptical") into tMoveEllipticalArray
+   if there is not a pLongId then exit _moveEllipticalChangeStepIn
+
+   put _getAnimationEngine(pLongId, "moveElliptical") into tMoveEllipticalArray
 
    put tMoveEllipticalArray["easeStart"] into tStart
    put tMoveEllipticalArray["easeEnd"] into tEnd
@@ -1983,10 +2151,10 @@ on moveEllipticalChangeStepIn
    put the milliseconds - tMillisecs into tElapsed
    put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveEllipticalArray["step"]
 
-   _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
+   _setAnimationEngine pLongId, "moveElliptical", tMoveEllipticalArray
 
-   if tMoveEllipticalArray["step"] <> tEnd then send "moveEllipticalChangeStepIn" to tLongId in 20 milliseconds
-end moveEllipticalChangeStepIn
+   if tMoveEllipticalArray["step"] is a number and tMoveEllipticalArray["step"] <> tEnd then send "_moveEllipticalChangeStepIn pLongId" to me in 20 milliseconds
+end _moveEllipticalChangeStepIn
 
 
 on moveEllipticalEaseOut pNewValue, pDuration, pExponent
@@ -2005,15 +2173,15 @@ on moveEllipticalEaseOut pNewValue, pDuration, pExponent
    put pExponent into tMoveEllipticalArray["easeExponent"]
    put the milliseconds into tMoveEllipticalArray["easeStartTime"]
 
-   dispatch "moveEllipticalChangeStepOut" to tLongId
+   _moveEllipticalChangeStepOut tLongId
 end moveEllipticalEaseOut
 
+# Reserved for internal use
+on _moveEllipticalChangeStepOut pLongId
+   local tMoveEllipticalArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
 
-on moveEllipticalChangeStepOut
-   local tLongId, tMoveEllipticalArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
-
-   put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveElliptical") into tMoveEllipticalArray
+   if there is a not pLongId then exit _moveEllipticalChangeStepOut
+   put _getAnimationEngine(pLongId, "moveElliptical") into tMoveEllipticalArray
 
    put tMoveEllipticalArray["easeStart"] into tStart
    put tMoveEllipticalArray["easeEnd"] into tEnd
@@ -2023,10 +2191,10 @@ on moveEllipticalChangeStepOut
    put the milliseconds - tMillisecs into tElapsed
 
    put aeEaseOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveEllipticalArray["step"]
-   _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
+   _setAnimationEngine pLongId, "moveElliptical", tMoveEllipticalArray
 
-   if tMoveEllipticalArray["step"] <> tEnd then send "moveEllipticalChangeStepOut" to tLongId in 20 milliseconds
-end moveEllipticalChangeStepOut
+   if tMoveEllipticalArray["step"] is a number and tMoveEllipticalArray["step"] <> tEnd then send "_moveEllipticalChangeStepOut pLongId" to me in 20 milliseconds
+end _moveEllipticalChangeStepOut
 
 
 on moveEllipticalEaseInOut pNewValue, pDuration, pExponent
@@ -2047,15 +2215,16 @@ on moveEllipticalEaseInOut pNewValue, pDuration, pExponent
 
    _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
 
-   dispatch "moveEllipticalChangeStepInOut" to tLongId
+   dispatch "_moveEllipticalChangeStepInOut" to tLongId
 end moveEllipticalEaseInOut
 
 
-on moveEllipticalChangeStepInOut
-   local tLongId, tMoveEllipticalArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
+# Reserved for internal use
+on _moveEllipticalChangeStepInOut pLongId
+   local tMoveEllipticalArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
 
-   put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveElliptical") into tMoveEllipticalArray
+   if there is a not pLongId then exit _moveEllipticalChangeStepInOut
+   put _getAnimationEngine(pLongId, "moveElliptical") into tMoveEllipticalArray
 
    put tMoveEllipticalArray["easeStart"] into tStart
    put tMoveEllipticalArray["easeEnd"] into tEnd
@@ -2065,15 +2234,16 @@ on moveEllipticalChangeStepInOut
    put the milliseconds - tMillisecs into tElapsed
    put aeEaseInOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveEllipticalArray["step"]
 
-   _setAnimationEngine tLongId, "moveElliptical", tMoveEllipticalArray
+   _setAnimationEngine pLongId, "moveElliptical", tMoveEllipticalArray
 
-   if tMoveEllipticalArray["step"] <> tEnd then send "moveEllipticalChangeStepInOut" to the target in 20 milliseconds
+   if tMoveEllipticalArray["step"] is a number and tMoveEllipticalArray["step"] <> tEnd
+   then send "_moveEllipticalChangeStepInOut pLongId" to me in 20 milliseconds
+end _moveEllipticalChangeStepInOut
 
-end moveEllipticalChangeStepInOut
 
 -- linear easing
 command moveLinearEaseIn pNewValue, pDuration, pExponent
-   local tLongId, tMoveLinearlArray
+   local tLongId, tMoveLinearArray
 
    if pExponent is empty then put 2 into pExponent
    if pNewValue is not a number or pDuration is not a number or pExponent is not a number then
@@ -2081,40 +2251,41 @@ command moveLinearEaseIn pNewValue, pDuration, pExponent
    end if
 
    put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearArray
 
-   put tMoveLinearlArray["step"] into tMoveLinearlArray["easeStart"]
-   put pNewValue into tMoveLinearlArray["easeEnd"]
-   put pDuration into tMoveLinearlArray["easeDuration"]
-   put pExponent into tMoveLinearlArray["easeExponent"]
-   put the milliseconds into tMoveLinearlArray["easeStartTime"]
+   put tMoveLinearArray["step"] into tMoveLinearArray["easeStart"]
+   put pNewValue into tMoveLinearArray["easeEnd"]
+   put pDuration into tMoveLinearArray["easeDuration"]
+   put pExponent into tMoveLinearArray["easeExponent"]
+   put the milliseconds into tMoveLinearArray["easeStartTime"]
 
-   dispatch "moveLinearChangeStepIn" to tLongId
+   _moveLinearChangeStepIn tLongId
 end moveLinearEaseIn
 
 
-on moveLinearChangeStepIn
-   local tLongId, tMoveLinearlArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
+# Reserved for internal use
+on _moveLinearChangeStepIn pLongId
+   local tMoveLinearArray, tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
 
-   put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+   if there is not a pLongId then exit _moveLinearChangeStepIn
+   put _getAnimationEngine(pLongId, "moveLinear") into tMoveLinearArray
 
-   put tStart into tMoveLinearlArray["easeStart"]
-   put tEnd into tMoveLinearlArray["easeEnd"]
-   put tDuration into tMoveLinearlArray["easeDuration"]
-   put tExponent into tMoveLinearlArray["easeExponent"]
-   put tMillisecs into tMoveLinearlArray["easeStartTime"]
+   put tStart into tMoveLinearArray["easeStart"]
+   put tEnd into tMoveLinearArray["easeEnd"]
+   put tDuration into tMoveLinearArray["easeDuration"]
+   put tExponent into tMoveLinearArray["easeExponent"]
+   put tMillisecs into tMoveLinearArray["easeStartTime"]
    put the milliseconds - tMillisecs into tElapsed
-   put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveLinearlArray["step"]
+   put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveLinearArray["step"]
 
-   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
+   _setAnimationEngine pLongId, "moveLinear", tMoveLinearArray
 
-   if tMoveLinearlArray["step"] <> tEnd then send "moveLinearChangeStepIn" to tLongId in 20 milliseconds
-end moveLinearChangeStepIn
+   if tMoveLinearArray["step"] <> tEnd then send "_moveLinearChangeStepIn pLongId" to me in 20 milliseconds
+end _moveLinearChangeStepIn
 
 
 on moveLinearEaseOut pNewValue, pDuration, pExponent
-   local tLongId, tMoveLinearlArray
+   local tLongId, tMoveLinearArray
 
    _parameterFormat pNewValue, pDuration, pExponent, sTemp, sTemp, sTemp, sTemp, sTemp
 
@@ -2123,45 +2294,45 @@ on moveLinearEaseOut pNewValue, pDuration, pExponent
    end if
 
    put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearArray
 
    if pExponent is empty then put 2 into pExponent
 
-   put the moveLinear["step"] of tLongId into tMoveLinearlArray["easeStart"]
-   put pNewValue into tMoveLinearlArray["easeEnd"]
-   put pDuration into tMoveLinearlArray["easeDuration"]
-   put pExponent into tMoveLinearlArray["easeExponent"]
-   put the milliseconds into tMoveLinearlArray["easeStartTime"]
+   put the moveLinear["step"] of tLongId into tMoveLinearArray["easeStart"]
+   put pNewValue into tMoveLinearArray["easeEnd"]
+   put pDuration into tMoveLinearArray["easeDuration"]
+   put pExponent into tMoveLinearArray["easeExponent"]
+   put the milliseconds into tMoveLinearArray["easeStartTime"]
 
-   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearArray
 
    dispatch "moveLinearChangeStepOut" to tLongId
 end moveLinearEaseOut
 
-
+# Reserved for internal use
 on moveLinearChangeStepOut
    local tDuration, tElapsed, tEnd, tExponent, tMillisecs, tStart
-   local tLongId, tMoveLinearlArray
+   local tLongId, tMoveLinearArray
 
    put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearArray
 
-   put tStart into tMoveLinearlArray["easeStart"]
-   put tEnd into tMoveLinearlArray["easeEnd"]
-   put tDuration into tMoveLinearlArray["easeDuration"]
-   put tExponent into tMoveLinearlArray["easeExponent"]
-   put tMillisecs into tMoveLinearlArray["easeStartTime"]
+   put tStart into tMoveLinearArray["easeStart"]
+   put tEnd into tMoveLinearArray["easeEnd"]
+   put tDuration into tMoveLinearArray["easeDuration"]
+   put tExponent into tMoveLinearArray["easeExponent"]
+   put tMillisecs into tMoveLinearArray["easeStartTime"]
    put the milliseconds - tMillisecs into tElapsed
-   put aeEaseOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveLinearlArray["step"]
+   put aeEaseOut(tStart, tEnd, tDuration, tElapsed, tExponent) into tMoveLinearArray["step"]
 
-   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearArray
 
-   if tMoveLinearlArray["step"] <> tEnd then send "moveLinearChangeStepOut" to tLongId in 20 milliseconds
+   if tMoveLinearArray["step"] is a number and tMoveLinearArray["step"] <> tEnd then send "moveLinearChangeStepOut" to tLongId in 20 milliseconds
 end moveLinearChangeStepOut
 
 
 on moveLinearEaseInOut pNewValue, pDuration, pExponent
-   local tLongId, tMoveLinearlArray
+   local tLongId, tMoveLinearArray
 
    _parameterFormat pNewValue, pDuration, pExponent, sTemp, sTemp, sTemp, sTemp, sTemp
 
@@ -2172,77 +2343,76 @@ on moveLinearEaseInOut pNewValue, pDuration, pExponent
    if pExponent is empty then put 2 into pExponent
 
    put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearArray
 
-   put tMoveLinearlArray["step"] into tMoveLinearlArray["easeStart"]
-   put pNewValue into tMoveLinearlArray["easeEnd"]
-   put pDuration into tMoveLinearlArray["easeDuration"]
-   put pExponent into tMoveLinearlArray["easeExponent"]
-   put the milliseconds into tMoveLinearlArray["easeStartTime"]
+   put tMoveLinearArray["step"] into tMoveLinearArray["easeStart"]
+   put pNewValue into tMoveLinearArray["easeEnd"]
+   put pDuration into tMoveLinearArray["easeDuration"]
+   put pExponent into tMoveLinearArray["easeExponent"]
+   put the milliseconds into tMoveLinearArray["easeStartTime"]
 
-   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
-
-   dispatch "moveLinearChangeStepInOut" to tLongId
+   _setAnimationEngine tLongId, "moveLinear", tMoveLinearArray
+   _moveLinearChangeStepInOut tLongId
 end moveLinearEaseInOut
 
 
-on moveLinearChangeStepInOut
-   local tLongId, tMoveLinearlArray, tElapsed
+on _moveLinearChangeStepInOut pLongId
+   local tLongId, tMoveLinearArray, tElapsed
 
-   put the long id of target into tLongId
-   put _getAnimationEngine(tLongId, "moveLinear") into tMoveLinearlArray
+   if there is not a pLongId then exit _moveLinearChangeStepInOut
+   put _getAnimationEngine(pLongId, "moveLinear") into tMoveLinearArray
 
-   put the milliseconds - tMoveLinearlArray["easeStartTime"] into tElapsed
-   put aeEaseInOut(tMoveLinearlArray["easeStart"], tMoveLinearlArray["easeEnd"], tMoveLinearlArray["easeDuration"], tElapsed, tMoveLinearlArray["easeExponent"]) into tMoveLinearlArray["step"]
+   put the milliseconds - tMoveLinearArray["easeStartTime"] into tElapsed
+   put aeEaseInOut(tMoveLinearArray["easeStart"], tMoveLinearArray["easeEnd"], tMoveLinearArray["easeDuration"], tElapsed, tMoveLinearArray["easeExponent"]) into tMoveLinearArray["step"]
 
-   _setAnimationEngine tLongId, "moveLinear", tMoveLinearlArray
-   if tMoveLinearlArray["step"] <> tMoveLinearlArray["easeEnd"] then send "moveLinearChangeStepInOut" to tLongId in 20 milliseconds
-end moveLinearChangeStepInOut
+   _setAnimationEngine pLongId, "moveLinear", tMoveLinearArray
+   if tMoveLinearArray["step"] <> tMoveLinearArray["easeEnd"] then send "_moveLinearChangeStepInOut pLongId" to me in 20 milliseconds
+end _moveLinearChangeStepInOut
 
 
 -- Polygonal easing
 on movePolygonalEaseIn pNewValue, pDuration, pExponent
-   try
-      if pNewValue is not a number or pDuration is not a number then
-         return "error: Parameter is not a number"
-         exit movePolygonalEaseIn
-      end if
-      if pExponent is not a number and pExponent is not empty then
-         return "error: Parameter is not a number"
-         exit movePolygonalEaseIn
-      end if
-      if pExponent is empty then put 2 into pExponent
-      set the movePolygonal["easeStart"] of the target to the movePolygonal["step"] of the target
-      set the movePolygonal["easeEnd"] of the target to pNewValue
-      set the movePolygonal["easeDuration"] of the target to pDuration
-      set the movePolygonal["easeExponent"] of the target to pExponent
-      set the movePolygonal["easeStartTime"] of the target to the milliseconds
-      send "movePolygonalChangeStepIn" to the target
-   catch theError
-      return theError
-   end try
+   local tLongId, tMovePolygonalArray
 
+   _parameterFormat pNewValue, pDuration, pExponent, sTemp, sTemp, sTemp, sTemp, sTemp
+
+   if pNewValue is not a number or pDuration is not a number or (pExponent is not a number and pExponent is not empty)
+   then return "error: Parameter is not a number"
+
+   if pExponent is empty then put 2 into pExponent
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "movePolygonal") into tMovePolygonalArray
+
+   put tMovePolygonalArray["step"] into tMovePolygonalArray["easeStart"]
+   put pNewValue into tMovePolygonalArray["easeEnd"]
+   put pDuration into tMovePolygonalArray["easeDuration"]
+   put pExponent into tMovePolygonalArray["easeExponent"]
+   put the milliseconds into tMovePolygonalArray["easeStartTime"]
+
+   _setAnimationEngine tLongId, "movePolygonal", tMovePolygonalArray
+   dispatch "movePolygonalChangeStepIn" to tLongId
 end movePolygonalEaseIn
-#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
+
 
 on movePolygonalChangeStepIn
-   local tDuration, tElapsed, tEnd, tExponent
-   local tMillisecs, tNewStep, tStart
-   try
-      put the movePolygonal["easeStart"] of the target into tStart
-      put the movePolygonal["easeEnd"] of the target into tEnd
-      put the movePolygonal["easeDuration"] of the target into tDuration
-      put the movePolygonal["easeExponent"] of the target into tExponent
-      put the movePolygonal["easeStartTime"] of the target into tMillisecs
-      put the milliseconds - tMillisecs into tElapsed
-      put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tNewStep
-      set the movePolygonal["step"] of the target to tNewStep
-      if tNewStep <> tEnd then send "movePolygonalChangeStepIn" to the target in 20 milliseconds
-   catch theError
-      return theError
-   end try
+   local tDuration, tElapsed, tEnd, tExponent, tMillisecs, tNewStep, tStart
+   local tLongId, tMovePolygonalArray
+
+   put the long id of target into tLongId
+   put _getAnimationEngine(tLongId, "movePolygonal") into tMovePolygonalArray
+
+   put the movePolygonal["easeStart"] of the target into tStart
+   put the movePolygonal["easeEnd"] of the target into tEnd
+   put the movePolygonal["easeDuration"] of the target into tDuration
+   put the movePolygonal["easeExponent"] of the target into tExponent
+   put the movePolygonal["easeStartTime"] of the target into tMillisecs
+   put the milliseconds - tMillisecs into tElapsed
+   put aeEaseIn(tStart, tEnd, tDuration, tElapsed, tExponent) into tNewStep
+   set the movePolygonal["step"] of the target to tNewStep
+   if tNewStep <> tEnd then send "movePolygonalChangeStepIn" to the target in 20 milliseconds
 
 end movePolygonalChangeStepIn
+#xxxxxxxxxxxxxxxxxxxxxV7xxxxxxxxxxxxxxxxxxxxxx#
 
 on movePolygonalEaseOut pNewValue, pDuration, pExponent
    try
@@ -2363,7 +2533,7 @@ function aeEaseInOut pStart, pEnd, pDuration, pElapsedTime, pExponent
       if pElapsedTime / pDuration < 0.5 then
          return pStart + ((((pElapsedTime / pDuration) * 2) ^ pExponent) / 2) * (pEnd - pStart)
        else
-         return pStart + (0.5 + aeMathEaseOut((pElapsedTime / pDuration - 0.5) * 2, pExponent) / 2) * (pEnd - pStart)
+         return pStart + (0.5 + _aeMathEaseOut((pElapsedTime / pDuration - 0.5) * 2, pExponent) / 2) * (pEnd - pStart)
       end if
    catch theError
       return theError
@@ -2371,13 +2541,10 @@ function aeEaseInOut pStart, pEnd, pDuration, pElapsedTime, pExponent
 
 end aeEaseInOut
 
-function aeMathEaseOut pR, pExponent
-   try
-      return 1 - (1 - pR) ^ pExponent
-   catch theError
-      return theError
-   end try
-end aeMathEaseOut
+# Reserved for internal use
+private function _aeMathEaseOut pR, pExponent
+   return 1 - (1 - pR) ^ pExponent
+end _aeMathEaseOut
 
 -- isometric drawing and 3d
 
@@ -3022,9 +3189,9 @@ on aeUnlockMoves
    if "aeGeneral" is not in the pendingmessages then aeGeneral
 end aeUnlockMoves
 
-local sTimeTaken
 
-command aeGeneral
+# Reserved for internal use
+on aeGeneral
    lock screen
    local tTimeLost, tFramesLost, tElapsed, tControls
    local tX, tY, tDuration, tMethod, tEndX, tStartX, tDestX, tStartY, tDestY, tStartTime
@@ -5551,24 +5718,25 @@ end ae3dConvertListToScreen
 # This command is to create and update the value of the properties of the objects
 # in the custom property set used by this library.
 # The parameters are:
-# - pLongID: The long id of the control
+# - pLongId: The long id of the control
 # - pProp: The name of the property
 # - pValue: The value of the property
-private command _setAnimationEngine pLongID, pProp, pValue
-   if there is not a pLongID or pProp is empty then exit _setAnimationEngine
-   set the cAnimationEngine[pProp] of pLongID to pValue
+private command _setAnimationEngine pLongId, pProp, pValue
+   if there is not a pLongId or pProp is empty then exit _setAnimationEngine
+   set the cAnimationEngine[pProp] of pLongId to pValue
 end _setAnimationEngine
 
 # This function is to get the value of a property from the library's custom property set.
 # If the property name is not specified, the full array is returned.
 # The parameters are:
-# - pLongID: The long id of the control
+# - pLongId: The long id of the control
 # - pProp: The name of the property
-private function _getAnimationEngine pLongID, pProp
-   if there is not a pLongID then return empty
-   get the cAnimationEngine of pLongID
-   if pProp is not empty then return it [pProp]
-   return it
+private function _getAnimationEngine pLongId, pProp
+   local tAnimationEngineArray
+   if there is not a pLongId then return empty
+   put the customProperties["cAnimationEngine"]  of pLongId into tAnimationEngineArray
+   if pProp is not empty then return tAnimationEngineArray [pProp]
+   return tAnimationEngineArray
 end _getAnimationEngine
 
 
