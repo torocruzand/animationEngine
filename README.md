@@ -33,4 +33,5 @@ You will find the latest sources and documentation on Github.
 
 https://github.com/derbrill/animationEngine
 
-> ***Very important***: Finally, thank you for helping out! If you purchased a license for animationEngine, I really appreciate that! It helped moving the library forward!
+> [!IMPORTANT]
+> Finally, thank you for helping out! If you purchased a license for animationEngine, I really appreciate that! It helped moving the library forward!
